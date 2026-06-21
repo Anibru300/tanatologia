@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cuestionario de matching para encontrar al terapeuta ideal según tu situación y preferencias.">
+    <title>Encuentra tu Terapeuta | Tanatólogo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/pages.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">Tanatólogo</a>
+            <button class="nav__toggle" aria-label="Abrir menú" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav__menu">
+                <li><a href="pacientes.html">Para pacientes</a></li>
+                <li><a href="profesionales.html">Para profesionales</a></li>
+                <li><a href="membresias.html">Membresías</a></li>
+                <li><a href="matching.html">Encuentra terapeuta</a></li>
+                <li><a href="../index.html#contacto">Contacto</a></li>
+            </ul>
+            <div class="nav__actions">
+                <a href="login.html" class="btn btn--ghost btn--sm">Iniciar sesión</a>
+                <a href="matching.html" class="btn btn--primary btn--sm">Comenzar</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <span class="section__eyebrow">Matching</span>
+                <h1>Encontremos a tu acompañante ideal</h1>
+                <p>Responde 4 preguntas y te mostraremos hasta 3 profesionales que se ajusten a tu proceso.</p>
+            </div>
+        </section>
+
+        <section class="section section--alt">
+            <div class="container">
+                <form class="matching" id="matching-form" action="#" onsubmit="return false;">
+                    <div class="matching__step is-active" data-step="focus">
+                        <h2 class="matching__question">¿Qué motivo te trae aquí?</h2>
+                        <div class="matching__options">
+                            <label class="matching__option">
+                                <input type="radio" name="focus" value="duelo">
+                                <span>Duelo por fallecimiento de un ser querido</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="focus" value="ruptura">
+                                <span>Ruptura, divorcio o pérdida de relación</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="focus" value="enfermedad-cronica">
+                                <span>Enfermedad crónica, terminal o duelo anticipado</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="focus" value="ansiedad">
+                                <span>Ansiedad, estrés o crisis vital</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="focus" value="otra-perdida">
+                                <span>Otra pérdida significativa</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="matching__step" data-step="modality">
+                        <h2 class="matching__question">¿Qué tipo de terapia prefieres?</h2>
+                        <div class="matching__options">
+                            <label class="matching__option">
+                                <input type="radio" name="modality" value="individual">
+                                <span>Individual</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="modality" value="pareja">
+                                <span>De pareja</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="modality" value="familiar">
+                                <span>Familiar</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="matching__step" data-step="schedule">
+                        <h2 class="matching__question">¿Qué horarios te funcionan mejor?</h2>
+                        <div class="matching__options">
+                            <label class="matching__option">
+                                <input type="radio" name="schedule" value="manana">
+                                <span>Mañana (8:00 – 12:00)</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="schedule" value="tarde">
+                                <span>Tarde (12:00 – 18:00)</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="schedule" value="noche">
+                                <span>Noche (18:00 – 21:00)</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="schedule" value="flexible">
+                                <span>Flexible</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="matching__step" data-step="format">
+                        <h2 class="matching__question">¿Qué modalidad prefieres?</h2>
+                        <div class="matching__options">
+                            <label class="matching__option">
+                                <input type="radio" name="format" value="video">
+                                <span>Videollamada</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="format" value="llamada">
+                                <span>Llamada telefónica</span>
+                            </label>
+                            <label class="matching__option">
+                                <input type="radio" name="format" value="chat">
+                                <span>Chat terapéutico</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="matching__result">
+                        <h2 class="matching__question">Estos profesionales pueden acompañarte</h2>
+                        <div id="matching-result-list"></div>
+                        <div class="text-center" style="margin-top: 2rem;">
+                            <a href="membresias.html" class="btn btn--primary">Ver planes y agendar</a>
+                            <button type="button" class="btn btn--ghost" id="matching-restart" style="margin-left: 0.5rem;">Repetir cuestionario</button>
+                        </div>
+                    </div>
+
+                    <div class="matching__nav" id="matching-nav">
+                        <button type="button" class="btn btn--ghost" id="matching-prev" style="visibility: hidden;">Anterior</button>
+                        <button type="button" class="btn btn--primary" id="matching-next">Siguiente</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="alert alert--warning" style="max-width: 800px; margin: 0 auto;">
+                    <strong>Importante:</strong> Este cuestionario es una guía para encontrar un buen ajuste inicial. No sustituye una evaluación clínica. Si estás en crisis, busca atención de emergencia.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__grid">
+                <div class="footer__brand">
+                    <a href="../index.html" class="logo">Tanatólogo</a>
+                    <p>Plataforma especializada en tanatología y salud mental.</p>
+                </div>
+                <div>
+                    <h4 class="footer__title">Pacientes</h4>
+                    <ul class="footer__links">
+                        <li><a href="matching.html">Encontrar terapeuta</a></li>
+                        <li><a href="membresias.html">Membresías</a></li>
+                        <li><a href="pacientes.html">Cómo funciona</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="footer__title">Profesionales</h4>
+                    <ul class="footer__links">
+                        <li><a href="profesionales.html">Únete al directorio</a></li>
+                        <li><a href="profesionales.html#formacion">Formación</a></li>
+                        <li><a href="login.html">Iniciar sesión</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="footer__title">Legal</h4>
+                    <ul class="footer__links">
+                        <li><a href="#">Aviso de privacidad</a></li>
+                        <li><a href="#">Términos y condiciones</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; <span id="year"></span> Tanatólogo. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/matching.js"></script>
+</body>
+</html>
