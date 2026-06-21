@@ -1,18 +1,19 @@
-# Tanatólogo
+# SOMOS-CALMA
 
-Plataforma web de tanatología y salud mental que conecta a pacientes con tanatólogos y psicólogos certificados, mientras forma a profesionales con un modelo de membresía.
+Tu espacio seguro para sanar y encontrar alivio. Plataforma de tanatología y salud mental en México que conecta a personas en proceso de duelo con tanatólogos y psicólogos certificados, mientras forma a profesionales con un modelo de membresía.
 
 ## Estructura del proyecto
 
 ```
-PROYECTO TANATOLOGO/
+SOMOS-CALMA/
 ├── assets/                 # Recursos estáticos
 │   ├── css/                # Hojas de estilo
 │   │   ├── main.css        # Estilos base, componentes y utilidades
 │   │   └── pages.css       # Estilos específicos de páginas internas
 │   ├── js/                 # Scripts
-│   │   ├── main.js         # Menú móvil, smooth scroll, año actual
-│   │   └── matching.js     # Cuestionario de matching de pacientes
+│   │   ├── components.js   # Header, footer y botón de salida rápida
+│   │   ├── main.js         # Menú móvil, validación, smooth scroll
+│   │   └── matching.js     # Cuestionario de matching empático
 │   ├── images/             # Imágenes del sitio
 │   └── fonts/              # Tipografías personalizadas
 ├── docs/                   # Documentación del proyecto
@@ -24,7 +25,7 @@ PROYECTO TANATOLOGO/
 │   ├── pacientes.html      # Landing para pacientes
 │   ├── profesionales.html  # Landing para profesionales
 │   ├── membresias.html     # Comparativa de planes
-│   ├── matching.html       # Cuestionario de matching
+│   ├── matching.html       # Cuestionario de matching empático
 │   └── login.html          # Pantalla de inicio de sesión
 ├── index.html              # Página principal
 ├── .gitignore              # Archivos ignorados por Git
@@ -33,13 +34,14 @@ PROYECTO TANATOLOGO/
 
 ## Paleta de color
 
-La paleta está basada en investigación de psicología del color para sitios de terapia, duelo y salud mental:
+La paleta sigue la directriz del cliente: evitar azules clínicos y colores hiper-estimulantes. Se usa una gama terrosa y neutra que transmite calidez, estabilidad y cobijo:
 
-- **Azul pizarra (`#5A7D8C`):** calma, confianza y estabilidad.
-- **Verde salvia (`#8FA38C`):** crecimiento, renovación y naturaleza.
-- **Terracota suave (`#C9A28E`):** calidez humana y acogida.
-- **Crema cálido (`#FAF8F5`):** fondo limpio y reconfortante.
-- **Lavanda suave (`#E8E0EB`):** paz, espiritualidad y contención.
+- **Blanco roto (`#F7F5F2`):** fondo general, reduce fatiga visual.
+- **Beige suave (`#EDE8E1`):** secciones alternas, calidez.
+- **Gris arena (`#E8E4DE`):** fondos de contención.
+- **Verde salvia (`#7A8B6E`):** botones principales, crecimiento y calma.
+- **Azul sereno (`#7A9AA8`):** acentos secundarios, reduce ansiedad.
+- **Terracota suave (`#C9A28E`):** CTAs cálidos, acogida humana.
 
 Más detalles en [`docs/paleta-colores.md`](docs/paleta-colores.md).
 
@@ -48,6 +50,8 @@ Más detalles en [`docs/paleta-colores.md`](docs/paleta-colores.md).
 El sitio ya está publicado en GitHub Pages:
 
 **https://anibru300.github.io/tanatologia/**
+
+*Nota: el repositorio se llama `tanatologia`, pero la marca es SOMOS-CALMA. Cuando compres el dominio propio, solo hay que actualizar la URL.*
 
 ## Cómo usar en local
 
@@ -73,9 +77,16 @@ Ver [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Estado
 
-Proyecto en construcción. Se requiere definir:
+Proyecto en construcción. Avances definidos:
 
-- Nombre definitivo de marca y dominio.
-- Stack tecnológico final (No-Code vs. a medida).
-- País de operación y textos legales.
-- Primer curso de formación y profesionales fundadores.
+- ✅ Marca: SOMOS-CALMA
+- ✅ País de operación: México
+- ✅ Paleta terrosa y tipografía redondeada (Poppins)
+- ✅ Flujo de matching empático con una pregunta por pantalla
+- ✅ Botón de salida rápida
+- ⏳ Dominio propio por configurar
+- ⏳ Logo e imágenes reales
+- ⏳ Precios finales en MXN
+- ⏳ Textos legales (aviso de privacidad, términos)
+- ⏳ Perfiles reales de profesionales y testimonios
+- ⏳ Stack tecnológico final (No-Code vs. a la medida)

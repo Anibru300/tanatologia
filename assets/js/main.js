@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // En este MVP los formularios no envían datos a servidor
                 event.preventDefault();
-                showFormMessage(form, 'Gracias. Tu mensaje ha sido recibido (modo demostración).');
+                showFormMessage(form, 'Gracias por confiar en nosotros. Hemos recibido tu mensaje y te responderemos con calma (modo demostración).');
                 form.reset();
             }
         });

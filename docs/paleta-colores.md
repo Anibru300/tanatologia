@@ -1,38 +1,39 @@
-# Paleta de Colores — Plataforma de Tanatología
+# Paleta de Colores — SOMOS-CALMA
 
-## Principios de color para el nicho
-Según investigación de color psicológica en sitios de salud mental, terapia y tanatología:
+## Directriz del cliente
+Evitar la estética fría y clínica de plataformas médicas tradicionales (azules brillantes, blancos quirúrgicos) y también colores hiper-estimulantes. La paleta debe transmitir estabilidad, calidez y cobijo.
 
-- **Azul:** transmite calma, confianza, estabilidad y seguridad. Es el color más seguro para sitios de psicoterapia.
-- **Verde:** asociado con crecimiento, renovación, naturaleza y salud. Perfecto para procesos de duelo y sanación.
-- **Tonos tierra/beige:** generan anclaje, calidez y una sensación de suelo firme.
-- **Lavanda/morado suave:** evoca paz, espiritualidad y contención emocional.
-- **Evitar:** rojos, naranjas brillantes, amarillos chillantes y neones (sobreestimulan y no acompañan el estado emocional del usuario).
+## Paleta terrosa y neutra
 
-## Paleta propuesta
+| Token | Color | Sensación | Uso |
+|---|---|---|---|
+| `--color-bg` | `#F7F5F2` | Blanco roto, calma | Fondo general |
+| `--color-bg-alt` | `#EDE8E1` | Beige suave, calidez | Secciones alternas |
+| `--color-peace` | `#E8E4DE` | Gris arena, suavidad | Fondos de contención |
+| `--color-surface` | `#FFFFFF` | Limpieza | Tarjetas, formularios |
+| `--color-primary` | `#7A8B6E` | Verde salvia, crecimiento | Botones principales, header, enlaces |
+| `--color-primary-dark` | `#5F6F55` | Verde salvia oscuro | Hover, énfasis |
+| `--color-secondary` | `#7A9AA8` | Azul sereno, reduce ansiedad | Acentos secundarios, planes destacados |
+| `--color-secondary-dark` | `#5F7D8A` | Azul sereno oscuro | Hover secundario |
+| `--color-accent` | `#C9A28E` | Terracota suave, humanidad | CTAs cálidos, hover, etiquetas |
+| `--color-accent-dark` | `#A6826E` | Terracota oscuro | Hover de acentos |
+| `--color-text` | `#3D3A36` | Marrón grisáceo | Texto principal |
+| `--color-text-light` | `#6E6963` | Gris cálido | Texto secundario |
+| `--color-border` | `#E0DAD2` | Beige grisáceo | Bordes suaves |
 
-| Token | Color | Uso |
-|---|---|---|
-| `--color-primary` | `#5A7D8C` (Azul pizarra / Slate blue) | Botones principales, enlaces, header |
-| `--color-secondary` | `#8FA38C` (Verde salvia / Sage) | Secciones alternas, acentos secundarios |
-| `--color-accent` | `#C9A28E` (Terracota suave / Dusty rose) | CTAs importantes, etiquetas, hover |
-| `--color-bg` | `#FAF8F5` (Crema cálido / Warm cream) | Fondo general |
-| `--color-bg-alt` | `#F0EDE8` (Beige claro / Light beige) | Secciones alternas |
-| `--color-surface` | `#FFFFFF` | Tarjetas, formularios |
-| `--color-text` | `#3D3D3D` (Gris cálido oscuro) | Texto principal |
-| `--color-text-light` | `#6E6E6E` | Texto secundario |
-| `--color-muted` | `#A8A29E` | Bordes, iconos, detalles |
-| `--color-peace` | `#E8E0EB` (Lavanda muy suave) | Fondos de secciones de contención |
+## Tipografía
+- **Fuente:** Poppins (sans-serif redondeada y amigable)
+- **Tamaño base:** 17px en desktop, 16px en móvil
+- **Peso headings:** 600–700
 
-## Referencias analizadas
-- Zencare, TherapyDen, Mental Health Match: directorios con paletas limpias, mucho blanco y acentos suaves.
-- Headspace y Calm: azules y verdes apagados para transmitir tranquilidad.
-- Inclusive Therapists: tonos cálidos y acogedores sin saturación.
-- EmpathySites y BetweenSessions: recomiendan azules/verdes para terapeutas y tonos tierra para duelo.
+## Formas
+- Bordes muy redondeados: 12px, 20px, 28px, 40px
+- Botones con border-radius de 50px (píldora)
+- Tarjetas con esquinas redondeadas para evidar sensación de amenaza
 
 ## Aplicación en la interfaz
-- **Hero:** fondo crema con degradado sutil a lavanda suave.
-- **CTA principal:** botón en azul pizarra; hover en terracota suave.
-- **Tarjetas de planes:** fondo blanco con borde sutil en beige; plan destacado con acento en verde salvia.
-- **Sección de duelo/acompañamiento:** fondo lavanda suave para transmitir paz.
-- **Footer:** azul pizarra con texto claro para cerrar con estabilidad.
+- **Hero:** fondo blanco roto con degradado sutil a gris arena.
+- **CTA principal:** botón verde salvia en forma de píldora.
+- **Tarjetas:** fondo blanco con bordes suaves y sombras tenues.
+- **Sección de crisis/contención:** fondo gris arena para transmitir paz.
+- **Footer:** verde salvia oscuro con texto claro.

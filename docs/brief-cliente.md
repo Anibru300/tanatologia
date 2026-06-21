@@ -1,6 +1,10 @@
-# Brief del Cliente — Plataforma de Tanatología
+# Brief del Cliente — SOMOS-CALMA
 
 ## Idea de negocio
+**Marca:** SOMOS-CALMA  
+**Tagline:** *Tu espacio seguro para sanar y encontrar alivio.*  
+**País de operación:** México
+
 Crear una plataforma especializada en salud mental (psicólogos y tanatólogos) con un modelo de membresía y formación. La plataforma debe:
 
 - Formar tanatólogos que pertenezcan a la comunidad.
@@ -73,5 +77,7 @@ Resultado: mostrar los 3 perfiles de terapeutas que mejor se adapten.
 ## Preguntas abiertas con el cliente
 1. ¿Ya tienes vínculo con algún tanatólogo/psicólogo experto que estructure el contenido de formación?
 2. ¿Prefieres empezar por el camino rápido (No-Code) o construir una plataforma propia desde cero?
-3. ¿Tienes preferencia por el nombre de marca y dominio?
-4. ¿En qué país/región se operará inicialmente?
+3. ¿Tienes dominio comprado para SOMOS-CALMA?
+4. ¿Tienes logo o identidad visual definida?
+5. ¿Cuáles serán los precios finales en MXN?
+6. ¿Tienes testimonios reales y fotos de profesionales?
