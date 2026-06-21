@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
             menu.classList.toggle('is-active');
         });
 
-        // Cerrar menú al hacer clic en un enlace
         menu.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 toggle.setAttribute('aria-expanded', 'false');
@@ -37,5 +36,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 target.scrollIntoView({ behavior: 'smooth' });
             }
         });
+    });
+
+    // FAQ simple (opcional)
+    const faqItems = document.querySelectorAll('.faq__item');
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq__question');
+        const answer = item.querySelector('.faq__answer');
+        if (question && answer) {
+            answer.style.display = 'block';
+        }
     });
 });
