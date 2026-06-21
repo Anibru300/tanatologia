@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Servicios profesionales de tanatología. Acompañamiento, duelo y bienestar emocional.">
-    <title>Tanatólogo | Servicios de Tanatología</title>
+    <meta name="description" content="Plataforma de tanatología y salud mental. Formación para profesionales, acompañamiento para pacientes y citas virtuales seguras.">
+    <title>Tanatólogo | Plataforma de Tanatología y Salud Mental</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
@@ -17,65 +20,197 @@
                 <span></span>
             </button>
             <ul class="nav__menu">
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#servicios">Servicios</a></li>
-                <li><a href="#sobre-mi">Sobre mí</a></li>
-                <li><a href="#testimonios">Testimonios</a></li>
+                <li><a href="pages/pacientes.html">Para pacientes</a></li>
+                <li><a href="pages/profesionales.html">Para profesionales</a></li>
+                <li><a href="pages/membresias.html">Membresías</a></li>
+                <li><a href="pages/matching.html">Encuentra terapeuta</a></li>
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
+            <div class="nav__actions">
+                <a href="pages/login.html" class="btn btn--ghost btn--sm">Iniciar sesión</a>
+                <a href="pages/matching.html" class="btn btn--primary btn--sm">Comenzar</a>
+            </div>
         </nav>
     </header>
 
     <main>
-        <section id="inicio" class="hero">
+        <section class="hero">
             <div class="container">
-                <h1>Acompañamiento profesional en procesos de duelo</h1>
-                <p class="hero__subtitle">
-                    Espacio seguro para sanar, comprender y transitar el duelo con sentido.
-                </p>
-                <a href="#contacto" class="btn btn--primary">Agendar una sesión</a>
+                <div class="hero__content">
+                    <span class="hero__eyebrow">Plataforma de tanatología</span>
+                    <h1>Un espacio seguro para sanar, formarse y acompañar</h1>
+                    <p class="hero__subtitle">
+                        Conectamos a personas en proceso de duelo con tanatólogos y psicólogos certificados,
+                        mientras formamos a la comunidad profesional con herramientas de calidad.
+                    </p>
+                    <div class="hero__actions">
+                        <a href="pages/matching.html" class="btn btn--primary">Encontrar acompañamiento</a>
+                        <a href="pages/profesionales.html" class="btn btn--outline">Soy profesional</a>
+                    </div>
+                </div>
+                <div class="hero__stats">
+                    <div class="hero__stat">
+                        <strong>+50</strong>
+                        <span>Profesionales certificados</span>
+                    </div>
+                    <div class="hero__stat">
+                        <strong>+2,000</strong>
+                        <span>Sesiones realizadas</span>
+                    </div>
+                    <div class="hero__stat">
+                        <strong>98%</strong>
+                        <span>Recomendación</span>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section id="servicios" class="section">
+        <section class="section">
             <div class="container">
-                <h2>Servicios</h2>
+                <div class="section__header">
+                    <span class="section__eyebrow">Cómo funciona</span>
+                    <h2 class="section__title">Acompañamiento pensado en tu proceso</h2>
+                    <p class="section__subtitle">
+                        Desde el primer contacto hasta tu sesión virtual, todo está diseñado para que te sientas contenido.
+                    </p>
+                </div>
                 <div class="grid grid--3">
                     <article class="card">
-                        <h3>Terapia de duelo</h3>
-                        <p>Acompañamiento personalizado para procesar la pérdida de un ser querido.</p>
+                        <div class="card__icon">1</div>
+                        <h3>Cuéntanos tu situación</h3>
+                        <p>Responde un cuestionario breve y privado sobre lo que estás viviendo y tus preferencias.</p>
                     </article>
                     <article class="card">
-                        <h3>Acompañamiento emocional</h3>
-                        <p>Apoyo en momentos de crisis, enfermedad o transiciones vitales.</p>
+                        <div class="card__icon">2</div>
+                        <h3>Conoce a tu terapeuta</h3>
+                        <p>Te mostramos hasta 3 profesionales que se ajustan a tus necesidades, horario y modalidad.</p>
                     </article>
                     <article class="card">
-                        <h3>Capacitaciones</h3>
-                        <p>Talleres y charlas para equipos de salud, empresas e instituciones.</p>
+                        <div class="card__icon">3</div>
+                        <h3>Agenda y comienza</h3>
+                        <p>Elige tu plan, agenda tu primera sesión y accede a la videollamada segura desde la plataforma.</p>
                     </article>
                 </div>
             </div>
         </section>
 
-        <section id="sobre-mi" class="section section--alt">
+        <section class="section section--alt">
             <div class="container">
-                <h2>Sobre mí</h2>
-                <p>
-                    Aquí irá la biografía del profesional, su formación, enfoque y filosofía de trabajo.
-                </p>
+                <div class="feature">
+                    <div class="feature__content">
+                        <span class="section__eyebrow">Para pacientes</span>
+                        <h2>No tienes que atravesar el duelo solo</h2>
+                        <p>
+                            Nuestros terapeutas están especializados en duelo, pérdida, rupturas, enfermedad y crisis vitales.
+                            Encuentra un espacio de confianza, privacidad y calidez humana.
+                        </p>
+                        <ul class="feature__list">
+                            <li>Terapia individual, de pareja o familiar</li>
+                            <li>Videollamadas seguras y encriptadas</li>
+                            <li>Recursos de apoyo entre sesiones</li>
+                            <li>Agendamiento flexible por zona horaria</li>
+                        </ul>
+                        <a href="pages/matching.html" class="btn btn--primary">Encontrar mi terapeuta</a>
+                    </div>
+                    <div class="feature__image">
+                        <span>Ilustración: acompañamiento en duelo</span>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section id="testimonios" class="section">
+        <section class="section">
             <div class="container">
-                <h2>Testimonios</h2>
-                <div class="grid grid--2">
+                <div class="feature">
+                    <div class="feature__image">
+                        <span>Ilustración: formación profesional</span>
+                    </div>
+                    <div class="feature__content">
+                        <span class="section__eyebrow">Para profesionales</span>
+                        <h2>Crece como tanatólogo dentro de una comunidad</h2>
+                        <p>
+                            Únete a una red de psicólogos y tanatólogos. Accede a formación continua, recibe pacientes
+                            y gestiona tu consulta desde un solo lugar.
+                        </p>
+                        <ul class="feature__list">
+                            <li>Perfil en directorio especializado</li>
+                            <li>Cursos, talleres y actualizaciones</li>
+                            <li>Agenda y expediente digital</li>
+                            <li>Pagos automáticos por sesión atendida</li>
+                        </ul>
+                        <a href="pages/profesionales.html" class="btn btn--secondary">Unirme como profesional</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="membresias" class="section section--peace">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Planes</span>
+                    <h2 class="section__title">Membresías flexibles para quien busca acompañamiento</h2>
+                    <p class="section__subtitle">Elige el ritmo que se ajuste a tu proceso. Sin contratos forzosos.</p>
+                </div>
+                <div class="pricing">
+                    <article class="pricing__card">
+                        <h3 class="pricing__name">Plan Acompañamiento</h3>
+                        <div class="pricing__price">$1,200 <span>/ mes</span></div>
+                        <p class="pricing__description">Para quien necesita un espacio de contención constante.</p>
+                        <ul class="pricing__features">
+                            <li>2 sesiones al mes</li>
+                            <li>Recursos de apoyo (meditaciones, lecturas)</li>
+                            <li>Acceso a comunidad privada</li>
+                            <li>Cancelación flexible</li>
+                        </ul>
+                        <a href="pages/membresias.html" class="btn btn--outline" style="width:100%">Elegir plan</a>
+                    </article>
+                    <article class="pricing__card pricing__card--featured">
+                        <span class="pricing__badge">Más popular</span>
+                        <h3 class="pricing__name">Plan Proceso</h3>
+                        <div class="pricing__price">$2,200 <span>/ mes</span></div>
+                        <p class="pricing__description">Terapia semanal para un acompañamiento más profundo.</p>
+                        <ul class="pricing__features">
+                            <li>4 sesiones al mes</li>
+                            <li>Recursos de apoyo ilimitados</li>
+                            <li>Comunidad privada + talleres grupales</li>
+                            <li>Preferencia en horarios</li>
+                            <li>Cancelación flexible</li>
+                        </ul>
+                        <a href="pages/membresias.html" class="btn btn--primary" style="width:100%">Elegir plan</a>
+                    </article>
+                    <article class="pricing__card">
+                        <h3 class="pricing__name">Para profesionales</h3>
+                        <div class="pricing__price">$599 <span>/ mes</span></div>
+                        <p class="pricing__description">Todo lo que necesitas para recibir pacientes y formarte.</p>
+                        <ul class="pricing__features">
+                            <li>Perfil en directorio</li>
+                            <li>Formación continua</li>
+                            <li>Agenda y expediente digital</li>
+                            <li>Comisión del 20% por sesión</li>
+                        </ul>
+                        <a href="pages/profesionales.html" class="btn btn--outline" style="width:100%">Ser profesional</a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Testimonios</span>
+                    <h2 class="section__title">Historias de quienes han encontrado apoyo</h2>
+                </div>
+                <div class="grid grid--3">
                     <blockquote class="card card--quote">
-                        <p>"Un espacio de contención que me ayudó a reconstruirme."</p>
+                        <p>"Encontré a mi terapeuta en menos de 5 minutos. Por primera vez sentí que alguien entendía mi duelo sin juzgarme."</p>
                         <footer>— Paciente anónima</footer>
                     </blockquote>
                     <blockquote class="card card--quote">
-                        <p>"Profesionalismo y empatía en cada sesión."</p>
+                        <p>"Como tanatólogo, la plataforma me ha dado visibilidad, formación de calidad y una forma sencilla de gestionar mis citas."</p>
+                        <footer>— Dr. Javier López</footer>
+                    </blockquote>
+                    <blockquote class="card card--quote">
+                        <p>"El cuestionario de matching me ayudó a elegir a alguien que realmente se ajustaba a lo que necesitaba en ese momento."</p>
                         <footer>— Familiar de paciente</footer>
                     </blockquote>
                 </div>
@@ -84,27 +219,94 @@
 
         <section id="contacto" class="section section--alt">
             <div class="container">
-                <h2>Contacto</h2>
-                <p>Completa el formulario o escribe directamente por WhatsApp.</p>
-                <form class="form" action="#" method="post">
-                    <label for="nombre">Nombre</label>
-                    <input type="text" id="nombre" name="nombre" required>
-
-                    <label for="email">Correo electrónico</label>
-                    <input type="email" id="email" name="email" required>
-
-                    <label for="mensaje">Mensaje</label>
-                    <textarea id="mensaje" name="mensaje" rows="5" required></textarea>
-
+                <div class="section__header">
+                    <span class="section__eyebrow">Contacto</span>
+                    <h2 class="section__title">¿Tienes dudas? Estamos contigo</h2>
+                    <p class="section__subtitle">Escríbenos y te respondemos en menos de 24 horas.</p>
+                </div>
+                <form class="form" style="margin: 0 auto;" action="#" method="post">
+                    <div class="form__group">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
+                    </div>
+                    <div class="form__group">
+                        <label for="email">Correo electrónico</label>
+                        <input type="email" id="email" name="email" placeholder="hola@ejemplo.com" required>
+                    </div>
+                    <div class="form__group">
+                        <label for="tipo">Soy...</label>
+                        <select id="tipo" name="tipo" required>
+                            <option value="">Selecciona una opción</option>
+                            <option value="paciente">Paciente o familiar</option>
+                            <option value="profesional">Profesional de salud mental</option>
+                            <option value="empresa">Empresa o institución</option>
+                        </select>
+                    </div>
+                    <div class="form__group">
+                        <label for="mensaje">Mensaje</label>
+                        <textarea id="mensaje" name="mensaje" rows="5" placeholder="¿En qué podemos ayudarte?" required></textarea>
+                    </div>
                     <button type="submit" class="btn btn--primary">Enviar mensaje</button>
                 </form>
+            </div>
+        </section>
+
+        <section class="section section--peace">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Seguridad</span>
+                    <h2 class="section__title">Tu bienestar y privacidad son primero</h2>
+                    <p class="section__subtitle">Si estás en crisis, no estás solo.</p>
+                </div>
+                <div class="grid grid--2">
+                    <article class="card">
+                        <h3>Confidencialidad garantizada</h3>
+                        <p>Todas las sesiones son privadas, en entornos seguros y con profesionales certificados. Cumplimos con las normativas de protección de datos.</p>
+                    </article>
+                    <article class="card">
+                        <h3>¿Estás en crisis?</h3>
+                        <p>Esta plataforma no sustituye la atención de emergencia. Si tú o alguien cercano está en riesgo, llama a tu línea local de emergencias o a la línea de crisis de tu país.</p>
+                    </article>
+                </div>
             </div>
         </section>
     </main>
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; <span id="year"></span> Tanatólogo. Todos los derechos reservados.</p>
+            <div class="footer__grid">
+                <div class="footer__brand">
+                    <a href="index.html" class="logo">Tanatólogo</a>
+                    <p>Plataforma especializada en tanatología y salud mental. Formación para profesionales, acompañamiento para quienes duelen.</p>
+                </div>
+                <div>
+                    <h4 class="footer__title">Pacientes</h4>
+                    <ul class="footer__links">
+                        <li><a href="pages/matching.html">Encontrar terapeuta</a></li>
+                        <li><a href="pages/membresias.html">Membresías</a></li>
+                        <li><a href="pages/pacientes.html">Cómo funciona</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="footer__title">Profesionales</h4>
+                    <ul class="footer__links">
+                        <li><a href="pages/profesionales.html">Únete al directorio</a></li>
+                        <li><a href="pages/profesionales.html#formacion">Formación</a></li>
+                        <li><a href="pages/login.html">Iniciar sesión</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="footer__title">Legal</h4>
+                    <ul class="footer__links">
+                        <li><a href="#">Aviso de privacidad</a></li>
+                        <li><a href="#">Términos y condiciones</a></li>
+                        <li><a href="#">Política de cancelación</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; <span id="year"></span> Tanatólogo. Todos los derechos reservados.</p>
+            </div>
         </div>
     </footer>
 
