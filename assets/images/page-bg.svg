@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Fondo base cálido y suave -->
+    <linearGradient id="baseGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F7F5F2" />
+      <stop offset="40%" stop-color="#F2EEE8" />
+      <stop offset="100%" stop-color="#EDE8E1" />
+    </linearGradient>
+
+    <!-- Bruma verde suave -->
+    <radialGradient id="greenMist" cx="30%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#8BAE7A" stop-opacity="0.10" />
+      <stop offset="60%" stop-color="#8BAE7A" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#8BAE7A" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Bruma azul serena -->
+    <radialGradient id="blueMist" cx="75%" cy="25%" r="55%">
+      <stop offset="0%" stop-color="#7A9AA8" stop-opacity="0.09" />
+      <stop offset="70%" stop-color="#7A9AA8" stop-opacity="0.03" />
+      <stop offset="100%" stop-color="#7A9AA8" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Bruma terracota suave -->
+    <radialGradient id="terracottaMist" cx="60%" cy="80%" r="50%">
+      <stop offset="0%" stop-color="#C9A28E" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#C9A28E" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Colinas verdes muy suaves -->
+    <linearGradient id="hillGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#8BAE7A" stop-opacity="0.13" />
+      <stop offset="100%" stop-color="#8BAE7A" stop-opacity="0.04" />
+    </linearGradient>
+
+    <!-- Colinas azules suaves -->
+    <linearGradient id="hillBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7A9AA8" stop-opacity="0.10" />
+      <stop offset="100%" stop-color="#7A9AA8" stop-opacity="0.03" />
+    </linearGradient>
+
+    <!-- Colinas terracota suaves -->
+    <linearGradient id="hillTerracotta" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#C9A28E" stop-opacity="0.09" />
+      <stop offset="100%" stop-color="#C9A28E" stop-opacity="0.02" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base -->
+  <rect width="1440" height="900" fill="url(#baseGradient)" />
+
+  <!-- Brumas de luz -->
+  <circle cx="250" cy="200" r="350" fill="url(#greenMist)" />
+  <circle cx="1150" cy="180" r="300" fill="url(#blueMist)" />
+  <circle cx="800" cy="750" r="400" fill="url(#terracottaMist)" />
+
+  <!-- Capa de colinas traseras -->
+  <path d="M0,380 C200,320 400,420 600,360 C800,300 1000,400 1200,340 C1320,310 1380,350 1440,330 L1440,900 L0,900 Z" fill="url(#hillTerracotta)" />
+
+  <!-- Capa de colinas medias -->
+  <path d="M0,480 C240,420 480,520 720,460 C960,400 1200,500 1440,440 L1440,900 L0,900 Z" fill="url(#hillBlue)" />
+
+  <!-- Capa de colinas delanteras -->
+  <path d="M0,580 C180,520 360,600 540,560 C720,520 900,600 1080,560 C1260,520 1380,560 1440,550 L1440,900 L0,900 Z" fill="url(#hillGreen)" />
+
+  <!-- Elementos orgánicos en primer plano -->
+  <g opacity="0.10" fill="#8BAE7A">
+    <ellipse cx="100" cy="820" rx="120" ry="80" />
+    <ellipse cx="240" cy="860" rx="90" ry="60" />
+    <ellipse cx="1300" cy="830" rx="140" ry="90" />
+    <ellipse cx="1420" cy="870" rx="80" ry="55" />
+  </g>
+
+  <!-- Detalles sutiles tipo hojas/flores abstractas -->
+  <g opacity="0.07" fill="#7A9AA8">
+    <circle cx="350" cy="780" r="30" />
+    <circle cx="400" cy="800" r="22" />
+    <circle cx="1050" cy="770" r="28" />
+    <circle cx="1100" cy="790" r="18" />
+    <circle cx="700" cy="820" r="20" />
+  </g>
+
+  <!-- Línea de horizonte muy suave -->
+  <path d="M0,300 C360,290 720,310 1080,295 C1260,288 1380,295 1440,290" stroke="#8BAE7A" stroke-width="1" stroke-opacity="0.06" fill="none" />
+</svg>

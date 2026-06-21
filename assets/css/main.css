@@ -56,6 +56,15 @@ body {
     font-size: 17px;
 }
 
+/* Fondo elegante para la landing principal */
+body.page-with-bg {
+    background-image: url('../images/page-bg.svg');
+    background-size: cover;
+    background-position: center top;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
 img {
     max-width: 100%;
     display: block;
@@ -98,11 +107,18 @@ ul, ol {
 }
 
 .section--alt {
-    background-color: var(--color-bg-alt);
+    background-color: rgba(237, 232, 225, 0.78);
+    backdrop-filter: blur(8px);
 }
 
 .section--peace {
-    background-color: var(--color-peace);
+    background-color: rgba(232, 228, 222, 0.80);
+    backdrop-filter: blur(8px);
+}
+
+.section--glass {
+    background-color: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(10px);
 }
 
 .section__header {
@@ -305,14 +321,24 @@ ul, ol {
 
 /* === HERO === */
 .hero {
-    padding: 6.5rem 0 5.5rem;
-    background-color: var(--color-bg);
-    background-image: url('../images/hero-bg.svg');
-    background-size: cover;
-    background-position: center bottom;
-    background-repeat: no-repeat;
+    padding: 7.5rem 0 6.5rem;
+    background: transparent;
     position: relative;
     overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(247, 245, 242, 0.55) 0%, rgba(247, 245, 242, 0.25) 50%, rgba(247, 245, 242, 0.65) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.hero .container {
+    position: relative;
+    z-index: 1;
 }
 
 .hero .container {
