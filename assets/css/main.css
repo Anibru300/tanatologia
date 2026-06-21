@@ -63,6 +63,16 @@ body.page-with-bg {
     background-position: center top;
     background-attachment: fixed;
     background-repeat: no-repeat;
+    animation: slowDrift 80s ease-in-out infinite;
+}
+
+@keyframes slowDrift {
+    0%, 100% {
+        background-position: center top;
+    }
+    50% {
+        background-position: center 55%;
+    }
 }
 
 img {

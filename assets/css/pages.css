@@ -1,8 +1,10 @@
 /* === PÁGINAS INTERNAS === */
 .page-header {
     padding: 4.5rem 0 3.5rem;
-    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-peace) 100%);
+    background: linear-gradient(180deg, rgba(247, 245, 242, 0.85) 0%, rgba(247, 245, 242, 0.45) 100%);
+    backdrop-filter: blur(6px);
     text-align: center;
+    position: relative;
 }
 
 .page-header h1 {
