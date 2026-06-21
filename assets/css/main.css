@@ -63,15 +63,30 @@ body.page-with-bg {
     background-position: center top;
     background-attachment: fixed;
     background-repeat: no-repeat;
-    animation: slowDrift 80s ease-in-out infinite;
+    position: relative;
 }
 
-@keyframes slowDrift {
+body.page-with-bg::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(139, 174, 122, 0.12) 0%, transparent 35%),
+        radial-gradient(circle at 80% 20%, rgba(122, 154, 168, 0.10) 0%, transparent 30%),
+        radial-gradient(circle at 60% 80%, rgba(201, 162, 142, 0.10) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: -1;
+    animation: mistPulse 20s ease-in-out infinite;
+}
+
+@keyframes mistPulse {
     0%, 100% {
-        background-position: center top;
+        opacity: 0.7;
+        transform: scale(1);
     }
     50% {
-        background-position: center 55%;
+        opacity: 1;
+        transform: scale(1.05);
     }
 }
 
