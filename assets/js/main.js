@@ -68,22 +68,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Contador animado en estadísticas del hero
-    const stats = document.querySelectorAll('.hero__stat strong');
+    const stats = document.querySelectorAll('.hero__stat strong[data-count]');
+
     const countUp = (element, target, suffix = '') => {
-        const duration = 1500;
-        const start = 0;
+        if (element.dataset.counted === 'true') return;
+        element.dataset.counted = 'true';
+
+        const duration = 1600;
         const startTime = performance.now();
 
         const update = (currentTime) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            // Easing suave
             const easeOut = 1 - Math.pow(1 - progress, 3);
-            const current = Math.floor(start + (target - start) * easeOut);
+            const current = Math.floor(target * easeOut);
             element.textContent = current.toLocaleString('es-MX') + suffix;
 
             if (progress < 1) {
                 requestAnimationFrame(update);
+            } else {
+                element.textContent = target.toLocaleString('es-MX') + suffix;
             }
         };
 
@@ -94,23 +98,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const statsObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    const strong = entry.target.querySelector('strong');
-                    const text = strong.textContent.trim();
-                    const numericValue = parseInt(text.replace(/[^0-9]/g, ''), 10);
-                    const suffix = text.replace(/[0-9,]/g, '');
-
-                    if (!isNaN(numericValue)) {
-                        strong.textContent = '0' + suffix;
-                        countUp(strong, numericValue, suffix);
+                    const strong = entry.target.querySelector('strong[data-count]');
+                    if (strong) {
+                        const target = parseInt(strong.dataset.count, 10);
+                        const originalText = strong.textContent.trim();
+                        const suffix = originalText.replace(/[0-9,]/g, '');
+                        if (!isNaN(target)) {
+                            countUp(strong, target, suffix);
+                        }
                     }
                     statsObserver.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.5 });
+        }, { threshold: 0.4 });
 
         stats.forEach(stat => {
             const statContainer = stat.closest('.hero__stat');
             if (statContainer) statsObserver.observe(statContainer);
+        });
+    } else {
+        stats.forEach(stat => {
+            const target = parseInt(stat.dataset.count, 10);
+            const suffix = stat.textContent.trim().replace(/[0-9,]/g, '');
+            if (!isNaN(target)) stat.textContent = target.toLocaleString('es-MX') + suffix;
         });
     }
 
