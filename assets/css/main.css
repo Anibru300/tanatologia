@@ -1,7 +1,7 @@
 /* === VARIABLES === */
 :root {
     /* Paleta terrosa y neutra para SOMOS-CALMA */
-    --color-primary: #839A75;        /* Verde salvia - ligeramente mas brillante */
+    --color-primary: #8BAE7A;        /* Verde salvia - ligeramente mas brillante y fresco */
     --color-primary-dark: #5F6F55;   /* Verde salvia oscuro */
     --color-secondary: #7A9AA8;      /* Azul sereno */
     --color-secondary-dark: #5F7D8A; /* Azul sereno oscuro */
@@ -306,7 +306,11 @@ ul, ol {
 /* === HERO === */
 .hero {
     padding: 6.5rem 0 5.5rem;
-    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-peace) 100%);
+    background-color: var(--color-bg);
+    background-image: url('../images/hero-bg.svg');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
     position: relative;
     overflow: hidden;
 }

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F7F5F2" />
+      <stop offset="100%" stop-color="#EDE8E1" />
+    </linearGradient>
+
+    <linearGradient id="hill1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#8BAE7A" stop-opacity="0.14" />
+      <stop offset="100%" stop-color="#8BAE7A" stop-opacity="0.06" />
+    </linearGradient>
+
+    <linearGradient id="hill2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7A9AA8" stop-opacity="0.10" />
+      <stop offset="100%" stop-color="#7A9AA8" stop-opacity="0.04" />
+    </linearGradient>
+
+    <linearGradient id="hill3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#C9A28E" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#C9A28E" stop-opacity="0.03" />
+    </linearGradient>
+
+    <radialGradient id="glow1" cx="50%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#8BAE7A" stop-opacity="0.10" />
+      <stop offset="100%" stop-color="#8BAE7A" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="glow2" cx="80%" cy="60%" r="40%">
+      <stop offset="0%" stop-color="#C9A28E" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#C9A28E" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Fondo base -->
+  <rect width="1440" height="800" fill="url(#skyGradient)" />
+
+  <!-- Brumas de luz -->
+  <circle cx="720" cy="250" r="400" fill="url(#glow1)" />
+  <circle cx="1100" cy="500" r="300" fill="url(#glow2)" />
+
+  <!-- Colinas traseras -->
+  <path d="M0,520 C180,460 360,580 540,520 C720,460 900,560 1080,500 C1260,440 1380,500 1440,480 L1440,800 L0,800 Z" fill="url(#hill3)" />
+
+  <!-- Colinas medias -->
+  <path d="M0,600 C240,540 480,640 720,580 C960,520 1200,620 1440,560 L1440,800 L0,800 Z" fill="url(#hill2)" />
+
+  <!-- Colinas delanteras -->
+  <path d="M0,680 C200,620 400,700 600,660 C800,620 1000,700 1200,660 C1320,640 1380,660 1440,650 L1440,800 L0,800 Z" fill="url(#hill1)" />
+
+  <!-- Elementos orgánicos tipo hojas/plantas estilizadas -->
+  <g opacity="0.12" fill="#8BAE7A">
+    <circle cx="120" cy="720" r="80" />
+    <circle cx="200" cy="760" r="60" />
+    <circle cx="1300" cy="740" r="90" />
+    <circle cx="1380" cy="780" r="55" />
+  </g>
+
+  <g opacity="0.08" fill="#7A9AA8">
+    <circle cx="300" cy="700" r="40" />
+    <circle cx="1100" cy="690" r="50" />
+    <circle cx="900" cy="750" r="35" />
+  </g>
+</svg>
