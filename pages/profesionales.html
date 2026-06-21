@@ -12,27 +12,7 @@
     <link rel="stylesheet" href="../assets/css/pages.css">
 </head>
 <body>
-    <header class="header">
-        <nav class="nav container">
-            <a href="../index.html" class="logo">Tanatólogo</a>
-            <button class="nav__toggle" aria-label="Abrir menú" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <ul class="nav__menu">
-                <li><a href="pacientes.html">Para pacientes</a></li>
-                <li><a href="profesionales.html">Para profesionales</a></li>
-                <li><a href="membresias.html">Membresías</a></li>
-                <li><a href="matching.html">Encuentra terapeuta</a></li>
-                <li><a href="../index.html#contacto">Contacto</a></li>
-            </ul>
-            <div class="nav__actions">
-                <a href="login.html" class="btn btn--ghost btn--sm">Iniciar sesión</a>
-                <a href="matching.html" class="btn btn--primary btn--sm">Comenzar</a>
-            </div>
-        </nav>
-    </header>
+    <div id="header-component"></div>
 
     <main>
         <section class="page-header">
@@ -162,43 +142,9 @@
         </section>
     </main>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer__grid">
-                <div class="footer__brand">
-                    <a href="../index.html" class="logo">Tanatólogo</a>
-                    <p>Plataforma especializada en tanatología y salud mental.</p>
-                </div>
-                <div>
-                    <h4 class="footer__title">Pacientes</h4>
-                    <ul class="footer__links">
-                        <li><a href="matching.html">Encontrar terapeuta</a></li>
-                        <li><a href="membresias.html">Membresías</a></li>
-                        <li><a href="pacientes.html">Cómo funciona</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="footer__title">Profesionales</h4>
-                    <ul class="footer__links">
-                        <li><a href="profesionales.html">Únete al directorio</a></li>
-                        <li><a href="profesionales.html#formacion">Formación</a></li>
-                        <li><a href="login.html">Iniciar sesión</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="footer__title">Legal</h4>
-                    <ul class="footer__links">
-                        <li><a href="#">Aviso de privacidad</a></li>
-                        <li><a href="#">Términos y condiciones</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer__bottom">
-                <p>&copy; <span id="year"></span> Tanatólogo. Todos los derechos reservados.</p>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-component"></div>
 
+    <script src="../assets/js/components.js"></script>
     <script src="../assets/js/main.js"></script>
 </body>
 </html>
