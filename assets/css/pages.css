@@ -337,6 +337,51 @@
     border-bottom: none;
 }
 
+/* === CONTENIDO LEGAL === */
+.legal-content {
+    color: var(--color-text);
+}
+
+.legal-content h2 {
+    font-size: clamp(1.4rem, 3vw, 1.75rem);
+    margin-top: 2.75rem;
+    margin-bottom: 1rem;
+    color: var(--color-primary-dark);
+}
+
+.legal-content h3 {
+    font-size: 1.15rem;
+    margin-top: 1.75rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-text);
+}
+
+.legal-content p,
+.legal-content ul,
+.legal-content ol {
+    margin-bottom: 1rem;
+    color: var(--color-text-light);
+}
+
+.legal-content ul,
+.legal-content ol {
+    padding-left: 1.5rem;
+}
+
+.legal-content li {
+    margin-bottom: 0.5rem;
+}
+
+.legal-content a {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.legal-content strong {
+    color: var(--color-text);
+}
+
 /* === ALERTAS === */
 .alert {
     padding: 1.1rem 1.5rem;

@@ -70,9 +70,10 @@
                 <div>
                     <h4 class="footer__title">Legal</h4>
                     <ul class="footer__links">
-                        <li><a href="#">Aviso de privacidad</a></li>
-                        <li><a href="#">Términos y condiciones</a></li>
-                        <li><a href="#">Política de cancelación</a></li>
+                        <li><a href="${root}pages/aviso-privacidad.html">Aviso de privacidad</a></li>
+                        <li><a href="${root}pages/terminos.html">Términos y condiciones</a></li>
+                        <li><a href="${root}pages/cancelacion.html">Política de cancelación</a></li>
+                        <li><a href="${root}pages/crisis.html">Líneas de emergencia</a></li>
                     </ul>
                 </div>
             </div>

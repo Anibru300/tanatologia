@@ -15,7 +15,12 @@
     <div id="header-component"></div>
 
     <main>
-        <section class="hero">
+        <section class="hero hero--video-bg">
+            <video autoplay muted loop playsinline preload="auto" class="hero__video" poster="assets/images/hero-bg.svg">
+                <source src="https://cdn.pixabay.com/video/2022/06/13/120173-720504778_large.mp4" type="video/mp4">
+                <!-- Fallback: fondo animado SVG si el video no carga -->
+            </video>
+            <div class="hero__video-overlay"></div>
             <div class="container">
                 <div class="hero__content">
                     <span class="hero__eyebrow">Tu espacio seguro para sanar</span>
@@ -260,7 +265,7 @@
                     <input type="text" name="_gotcha" style="display:none">
                     <button type="submit" class="btn btn--primary">Enviar mensaje</button>
                     <p style="font-size: 0.85rem; color: var(--color-text-light); margin-top: 0.75rem;">
-                        Al enviar, aceptas nuestra <a href="#">política de privacidad</a>.
+                        Al enviar, aceptas nuestro <a href="pages/aviso-privacidad.html">Aviso de Privacidad</a>.
                     </p>
                 </form>
             </div>
