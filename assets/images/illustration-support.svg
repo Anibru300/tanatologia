@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <rect width="400" height="300" fill="#F7F5F2"/>
+  <circle cx="320" cy="80" r="40" fill="#EDE8E1"/>
+  <circle cx="60" cy="220" r="30" fill="#E8E4DE"/>
+  <path d="M50 250 Q120 200 200 240 Q280 280 360 230" stroke="#8BAE7A" stroke-width="3" stroke-opacity="0.2" fill="none"/>
+  <path d="M40 260 Q110 215 190 250 Q270 285 350 240" stroke="#7A9AA8" stroke-width="2" stroke-opacity="0.15" fill="none"/>
+  <g transform="translate(140, 80)">
+    <circle cx="60" cy="40" r="35" fill="#C9A28E" fill-opacity="0.25"/>
+    <path d="M60 80 C30 80 10 110 10 150 L110 150 C110 110 90 80 60 80Z" fill="#8BAE7A" fill-opacity="0.2"/>
+    <circle cx="60" cy="40" r="28" fill="#F7F5F2"/>
+    <path d="M48 42 Q60 52 72 42" stroke="#8BAE7A" stroke-width="3" stroke-linecap="round" fill="none"/>
+  </g>
+  <g transform="translate(220, 100)">
+    <circle cx="40" cy="30" r="28" fill="#7A9AA8" fill-opacity="0.2"/>
+    <path d="M40 60 C18 60 5 82 5 110 L75 110 C75 82 62 60 40 60Z" fill="#C9A28E" fill-opacity="0.18"/>
+    <circle cx="40" cy="30" r="22" fill="#F7F5F2"/>
+    <path d="M32 32 Q40 40 48 32" stroke="#7A9AA8" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  </g>
+  <g transform="translate(100, 170)">
+    <path d="M10 80 Q30 40 50 80 Q70 40 90 80" stroke="#8BAE7A" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <ellipse cx="50" cy="85" rx="45" ry="10" fill="#EDE8E1"/>
+  </g>
+  <g transform="translate(260, 160)">
+    <path d="M10 70 Q25 35 40 70 Q55 35 70 70" stroke="#7A9AA8" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <ellipse cx="40" cy="75" rx="35" ry="8" fill="#EDE8E1"/>
+  </g>
+</svg>

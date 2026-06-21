@@ -20,8 +20,10 @@
                 <span></span>
             </button>
             <ul class="nav__menu">
+                <li><a href="${root}pages/nosotros.html">Nosotros</a></li>
                 <li><a href="${root}pages/pacientes.html">Para pacientes</a></li>
                 <li><a href="${root}pages/profesionales.html">Para profesionales</a></li>
+                <li><a href="${root}pages/recursos.html">Recursos</a></li>
                 <li><a href="${root}pages/membresias.html">Membresías</a></li>
                 <li><a href="${root}pages/matching.html">Encuentra terapeuta</a></li>
                 <li><a href="${root}index.html#contacto">Contacto</a></li>
@@ -43,11 +45,18 @@
                     <p>Tu espacio seguro para sanar y encontrar alivio. Formación para profesionales, acompañamiento para quienes duelen.</p>
                 </div>
                 <div>
+                    <h4 class="footer__title">SOMOS-CALMA</h4>
+                    <ul class="footer__links">
+                        <li><a href="${root}pages/nosotros.html">Nosotros</a></li>
+                        <li><a href="${root}pages/recursos.html">Recursos</a></li>
+                        <li><a href="${root}pages/matching.html">Encontrar terapeuta</a></li>
+                    </ul>
+                </div>
+                <div>
                     <h4 class="footer__title">Pacientes</h4>
                     <ul class="footer__links">
-                        <li><a href="${root}pages/matching.html">Encontrar terapeuta</a></li>
-                        <li><a href="${root}pages/membresias.html">Membresías</a></li>
                         <li><a href="${root}pages/pacientes.html">Cómo funciona</a></li>
+                        <li><a href="${root}pages/membresias.html">Membresías</a></li>
                     </ul>
                 </div>
                 <div>

@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body class="page-with-bg">
+    <div class="ambient-layer"></div>
     <div id="header-component"></div>
 
     <main>
@@ -92,8 +93,8 @@
                         </ul>
                         <a href="pages/matching.html" class="btn btn--primary">Encontrar mi terapeuta</a>
                     </div>
-                    <div class="feature__image">
-                        <span>Ilustración: acompañamiento en duelo</span>
+                    <div class="illustration-box">
+                        <img src="assets/images/illustration-support.svg" alt="Ilustración de acompañamiento empático" loading="lazy">
                     </div>
                 </div>
             </div>
@@ -102,8 +103,8 @@
         <section class="section section--alt">
             <div class="container">
                 <div class="feature">
-                    <div class="feature__image">
-                        <span>Ilustración: formación profesional</span>
+                    <div class="illustration-box">
+                        <img src="assets/images/illustration-learning.svg" alt="Ilustración de formación profesional" loading="lazy">
                     </div>
                     <div class="feature__content">
                         <span class="section__eyebrow">Para profesionales</span>
@@ -177,6 +178,36 @@
         <section class="section section--alt">
             <div class="container">
                 <div class="section__header">
+                    <span class="section__eyebrow">Nuestro equipo</span>
+                    <h2 class="section__title">Quienes nos acompañan</h2>
+                    <p class="section__subtitle">Profesionales comprometidos con crear un espacio seguro para sanar.</p>
+                </div>
+                <div class="team-grid">
+                    <article class="team-card">
+                        <div class="team-card__avatar">MR</div>
+                        <h3>Dra. María Rodríguez</h3>
+                        <p class="team-card__role">Directora Clínica · Tanatóloga</p>
+                        <p>15 años acompañando procesos de duelo y pérdida. Especialista en tanatología clínica y cuidados paliativos.</p>
+                    </article>
+                    <article class="team-card">
+                        <div class="team-card__avatar">JL</div>
+                        <h3>Lic. Javier López</h3>
+                        <p class="team-card__role">Coordinador de Formación</p>
+                        <p>Psicólogo clínico con enfoque en crisis vitales y acompañamiento emocional. Diseña nuestros programas de capacitación.</p>
+                    </article>
+                    <article class="team-card">
+                        <div class="team-card__avatar">SC</div>
+                        <h3>Dra. Sofía Castro</h3>
+                        <p class="team-card__role">Psicooncóloga · Supervisora</p>
+                        <p>Especialista en duelo anticipado, enfermedad crónica y supervisión clínica para profesionales de la red.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="section__header">
                     <span class="section__eyebrow">Testimonios</span>
                     <h2 class="section__title">Historias de sanación</h2>
                 </div>
@@ -204,7 +235,7 @@
                     <h2 class="section__title">¿Tienes dudas? Estamos contigo</h2>
                     <p class="section__subtitle">Escríbenos y te respondemos en menos de 24 horas.</p>
                 </div>
-                <form class="form" style="margin: 0 auto;" action="#" method="post">
+                <form class="form" style="margin: 0 auto;" action="https://formspree.io/f/xnnnzbjw" method="POST">
                     <div class="form__group">
                         <label for="nombre">Nombre</label>
                         <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
@@ -226,7 +257,11 @@
                         <label for="mensaje">Mensaje</label>
                         <textarea id="mensaje" name="mensaje" rows="5" placeholder="¿En qué podemos ayudarte?" required></textarea>
                     </div>
+                    <input type="text" name="_gotcha" style="display:none">
                     <button type="submit" class="btn btn--primary">Enviar mensaje</button>
+                    <p style="font-size: 0.85rem; color: var(--color-text-light); margin-top: 0.75rem;">
+                        Al enviar, aceptas nuestra <a href="#">política de privacidad</a>.
+                    </p>
                 </form>
             </div>
         </section>
