@@ -1,7 +1,7 @@
 /* === VARIABLES === */
 :root {
     /* Paleta terrosa y neutra para SOMOS-CALMA */
-    --color-primary: #7A8B6E;        /* Verde salvia */
+    --color-primary: #839A75;        /* Verde salvia - ligeramente mas brillante */
     --color-primary-dark: #5F6F55;   /* Verde salvia oscuro */
     --color-secondary: #7A9AA8;      /* Azul sereno */
     --color-secondary-dark: #5F7D8A; /* Azul sereno oscuro */
@@ -721,6 +721,91 @@ ul, ol {
 
 .footer__bottom a {
     color: rgba(255, 255, 255, 0.85);
+}
+
+/* === ANIMACIONES SUAVES === */
+.fade-in {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.fade-in.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.fade-in-delay-1 { transition-delay: 0.1s; }
+.fade-in-delay-2 { transition-delay: 0.2s; }
+.fade-in-delay-3 { transition-delay: 0.3s; }
+
+/* === BOTÓN VOLVER ARRIBA === */
+.back-to-top {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 200;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--color-surface);
+    color: var(--color-primary);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition), visibility var(--transition), transform var(--transition);
+}
+
+.back-to-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.back-to-top:hover {
+    transform: translateY(-3px);
+    background-color: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+}
+
+/* === FAQ ACORDEÓN === */
+.faq__answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.35s ease;
+    opacity: 0;
+}
+
+.faq__item.is-open .faq__answer {
+    max-height: 300px;
+    opacity: 1;
+}
+
+.faq__question {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: color var(--transition);
+}
+
+.faq__question::after {
+    content: "+";
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--color-primary);
+    transition: transform var(--transition);
+}
+
+.faq__item.is-open .faq__question::after {
+    transform: rotate(45deg);
 }
 
 /* === UTILIDADES RESPONSIVE === */
