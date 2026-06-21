@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Servicios profesionales de tanatología. Acompañamiento, duelo y bienestar emocional.">
+    <title>Tanatólogo | Servicios de Tanatología</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav container">
+            <a href="index.html" class="logo">Tanatólogo</a>
+            <button class="nav__toggle" aria-label="Abrir menú" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav__menu">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#servicios">Servicios</a></li>
+                <li><a href="#sobre-mi">Sobre mí</a></li>
+                <li><a href="#testimonios">Testimonios</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="inicio" class="hero">
+            <div class="container">
+                <h1>Acompañamiento profesional en procesos de duelo</h1>
+                <p class="hero__subtitle">
+                    Espacio seguro para sanar, comprender y transitar el duelo con sentido.
+                </p>
+                <a href="#contacto" class="btn btn--primary">Agendar una sesión</a>
+            </div>
+        </section>
+
+        <section id="servicios" class="section">
+            <div class="container">
+                <h2>Servicios</h2>
+                <div class="grid grid--3">
+                    <article class="card">
+                        <h3>Terapia de duelo</h3>
+                        <p>Acompañamiento personalizado para procesar la pérdida de un ser querido.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Acompañamiento emocional</h3>
+                        <p>Apoyo en momentos de crisis, enfermedad o transiciones vitales.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Capacitaciones</h3>
+                        <p>Talleres y charlas para equipos de salud, empresas e instituciones.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="sobre-mi" class="section section--alt">
+            <div class="container">
+                <h2>Sobre mí</h2>
+                <p>
+                    Aquí irá la biografía del profesional, su formación, enfoque y filosofía de trabajo.
+                </p>
+            </div>
+        </section>
+
+        <section id="testimonios" class="section">
+            <div class="container">
+                <h2>Testimonios</h2>
+                <div class="grid grid--2">
+                    <blockquote class="card card--quote">
+                        <p>"Un espacio de contención que me ayudó a reconstruirme."</p>
+                        <footer>— Paciente anónima</footer>
+                    </blockquote>
+                    <blockquote class="card card--quote">
+                        <p>"Profesionalismo y empatía en cada sesión."</p>
+                        <footer>— Familiar de paciente</footer>
+                    </blockquote>
+                </div>
+            </div>
+        </section>
+
+        <section id="contacto" class="section section--alt">
+            <div class="container">
+                <h2>Contacto</h2>
+                <p>Completa el formulario o escribe directamente por WhatsApp.</p>
+                <form class="form" action="#" method="post">
+                    <label for="nombre">Nombre</label>
+                    <input type="text" id="nombre" name="nombre" required>
+
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" name="email" required>
+
+                    <label for="mensaje">Mensaje</label>
+                    <textarea id="mensaje" name="mensaje" rows="5" required></textarea>
+
+                    <button type="submit" class="btn btn--primary">Enviar mensaje</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; <span id="year"></span> Tanatólogo. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

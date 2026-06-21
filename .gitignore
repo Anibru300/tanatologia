@@ -1,0 +1,27 @@
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependencias
+node_modules/
+package-lock.json
+yarn.lock
+
+# Builds
+dist/
+build/
+*.zip
+
+# Logs
+*.log
+
+# Entorno
+.env
+.env.local
