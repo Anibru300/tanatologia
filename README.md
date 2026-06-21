@@ -43,7 +43,13 @@ La paleta está basada en investigación de psicología del color para sitios de
 
 Más detalles en [`docs/paleta-colores.md`](docs/paleta-colores.md).
 
-## Cómo usar
+## 🌐 Sitio publicado
+
+El sitio ya está publicado en GitHub Pages:
+
+**https://anibru300.github.io/tanatologia/**
+
+## Cómo usar en local
 
 1. Abre `index.html` en tu navegador para ver la landing principal.
 2. Navega entre las páginas internas en la carpeta `pages/`.
