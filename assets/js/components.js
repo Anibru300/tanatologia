@@ -1,6 +1,6 @@
 /**
- * Componentes reutilizables: header y footer.
- * Detecta automáticamente si la página está en /pages/ para ajustar rutas.
+ * Componentes reutilizables: header, footer y boton de salida rapida.
+ * Detecta automaticamente si la pagina esta en /pages/ para ajustar rutas.
  */
 (function () {
     function getRootPath() {
@@ -13,7 +13,7 @@
     const headerHTML = `
     <header class="header">
         <nav class="nav container">
-            <a href="${root}index.html" class="logo">Tanatólogo</a>
+            <a href="${root}index.html" class="logo">SOMOS-CALMA</a>
             <button class="nav__toggle" aria-label="Abrir menú" aria-expanded="false">
                 <span></span>
                 <span></span>
@@ -39,8 +39,8 @@
         <div class="container">
             <div class="footer__grid">
                 <div class="footer__brand">
-                    <a href="${root}index.html" class="logo">Tanatólogo</a>
-                    <p>Plataforma especializada en tanatología y salud mental. Formación para profesionales, acompañamiento para quienes duelen.</p>
+                    <a href="${root}index.html" class="logo">SOMOS-CALMA</a>
+                    <p>Tu espacio seguro para sanar y encontrar alivio. Formación para profesionales, acompañamiento para quienes duelen.</p>
                 </div>
                 <div>
                     <h4 class="footer__title">Pacientes</h4>
@@ -68,10 +68,16 @@
                 </div>
             </div>
             <div class="footer__bottom">
-                <p>&copy; <span id="year"></span> Tanatólogo. Todos los derechos reservados.</p>
+                <p>&copy; <span id="year"></span> SOMOS-CALMA. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
+    `;
+
+    const quickExitHTML = `
+    <button class="quick-exit" type="button" aria-label="Salir rapido de la pagina">
+        Salir
+    </button>
     `;
 
     function injectComponents() {
@@ -84,6 +90,18 @@
 
         if (footerPlaceholder) {
             footerPlaceholder.outerHTML = footerHTML;
+        }
+
+        // Boton de salida rapida
+        const existingQuickExit = document.querySelector('.quick-exit');
+        if (!existingQuickExit) {
+            const quickExitWrapper = document.createElement('div');
+            quickExitWrapper.innerHTML = quickExitHTML;
+            const quickExitBtn = quickExitWrapper.querySelector('.quick-exit');
+            quickExitBtn.addEventListener('click', () => {
+                window.location.href = 'https://www.google.com';
+            });
+            document.body.appendChild(quickExitBtn);
         }
     }
 

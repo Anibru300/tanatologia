@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Cuestionario de matching para encontrar al terapeuta ideal según tu situación y preferencias.">
-    <title>Encuentra tu Terapeuta | Tanatólogo</title>
+    <meta name="description" content="Responde unas preguntas sencillas y encuentra al terapeuta ideal para acompañarte en tu proceso.">
+    <title>Encuentra tu Terapeuta | SOMOS-CALMA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/pages.css">
 </head>
@@ -17,111 +17,133 @@
     <main>
         <section class="page-header">
             <div class="container">
-                <span class="section__eyebrow">Matching</span>
-                <h1>Encontremos a tu acompañante ideal</h1>
-                <p>Responde 4 preguntas y te mostraremos hasta 3 profesionales que se ajusten a tu proceso.</p>
+                <span class="section__eyebrow">Encuentra apoyo</span>
+                <h1>Vamos a encontrar a tu acompañante ideal</h1>
+                <p>Unas pocas preguntas, sin prisas. Estás en un espacio seguro.</p>
             </div>
         </section>
 
         <section class="section section--alt">
             <div class="container">
                 <form class="matching" id="matching-form" action="#" onsubmit="return false;">
-                    <div class="matching__step is-active" data-step="focus">
-                        <h2 class="matching__question">¿Qué motivo te trae aquí?</h2>
-                        <div class="matching__options">
-                            <label class="matching__option">
-                                <input type="radio" name="focus" value="duelo">
-                                <span>Duelo por fallecimiento de un ser querido</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="focus" value="ruptura">
-                                <span>Ruptura, divorcio o pérdida de relación</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="focus" value="enfermedad-cronica">
-                                <span>Enfermedad crónica, terminal o duelo anticipado</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="focus" value="ansiedad">
-                                <span>Ansiedad, estrés o crisis vital</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="focus" value="otra-perdida">
-                                <span>Otra pérdida significativa</span>
-                            </label>
+                    <div class="matching__card">
+                        <div class="matching__progress" aria-hidden="true">
+                            <div class="matching__progress-bar"><div class="matching__progress-fill" id="progress-fill"></div></div>
                         </div>
-                    </div>
 
-                    <div class="matching__step" data-step="modality">
-                        <h2 class="matching__question">¿Qué tipo de terapia prefieres?</h2>
-                        <div class="matching__options">
-                            <label class="matching__option">
-                                <input type="radio" name="modality" value="individual">
-                                <span>Individual</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="modality" value="pareja">
-                                <span>De pareja</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="modality" value="familiar">
-                                <span>Familiar</span>
-                            </label>
+                        <!-- Paso 0: Bienvenida -->
+                        <div class="matching__step is-active" data-step="welcome">
+                            <div class="matching__welcome">
+                                <div class="card__icon" style="margin-inline: auto; font-size: 2.5rem; width: 72px; height: 72px;">🌿</div>
+                                <h2>Estamos aquí contigo</h2>
+                                <p>
+                                    Lamentamos mucho por lo que estás pasando. Tómate tu tiempo; estás en un espacio seguro y no tienes que resolver todo hoy.
+                                </p>
+                                <p style="color: var(--color-text-light); font-size: 0.95rem;">
+                                    Te haremos 3 preguntas breves para encontrar al terapeuta que mejor se ajuste a ti.
+                                </p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="matching__step" data-step="schedule">
-                        <h2 class="matching__question">¿Qué horarios te funcionan mejor?</h2>
-                        <div class="matching__options">
-                            <label class="matching__option">
-                                <input type="radio" name="schedule" value="manana">
-                                <span>Mañana (8:00 – 12:00)</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="schedule" value="tarde">
-                                <span>Tarde (12:00 – 18:00)</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="schedule" value="noche">
-                                <span>Noche (18:00 – 21:00)</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="schedule" value="flexible">
-                                <span>Flexible</span>
-                            </label>
+                        <!-- Paso 1: Motivo -->
+                        <div class="matching__step" data-step="focus">
+                            <h2 class="matching__question">¿Qué te trae hoy?</h2>
+                            <div class="matching__options">
+                                <label class="matching__option">
+                                    <input type="radio" name="focus" value="duelo">
+                                    <span class="matching__option-icon">🕊️</span>
+                                    <span>Duelo por la muerte de un ser querido</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="focus" value="ruptura">
+                                    <span class="matching__option-icon">💔</span>
+                                    <span>Ruptura, divorcio o pérdida de relación</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="focus" value="enfermedad-cronica">
+                                    <span class="matching__option-icon">🌿</span>
+                                    <span>Enfermedad, diagnóstico o duelo anticipado</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="focus" value="ansiedad">
+                                    <span class="matching__option-icon">🌙</span>
+                                    <span>Ansiedad, estrés o crisis vital</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="focus" value="otra-perdida">
+                                    <span class="matching__option-icon">🤍</span>
+                                    <span>Otra pérdida o situación difícil</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="matching__step" data-step="format">
-                        <h2 class="matching__question">¿Qué modalidad prefieres?</h2>
-                        <div class="matching__options">
-                            <label class="matching__option">
-                                <input type="radio" name="format" value="video">
-                                <span>Videollamada</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="format" value="llamada">
-                                <span>Llamada telefónica</span>
-                            </label>
-                            <label class="matching__option">
-                                <input type="radio" name="format" value="chat">
-                                <span>Chat terapéutico</span>
-                            </label>
+                        <!-- Paso 2: Preferencias -->
+                        <div class="matching__step" data-step="modality">
+                            <h2 class="matching__question">¿Cómo prefieres recibir apoyo?</h2>
+                            <div class="matching__options">
+                                <label class="matching__option">
+                                    <input type="radio" name="modality" value="individual">
+                                    <span class="matching__option-icon">🧍</span>
+                                    <span>Individual</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="modality" value="pareja">
+                                    <span class="matching__option-icon">👥</span>
+                                    <span>De pareja</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="modality" value="familiar">
+                                    <span class="matching__option-icon">🏠</span>
+                                    <span>Familiar</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="matching__result">
-                        <h2 class="matching__question">Estos profesionales pueden acompañarte</h2>
-                        <div id="matching-result-list"></div>
-                        <div class="text-center" style="margin-top: 2rem;">
-                            <a href="membresias.html" class="btn btn--primary">Ver planes y agendar</a>
-                            <button type="button" class="btn btn--ghost" id="matching-restart" style="margin-left: 0.5rem;">Repetir cuestionario</button>
+                        <!-- Paso 3: Horario -->
+                        <div class="matching__step" data-step="schedule">
+                            <h2 class="matching__question">¿Qué momento del día te funciona mejor?</h2>
+                            <div class="matching__options">
+                                <label class="matching__option">
+                                    <input type="radio" name="schedule" value="manana">
+                                    <span class="matching__option-icon">🌅</span>
+                                    <span>Mañana</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="schedule" value="tarde">
+                                    <span class="matching__option-icon">☀️</span>
+                                    <span>Tarde</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="schedule" value="noche">
+                                    <span class="matching__option-icon">🌙</span>
+                                    <span>Noche</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="schedule" value="flexible">
+                                    <span class="matching__option-icon">🕊️</span>
+                                    <span>Mi horario es flexible</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="matching__nav" id="matching-nav">
-                        <button type="button" class="btn btn--ghost" id="matching-prev" style="visibility: hidden;">Anterior</button>
-                        <button type="button" class="btn btn--primary" id="matching-next">Siguiente</button>
+                        <!-- Paso 4: Resultados -->
+                        <div class="matching__result">
+                            <div class="text-center" style="margin-bottom: 2rem;">
+                                <div class="card__icon" style="margin-inline: auto; font-size: 2rem; width: 64px; height: 64px;">✨</div>
+                                <h2 class="matching__question">Estos profesionales pueden acompañarte</h2>
+                                <p style="color: var(--color-text-light);">Elige el que más resuene contigo. Recuerda que siempre puedes cambiar después.</p>
+                            </div>
+                            <div id="matching-result-list"></div>
+                            <div class="text-center" style="margin-top: 2.5rem;">
+                                <a href="membresias.html" class="btn btn--primary">Ver planes y agendar</a>
+                                <button type="button" class="btn btn--ghost" id="matching-restart" style="margin-left: 0.5rem;">Repetir cuestionario</button>
+                            </div>
+                        </div>
+
+                        <div class="matching__nav" id="matching-nav">
+                            <button type="button" class="btn btn--ghost" id="matching-prev" style="visibility: hidden;">Anterior</button>
+                            <button type="button" class="btn btn--primary" id="matching-next">Comenzar</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -130,7 +152,7 @@
         <section class="section">
             <div class="container">
                 <div class="alert alert--warning" style="max-width: 800px; margin: 0 auto;">
-                    <strong>Importante:</strong> Este cuestionario es una guía para encontrar un buen ajuste inicial. No sustituye una evaluación clínica. Si estás en crisis, busca atención de emergencia.
+                    <strong>Con cariño:</strong> Este cuestionario es solo una guía para encontrar un buen ajuste inicial. No sustituye una evaluación clínica. Si estás en crisis, busca atención de emergencia.
                 </div>
             </div>
         </section>

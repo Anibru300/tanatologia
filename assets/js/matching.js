@@ -5,11 +5,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('matching-next');
     const restartBtn = document.getElementById('matching-restart');
     const resultList = document.getElementById('matching-result-list');
+    const progressFill = document.getElementById('progress-fill');
+    const nav = document.getElementById('matching-nav');
 
     let currentStep = 0;
+    const totalSteps = steps.length; // welcome + 3 preguntas
     const answers = {};
 
     if (!steps.length) return;
+
+    function updateProgress() {
+        if (!progressFill) return;
+        const progress = ((currentStep) / (totalSteps - 1)) * 100;
+        progressFill.style.width = `${Math.min(progress, 100)}%`;
+    }
 
     function updateStep() {
         steps.forEach((step, index) => {
@@ -18,22 +27,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (prevBtn) {
             prevBtn.style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+            prevBtn.textContent = 'Anterior';
         }
 
         if (nextBtn) {
-            nextBtn.textContent = currentStep === steps.length - 1 ? 'Ver resultados' : 'Siguiente';
+            if (currentStep === 0) {
+                nextBtn.textContent = 'Comenzar';
+            } else if (currentStep === totalSteps - 1) {
+                nextBtn.textContent = 'Ver resultados';
+            } else {
+                nextBtn.textContent = 'Siguiente';
+            }
         }
+
+        updateProgress();
+    }
+
+    function getStepName() {
+        return steps[currentStep].dataset.step;
     }
 
     function collectAnswer() {
         const activeStep = steps[currentStep];
-        const inputs = activeStep.querySelectorAll('input[type="radio"]:checked, input[type="checkbox"]:checked, select');
-        const stepName = activeStep.dataset.step;
+        const inputs = activeStep.querySelectorAll('input[type="radio"]:checked');
+        const stepName = getStepName();
 
         const values = Array.from(inputs).map(input => input.value);
         if (values.length) {
-            answers[stepName] = values;
+            answers[stepName] = values[0];
         }
+    }
+
+    function hasSelection() {
+        const activeStep = steps[currentStep];
+        return activeStep.querySelectorAll('input[type="radio"]:checked').length > 0;
+    }
+
+    function showError() {
+        const activeStep = steps[currentStep];
+        let error = activeStep.querySelector('.matching__error');
+        if (!error) {
+            error = document.createElement('p');
+            error.className = 'matching__error';
+            error.style.cssText = 'color: var(--color-error); text-align: center; margin-top: 1rem; font-size: 0.95rem;';
+            activeStep.appendChild(error);
+        }
+        error.textContent = 'Por favor, elige una opción para continuar. Recuerda que no hay prisa.';
+    }
+
+    function clearError() {
+        const activeStep = steps[currentStep];
+        const error = activeStep.querySelector('.matching__error');
+        if (error) error.remove();
     }
 
     function showResults() {
@@ -44,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (nextBtn) nextBtn.style.display = 'none';
         if (prevBtn) prevBtn.style.display = 'none';
+        if (nav) nav.style.display = 'none';
 
-        // Perfiles de ejemplo según respuestas
         const matchedTherapists = getMatchedTherapists(answers);
 
         if (resultList) {
@@ -63,20 +108,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 </article>
             `).join('');
         }
+
+        updateProgress();
     }
 
     function getMatchedTherapists(answers) {
-        // Lógica de ejemplo; en producción vendría del backend
-        const focus = answers.focus ? answers.focus[0] : 'duelo';
-        const modality = answers.modality ? answers.modality[0] : 'individual';
+        const focus = answers.focus || 'duelo';
+        const modality = answers.modality || 'individual';
 
         const therapists = [
             {
                 initials: 'MR',
                 name: 'Dra. María Rodríguez',
                 title: 'Psicóloga · Tanatóloga',
-                experience: '12 años de experiencia',
-                bio: 'Especialista en duelo por muerte y pérdidas significativas. Acompañamiento empático y basado en evidencia.',
+                experience: '12 años acompañando procesos de duelo',
+                bio: 'Especialista en pérdida de pareja y duelo por muerte. Su enfoque es cálido, pausado y basado en evidencia.',
                 tags: ['Duelo', 'Ansiedad', 'Adultos mayores'],
                 specialties: ['duelo', 'ansiedad', 'adultos-mayores']
             },
@@ -85,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Lic. Javier López',
                 title: 'Psicólogo Clínico',
                 experience: '8 años de experiencia',
-                bio: 'Enfoque cognitivo-conductual para crisis vitales, rupturas y adaptación al cambio.',
+                bio: 'Acompaña crisis vitales, rupturas y adaptación al cambio desde una mirada empática y sin juicio.',
                 tags: ['Ruptura', 'Estrés', 'Terapia de pareja'],
                 specialties: ['ruptura', 'estres', 'pareja']
             },
@@ -94,20 +140,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Dra. Sofía Castro',
                 title: 'Tanatóloga · Psicooncóloga',
                 experience: '10 años de experiencia',
-                bio: 'Acompañamiento en enfermedad crónica, cuidados paliativos y duelo anticipado.',
-                tags: ['Duelo anticipado', 'Oncología', 'Familias'],
+                bio: 'Especialista en acompañamiento ante enfermedades crónicas, diagnósticos difíciles y duelo anticipado.',
+                tags: ['Duelo anticipado', 'Diagnóstico', 'Familias'],
                 specialties: ['duelo', 'enfermedad-cronica', 'familias']
             }
         ];
 
-        return therapists.filter(t => t.specialties.includes(focus) || t.specialties.includes(modality)).slice(0, 3);
+        return therapists
+            .filter(t => t.specialties.includes(focus) || t.specialties.includes(modality))
+            .slice(0, 3);
     }
 
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
+            clearError();
+
+            if (currentStep > 0 && !hasSelection()) {
+                showError();
+                return;
+            }
+
             collectAnswer();
 
-            if (currentStep < steps.length - 1) {
+            if (currentStep < totalSteps - 1) {
                 currentStep++;
                 updateStep();
             } else {
@@ -118,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
+            clearError();
             if (currentStep > 0) {
                 currentStep--;
                 updateStep();
@@ -135,6 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 inputs.forEach(input => {
                     input.checked = false;
                 });
+                const error = step.querySelector('.matching__error');
+                if (error) error.remove();
             });
 
             if (result) result.classList.remove('is-active');
@@ -143,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 prevBtn.style.display = 'inline-flex';
                 prevBtn.style.visibility = 'hidden';
             }
+            if (nav) nav.style.display = 'flex';
 
             updateStep();
         });
