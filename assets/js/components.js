@@ -107,7 +107,11 @@
         injectComponents();
     }
 
-    // Cargar bot de atención al cliente (centraliza preguntas frecuentes y WhatsApp)
+    // Cargar botón flotante de WhatsApp y bot de atención al cliente
+    const whatsappScript = document.createElement('script');
+    whatsappScript.src = `${root}assets/js/chatbot.js`;
+    document.head.appendChild(whatsappScript);
+
     const atencionBotScript = document.createElement('script');
     atencionBotScript.src = `${root}assets/js/atencion-bot.js`;
     document.head.appendChild(atencionBotScript);

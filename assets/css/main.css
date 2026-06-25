@@ -1396,7 +1396,7 @@ body.page-with-bg::after {
 .whatsapp-float {
     position: fixed;
     bottom: 1.5rem;
-    right: 5.5rem;
+    right: 1.5rem;
     z-index: 240;
     width: 52px;
     height: 52px;
@@ -1462,7 +1462,7 @@ body.page-with-bg::after {
 
     .whatsapp-float {
         bottom: 1rem;
-        right: 5rem;
+        right: 1rem;
         width: 48px;
         height: 48px;
     }
