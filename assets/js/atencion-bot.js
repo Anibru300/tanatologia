@@ -35,7 +35,7 @@
             ]
         },
         precios: {
-            message: 'Tenemos opciones accesibles:\n\n• Consulta aislada: $400 MXN (una sesión de 50 minutos).\n• Programa de bienestar emocional: 4 sesiones.\n• Programa de duelo, muerte o pérdida: 6 sesiones.\n\nLos programas tienen precios por paquete que puedes consultar directamente con nosotros.',
+            message: 'Tenemos opciones accesibles:\n\n• Consulta aislada: $400 MXN (una sesión de 50 minutos).\n• Programa de Salud Mental: 4 sesiones.\n• Programa de acompañamiento por duelo, muerte o pérdida: 6 sesiones por $2,200 MXN.\n\nSi quieres conocer el precio del programa de Salud Mental, escríbenos.',
             options: [
                 { id: 'como_pagar', label: '¿Cómo puedo pagar?' },
                 { id: 'descuento', label: '¿Hay descuentos?' },
@@ -59,7 +59,7 @@
             ]
         },
         programas: {
-            message: 'Diseñamos dos caminos sencillos:\n\n🧠 Bienestar emocional (4 sesiones): para ansiedad, estrés, depresión o autocuidado. Lo imparte un psicólogo.\n\n🕊️ Duelo, muerte o pérdida (6 sesiones): para acompañarte en una pérdida. Lo imparte un tanatólogo.\n\nAmbos incluyen material de apoyo entre sesiones.',
+            message: 'Diseñamos dos caminos sencillos:\n\n🧠 Salud Mental (4 sesiones): para ansiedad, estrés, depresión o autocuidado. Lo imparte un psicólogo.\n\n🕊️ Acompañamiento por duelo, muerte o pérdida (6 sesiones): para acompañarte en una pérdida. Lo imparte un tanatólogo.\n\nAmbos incluyen material de apoyo entre sesiones.',
             options: [
                 { id: 'psicologo_vs_tanatologo', label: '¿Psicólogo o tanatólogo?' },
                 { id: 'agendar', label: 'Quiero comenzar un programa', primary: true },
@@ -74,7 +74,7 @@
             ]
         },
         psicologo_vs_tanatologo: {
-            message: 'Te ayudo a decidir:\n\n• Si lo que vives está relacionado con ansiedad, depresión, estrés o bienestar emocional general, te vinculamos con un psicólogo.\n\n• Si atraviesas un duelo por muerte, una ruptura, una pérdida importante o una enfermedad, te vinculamos con un tanatólogo.\n\nSi no estás seguro, el matching te orienta.',
+            message: 'Te ayudo a decidir:\n\n• Si lo que vives está relacionado con ansiedad, depresión, estrés o salud mental general, te vinculamos con un psicólogo.\n\n• Si atraviesas un duelo por muerte, una ruptura, una pérdida importante o una enfermedad, te vinculamos con un tanatólogo.\n\nSi no estás seguro, el matching te orienta.',
             options: [
                 { id: 'matching', label: 'Hacer el matching', primary: true },
                 { id: 'volver', label: 'Ver otras opciones' }

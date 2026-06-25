@@ -34,7 +34,7 @@
         {
             id: 'programa',
             label: 'Quiero un programa de 4 o 6 sesiones',
-            response: 'Qué bueno que busques acompañarte de forma guiada. Tenemos dos programas: bienestar emocional (4 sesiones) y duelo, muerte o pérdida (6 sesiones).',
+            response: 'Qué bueno que busques acompañarte de forma guiada. Tenemos dos programas: Salud Mental (4 sesiones) y acompañamiento por duelo, muerte o pérdida (6 sesiones).',
             actions: [
                 { label: 'Ver programas', href: 'pages/membresias.html', primary: true },
                 { label: 'Preguntar a Lupita', href: WHATSAPP_URL, external: true }

@@ -118,8 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const serviceLabels = {
             aislada: 'Consulta aislada',
-            bienestar: 'Programa de bienestar (4 sesiones)',
-            duelo: 'Programa de duelo (6 sesiones)'
+            bienestar: 'Programa de Salud Mental (4 sesiones)',
+            duelo: 'Programa de acompañamiento por duelo, muerte o pérdida (6 sesiones)'
         };
 
         const serviceNote = serviceLabels[service] || serviceLabels.aislada;
