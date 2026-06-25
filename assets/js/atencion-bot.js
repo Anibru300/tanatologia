@@ -125,10 +125,12 @@
     <div class="atencion-bot" id="atencion-bot">
         <button class="atencion-bot__toggle" id="atencion-bot-toggle" type="button" aria-label="Abrir atención al cliente">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2a1 1 0 0 0-2 0v2a9 9 0 0 0 8 8.95V22a1 1 0 0 0 2 0v-1.05A9 9 0 0 0 21 12v-2a1 1 0 0 0-2 0z"/>
+                <path d="M19.5 10.5V13h-2v-2.5c0-2.48-2.02-4.5-4.5-4.5S8.5 8.02 8.5 10.5V13h-2v-2.5C6.5 6.46 9.96 3 14 3s7.5 3.46 7.5 7.5z"/>
+                <path d="M3 13.5C3 12.67 3.67 12 4.5 12S6 12.67 6 13.5v3C6 17.33 5.33 18 4.5 18S3 17.33 3 16.5v-3zM18 13.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3z"/>
+                <path d="M7 13h10v3c0 2.76-2.24 5-5 5s-5-2.24-5-5v-3z"/>
+                <path d="M11 18h2v3h-2z"/>
             </svg>
-            <span class="atencion-bot__label">Asistencia</span>
+            <span class="atencion-bot__label">Atención al Cliente</span>
         </button>
         <div class="atencion-bot__window" id="atencion-bot-window" role="dialog" aria-hidden="true" aria-label="Atención al cliente de Somos Calma">
             <div class="atencion-bot__header">

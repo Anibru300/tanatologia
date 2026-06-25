@@ -1449,28 +1449,29 @@ body.page-with-bg::after {
 .atencion-bot__toggle {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
+    gap: 0.75rem;
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
     color: #ffffff;
     border: none;
     border-radius: 50px;
-    padding: 0.85rem 1.25rem;
+    padding: 1rem 1.5rem;
     font-family: inherit;
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-weight: 700;
+    font-size: 1rem;
     cursor: pointer;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
     transition: transform var(--transition), box-shadow var(--transition);
 }
 
 .atencion-bot__toggle svg {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
 }
 
 .atencion-bot__toggle:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 12px 40px rgba(122, 154, 168, 0.35);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.5);
 }
 
 .atencion-bot__window {
@@ -1674,27 +1675,27 @@ body.page-with-bg::after {
     }
 
     .atencion-bot__toggle {
-        padding: 0.75rem 1rem;
-        font-size: 0.85rem;
+        padding: 0.85rem 1.1rem;
+        font-size: 0.9rem;
     }
 
     .atencion-bot__toggle svg {
-        width: 20px;
-        height: 20px;
+        width: 22px;
+        height: 22px;
     }
 
     .atencion-bot__label {
-        display: none;
+        display: inline;
     }
 
     .atencion-bot__window {
-        bottom: 64px;
+        bottom: 72px;
         left: 0;
         width: calc(100vw - 2rem);
     }
 
     .back-to-top {
-        bottom: 5rem;
+        bottom: 5.5rem;
         left: 1rem;
     }
 }
