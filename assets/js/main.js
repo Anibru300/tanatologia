@@ -71,9 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const stats = document.querySelectorAll('.hero__stat strong[data-count]');
     stats.forEach(stat => {
         const target = parseInt(stat.dataset.count, 10);
-        const suffix = stat.textContent.trim().replace(/[0-9,]/g, '');
+        const text = stat.textContent.trim();
+        const prefix = text.startsWith('$') ? '$' : '';
+        const suffix = text.replace(/[0-9,$]/g, '').trim();
         if (!isNaN(target)) {
-            stat.textContent = target.toLocaleString('es-MX') + suffix;
+            stat.textContent = prefix + target.toLocaleString('es-MX') + (suffix ? ' ' + suffix : '');
         }
     });
 
