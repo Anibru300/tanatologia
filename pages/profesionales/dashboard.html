@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard del portal de profesionales de Somos Calma.">
+    <title>Dashboard | Portal del Profesional</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <link rel="stylesheet" href="../../assets/css/pages.css">
+</head>
+<body class="page-with-bg">
+    <div id="portal-header-component"></div>
+
+    <div class="portal-layout">
+        <div id="portal-sidebar-component"></div>
+
+        <main class="portal-main">
+            <div class="portal-main__header">
+                <h1>Bienvenido de vuelta</h1>
+                <p>Este es tu resumen de actividad en Somos Calma.</p>
+            </div>
+
+            <div class="portal-grid">
+                <article class="portal-card">
+                    <h3>Próximas consultas</h3>
+                    <p class="portal-card__meta">Hoy y mañana</p>
+                    <ul class="portal-list">
+                        <li>
+                            <div>
+                                <div class="portal-list__title">Paciente anónima</div>
+                                <div class="portal-list__meta">Hoy · 6:00 p.m. · Consulta aislada</div>
+                            </div>
+                            <a href="#" class="btn btn--primary btn--sm">Ingresar</a>
+                        </li>
+                        <li>
+                            <div>
+                                <div class="portal-list__title">Paciente anónimo</div>
+                                <div class="portal-list__meta">Mañana · 10:00 a.m. · Programa duelo</div>
+                            </div>
+                            <a href="#" class="btn btn--outline btn--sm">Preparar</a>
+                        </li>
+                    </ul>
+                </article>
+
+                <article class="portal-card">
+                    <h3>Tu disponibilidad</h3>
+                    <p class="portal-card__meta">Horarios registrados esta semana</p>
+                    <p>Marca los turnos en los que puedes atender para ayudarnos a cubrir de 7 a.m. a 11 p.m.</p>
+                    <div class="portal-card__actions">
+                        <a href="./agenda.html" class="btn btn--primary btn--sm">Gestionar agenda</a>
+                    </div>
+                </article>
+
+                <article class="portal-card">
+                    <h3>Conferencia del mes</h3>
+                    <p class="portal-card__meta">2 magistrales disponibles</p>
+                    <p>Accede a las conferencias grabadas y al material complementario en tu Aula Magna.</p>
+                    <div class="portal-card__actions">
+                        <a href="./aula.html" class="btn btn--primary btn--sm">Ver Aula Magna</a>
+                    </div>
+                </article>
+
+                <article class="portal-card">
+                    <h3>Biblioteca</h3>
+                    <p class="portal-card__meta">Libros y actividades</p>
+                    <p>Encuentra mapas mentales, lecturas y ejercicios para compartir con tus pacientes.</p>
+                    <div class="portal-card__actions">
+                        <a href="./biblioteca.html" class="btn btn--primary btn--sm">Explorar</a>
+                    </div>
+                </article>
+            </div>
+
+            <section style="margin-top: 2.5rem;">
+                <h2 style="margin-bottom: 1rem;">Sesiones recientes</h2>
+                <div class="portal-card">
+                    <ul class="portal-list">
+                        <li>
+                            <div>
+                                <div class="portal-list__title">Consulta aislada</div>
+                                <div class="portal-list__meta">22 jun · 5:00 p.m. · 50 min</div>
+                            </div>
+                            <span class="portal-badge">Completada</span>
+                        </li>
+                        <li>
+                            <div>
+                                <div class="portal-list__title">Programa de bienestar · Sesión 2 de 4</div>
+                                <div class="portal-list__meta">20 jun · 11:00 a.m. · 50 min</div>
+                            </div>
+                            <span class="portal-badge">Completada</span>
+                        </li>
+                        <li>
+                            <div>
+                                <div class="portal-list__title">Programa de duelo · Sesión 4 de 6</div>
+                                <div class="portal-list__meta">18 jun · 7:00 p.m. · 50 min</div>
+                            </div>
+                            <span class="portal-badge">Completada</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="portal-footer-component"></div>
+
+    <script src="../../assets/js/portal-components.js"></script>
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

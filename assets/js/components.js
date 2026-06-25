@@ -13,7 +13,9 @@
     const headerHTML = `
     <header class="header">
         <nav class="nav container">
-            <a href="${root}index.html" class="logo">SOMOS-CALMA</a>
+            <a href="${root}index.html" class="logo">
+                <img src="${root}assets/images/logo.jpeg" alt="Somos Calma" class="logo__img">
+            </a>
             <button class="nav__toggle" aria-label="Abrir menú" aria-expanded="false">
                 <span></span>
                 <span></span>
@@ -41,7 +43,9 @@
         <div class="container">
             <div class="footer__grid">
                 <div class="footer__brand">
-                    <a href="${root}index.html" class="logo">SOMOS-CALMA</a>
+                    <a href="${root}index.html" class="logo logo--footer">
+                        <span class="logo__wrap"><img src="${root}assets/images/logo.jpeg" alt="Somos Calma" class="logo__img"></span>
+                    </a>
                     <p>Tu espacio seguro para sanar y encontrar alivio. Formación para profesionales, acompañamiento para quienes duelen.</p>
                 </div>
                 <div>
@@ -120,4 +124,9 @@
     } else {
         injectComponents();
     }
+
+    // Cargar chatbot cálido y botón de WhatsApp en todas las páginas
+    const chatbotScript = document.createElement('script');
+    chatbotScript.src = `${root}assets/js/chatbot.js`;
+    document.head.appendChild(chatbotScript);
 })();

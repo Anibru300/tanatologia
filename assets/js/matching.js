@@ -113,8 +113,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getMatchedTherapists(answers) {
-        const focus = answers.focus || 'duelo';
-        const modality = answers.modality || 'individual';
+        const service = answers.service || 'aislada';
+        const focus = answers.focus || 'otra';
+
+        const serviceLabels = {
+            aislada: 'Consulta aislada',
+            bienestar: 'Programa de bienestar (4 sesiones)',
+            duelo: 'Programa de duelo (6 sesiones)'
+        };
+
+        const serviceNote = serviceLabels[service] || serviceLabels.aislada;
 
         const therapists = [
             {
@@ -122,33 +130,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Dra. María Rodríguez',
                 title: 'Psicóloga · Tanatóloga',
                 experience: '12 años acompañando procesos de duelo',
-                bio: 'Especialista en pérdida de pareja y duelo por muerte. Su enfoque es cálido, pausado y basado en evidencia.',
-                tags: ['Duelo', 'Ansiedad', 'Adultos mayores'],
-                specialties: ['duelo', 'ansiedad', 'adultos-mayores']
+                bio: `Especialista en duelo por muerte y pérdida de pareja. Puede acompañarte en tu ${serviceNote.toLowerCase()}.`,
+                tags: ['Duelo', 'Pérdida', 'Adultos mayores'],
+                specialties: ['duelo-muerte', 'perdida', 'enfermedad', 'duelo']
             },
             {
                 initials: 'JL',
                 name: 'Lic. Javier López',
                 title: 'Psicólogo Clínico',
                 experience: '8 años de experiencia',
-                bio: 'Acompaña crisis vitales, rupturas y adaptación al cambio desde una mirada empática y sin juicio.',
-                tags: ['Ruptura', 'Estrés', 'Terapia de pareja'],
-                specialties: ['ruptura', 'estres', 'pareja']
+                bio: `Acompaña ansiedad, estrés, depresión y crisis vitales. Ideal para tu ${serviceNote.toLowerCase()}.`,
+                tags: ['Ansiedad', 'Estrés', 'Depresión'],
+                specialties: ['ansiedad-estres', 'depresion', 'otra', 'bienestar']
             },
             {
                 initials: 'SC',
                 name: 'Dra. Sofía Castro',
                 title: 'Tanatóloga · Psicooncóloga',
                 experience: '10 años de experiencia',
-                bio: 'Especialista en acompañamiento ante enfermedades crónicas, diagnósticos difíciles y duelo anticipado.',
+                bio: `Especialista en duelo anticipado, diagnósticos difíciles y pérdidas complejas. Puede guiar tu ${serviceNote.toLowerCase()}.`,
                 tags: ['Duelo anticipado', 'Diagnóstico', 'Familias'],
-                specialties: ['duelo', 'enfermedad-cronica', 'familias']
+                specialties: ['duelo-muerte', 'enfermedad', 'duelo']
             }
         ];
 
-        return therapists
-            .filter(t => t.specialties.includes(focus) || t.specialties.includes(modality))
-            .slice(0, 3);
+        // Si el servicio es bienestar, priorizamos psicólogos; si es duelo, tanatólogos.
+        const sortedTherapists = therapists.sort((a, b) => {
+            const aMatch = a.specialties.includes(focus) ? 2 : (service === 'duelo' && a.title.includes('Tanatólogo') ? 1 : 0);
+            const bMatch = b.specialties.includes(focus) ? 2 : (service === 'duelo' && b.title.includes('Tanatólogo') ? 1 : 0);
+            return bMatch - aMatch;
+        });
+
+        return sortedTherapists.slice(0, 3);
     }
 
     if (nextBtn) {

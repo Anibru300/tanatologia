@@ -430,3 +430,312 @@
         font-size: 0.8rem;
     }
 }
+
+/* === PORTAL DE PROFESIONALES === */
+.portal-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 80px);
+}
+
+.portal-header {
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.portal-header__inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 0;
+}
+
+.portal-header__nav {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.portal-header__link {
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.portal-header__link:hover {
+    color: var(--color-primary);
+}
+
+.logo--portal .logo__img {
+    height: 40px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+}
+
+.portal-sidebar {
+    background-color: var(--color-primary-dark);
+    color: #ffffff;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.portal-sidebar__brand {
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.portal-sidebar__title {
+    display: block;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.portal-sidebar__subtitle {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.portal-sidebar__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.portal-sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-sm);
+    color: rgba(255, 255, 255, 0.88);
+    font-weight: 500;
+    transition: background-color var(--transition), color var(--transition);
+}
+
+.portal-sidebar__link:hover,
+.portal-sidebar__link.is-active {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.portal-sidebar__icon {
+    font-size: 1.15rem;
+}
+
+.portal-sidebar__footer {
+    margin-top: auto;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.portal-sidebar__help {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background-color: var(--color-error);
+    color: #ffffff;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background-color var(--transition);
+}
+
+.portal-sidebar__help:hover {
+    background-color: #a84d52;
+    color: #ffffff;
+}
+
+.portal-main {
+    padding: 2rem;
+    background-color: var(--color-bg);
+    min-height: calc(100vh - 80px);
+}
+
+.portal-main__header {
+    margin-bottom: 2rem;
+}
+
+.portal-main__header h1 {
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    margin-bottom: 0.35rem;
+}
+
+.portal-main__header p {
+    color: var(--color-text-light);
+    margin-bottom: 0;
+}
+
+.portal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.portal-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+
+.portal-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.portal-card p {
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.portal-card__meta {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    margin-bottom: 1rem;
+}
+
+.portal-card__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.portal-card__actions .btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+}
+
+.portal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.portal-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.portal-list li:last-child {
+    border-bottom: none;
+}
+
+.portal-list__title {
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+}
+
+.portal-list__meta {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+}
+
+.portal-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.portal-calendar__day {
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+}
+
+.portal-calendar__day.has-session {
+    background-color: rgba(122, 158, 126, 0.12);
+    border-color: var(--color-primary);
+    color: var(--color-primary-dark);
+    font-weight: 600;
+}
+
+.portal-footer {
+    background-color: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: 1rem 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+}
+
+.portal-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: var(--color-peace);
+    color: var(--color-primary-dark);
+}
+
+.portal-badge--live {
+    background-color: var(--color-error);
+    color: #ffffff;
+}
+
+.portal-badge--recorded {
+    background-color: var(--color-secondary);
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .portal-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-sidebar {
+        position: static;
+        height: auto;
+        padding: 1rem;
+    }
+
+    .portal-sidebar__nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .portal-sidebar__link {
+        flex: 1;
+        min-width: 140px;
+        justify-content: center;
+    }
+
+    .portal-main {
+        padding: 1.25rem;
+    }
+
+    .portal-calendar {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 0.25rem;
+    }
+
+    .portal-calendar__day {
+        font-size: 0.7rem;
+    }
+}

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Responde unas preguntas sencillas y encuentra al terapeuta ideal para acompañarte en tu proceso.">
-    <title>Encuentra tu Terapeuta | SOMOS-CALMA</title>
+    <meta name="description" content="Responde unas preguntas sencillas y encuentra al psicólogo o tanatólogo ideal para acompañarte.">
+    <title>Encuentra tu acompañamiento | Somos Calma</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -40,61 +40,66 @@
                                     Lamentamos mucho por lo que estás pasando. Tómate tu tiempo; estás en un espacio seguro y no tienes que resolver todo hoy.
                                 </p>
                                 <p style="color: var(--color-text-light); font-size: 0.95rem;">
-                                    Te haremos 3 preguntas breves para encontrar al terapeuta que mejor se ajuste a ti.
+                                    Te haremos 3 preguntas breves para encontrar la mejor opción para ti.
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Paso 1: Motivo -->
-                        <div class="matching__step" data-step="focus">
-                            <h2 class="matching__question">¿Qué te trae hoy?</h2>
+                        <!-- Paso 1: Servicio -->
+                        <div class="matching__step" data-step="service">
+                            <h2 class="matching__question">¿Qué tipo de acompañamiento buscas?</h2>
                             <div class="matching__options">
                                 <label class="matching__option">
-                                    <input type="radio" name="focus" value="duelo">
-                                    <span class="matching__option-icon">🕊️</span>
-                                    <span>Duelo por la muerte de un ser querido</span>
-                                </label>
-                                <label class="matching__option">
-                                    <input type="radio" name="focus" value="ruptura">
-                                    <span class="matching__option-icon">💔</span>
-                                    <span>Ruptura, divorcio o pérdida de relación</span>
-                                </label>
-                                <label class="matching__option">
-                                    <input type="radio" name="focus" value="enfermedad-cronica">
+                                    <input type="radio" name="service" value="aislada">
                                     <span class="matching__option-icon">🌿</span>
-                                    <span>Enfermedad, diagnóstico o duelo anticipado</span>
+                                    <span>Consulta aislada — una sesión para lo urgente</span>
                                 </label>
                                 <label class="matching__option">
-                                    <input type="radio" name="focus" value="ansiedad">
-                                    <span class="matching__option-icon">🌙</span>
-                                    <span>Ansiedad, estrés o crisis vital</span>
+                                    <input type="radio" name="service" value="bienestar">
+                                    <span class="matching__option-icon">🧠</span>
+                                    <span>Programa de bienestar emocional — 4 sesiones</span>
                                 </label>
                                 <label class="matching__option">
-                                    <input type="radio" name="focus" value="otra-perdida">
-                                    <span class="matching__option-icon">🤍</span>
-                                    <span>Otra pérdida o situación difícil</span>
+                                    <input type="radio" name="service" value="duelo">
+                                    <span class="matching__option-icon">🕊️</span>
+                                    <span>Programa de duelo, muerte o pérdida — 6 sesiones</span>
                                 </label>
                             </div>
                         </div>
 
-                        <!-- Paso 2: Preferencias -->
-                        <div class="matching__step" data-step="modality">
-                            <h2 class="matching__question">¿Cómo prefieres recibir apoyo?</h2>
+                        <!-- Paso 2: Motivo -->
+                        <div class="matching__step" data-step="focus">
+                            <h2 class="matching__question">¿Qué te trae hoy?</h2>
                             <div class="matching__options">
                                 <label class="matching__option">
-                                    <input type="radio" name="modality" value="individual">
-                                    <span class="matching__option-icon">🧍</span>
-                                    <span>Individual</span>
+                                    <input type="radio" name="focus" value="ansiedad-estres">
+                                    <span class="matching__option-icon">🌙</span>
+                                    <span>Ansiedad, estrés o crisis vital</span>
                                 </label>
                                 <label class="matching__option">
-                                    <input type="radio" name="modality" value="pareja">
-                                    <span class="matching__option-icon">👥</span>
-                                    <span>De pareja</span>
+                                    <input type="radio" name="focus" value="depresion">
+                                    <span class="matching__option-icon">🌧️</span>
+                                    <span>Depresión o tristeza profunda</span>
                                 </label>
                                 <label class="matching__option">
-                                    <input type="radio" name="modality" value="familiar">
-                                    <span class="matching__option-icon">🏠</span>
-                                    <span>Familiar</span>
+                                    <input type="radio" name="focus" value="duelo-muerte">
+                                    <span class="matching__option-icon">🕊️</span>
+                                    <span>Duelo por la muerte de un ser querido</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="focus" value="perdida">
+                                    <span class="matching__option-icon">💔</span>
+                                    <span>Ruptura, divorcio o pérdida de relación</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="focus" value="enfermedad">
+                                    <span class="matching__option-icon">🌿</span>
+                                    <span>Enfermedad, diagnóstico o duelo anticipado</span>
+                                </label>
+                                <label class="matching__option">
+                                    <input type="radio" name="focus" value="otra">
+                                    <span class="matching__option-icon">🤍</span>
+                                    <span>Otra situación difícil</span>
                                 </label>
                             </div>
                         </div>
@@ -106,17 +111,17 @@
                                 <label class="matching__option">
                                     <input type="radio" name="schedule" value="manana">
                                     <span class="matching__option-icon">🌅</span>
-                                    <span>Mañana</span>
+                                    <span>Mañana (7 a.m. – 12 p.m.)</span>
                                 </label>
                                 <label class="matching__option">
                                     <input type="radio" name="schedule" value="tarde">
                                     <span class="matching__option-icon">☀️</span>
-                                    <span>Tarde</span>
+                                    <span>Tarde (12 p.m. – 6 p.m.)</span>
                                 </label>
                                 <label class="matching__option">
                                     <input type="radio" name="schedule" value="noche">
                                     <span class="matching__option-icon">🌙</span>
-                                    <span>Noche</span>
+                                    <span>Noche (6 p.m. – 11 p.m.)</span>
                                 </label>
                                 <label class="matching__option">
                                     <input type="radio" name="schedule" value="flexible">
@@ -135,7 +140,7 @@
                             </div>
                             <div id="matching-result-list"></div>
                             <div class="text-center" style="margin-top: 2.5rem;">
-                                <a href="membresias.html" class="btn btn--primary">Ver planes y agendar</a>
+                                <a href="membresias.html" class="btn btn--primary">Ver opciones y agendar</a>
                                 <button type="button" class="btn btn--ghost" id="matching-restart" style="margin-left: 0.5rem;">Repetir cuestionario</button>
                             </div>
                         </div>
