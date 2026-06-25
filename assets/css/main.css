@@ -1490,7 +1490,7 @@ body.page-with-bg::after {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    background: linear-gradient(135deg, #6B9BC0, #5484A8);
     color: #ffffff;
     border: none;
     border-radius: 50px;
@@ -1499,7 +1499,7 @@ body.page-with-bg::after {
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
-    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+    box-shadow: 0 8px 24px rgba(107, 155, 192, 0.4);
     transition: transform var(--transition), box-shadow var(--transition);
 }
 
@@ -1511,7 +1511,7 @@ body.page-with-bg::after {
 
 .atencion-bot__toggle:hover {
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.5);
+    box-shadow: 0 12px 32px rgba(107, 155, 192, 0.5);
 }
 
 .atencion-bot__window {

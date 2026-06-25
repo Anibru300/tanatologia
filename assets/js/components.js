@@ -107,11 +107,7 @@
         injectComponents();
     }
 
-    // Cargar chatbot cálido, WhatsApp y bot de atención al cliente
-    const chatbotScript = document.createElement('script');
-    chatbotScript.src = `${root}assets/js/chatbot.js`;
-    document.head.appendChild(chatbotScript);
-
+    // Cargar bot de atención al cliente (centraliza preguntas frecuentes y WhatsApp)
     const atencionBotScript = document.createElement('script');
     atencionBotScript.src = `${root}assets/js/atencion-bot.js`;
     document.head.appendChild(atencionBotScript);
