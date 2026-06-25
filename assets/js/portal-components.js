@@ -52,7 +52,7 @@
             </a>
         </nav>
         <div class="portal-sidebar__footer">
-            <a href="https://wa.me/4772541540?text=Hola%20Lupita%2C%20soy%20profesional%20de%20Somos%20Calma%20y%20necesito%20apoyo" target="_blank" rel="noopener noreferrer" class="portal-sidebar__help">
+            <a href="https://wa.me/5214772541540?text=Hola%20Lupita%2C%20soy%20profesional%20de%20Somos%20Calma%20y%20necesito%20apoyo" target="_blank" rel="noopener noreferrer" class="portal-sidebar__help">
                 <span>🆘</span>
                 <span>Botón de alerta</span>
             </a>

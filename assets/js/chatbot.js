@@ -4,7 +4,7 @@
  * Ofrece atención humana vía WhatsApp con Lupita Muñoz.
  */
 (function () {
-    const WHATSAPP_NUMBER = '4772541540';
+    const WHATSAPP_NUMBER = '5214772541540';
     const WHATSAPP_NAME = 'Lupita Muñoz';
     const WHATSAPP_MESSAGE = encodeURIComponent(
         'Hola Lupita, me interesa recibir información de Somos Calma. ¿Podrías orientarme?'

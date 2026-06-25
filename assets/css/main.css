@@ -908,30 +908,6 @@ body.page-with-bg::after {
     border-color: var(--color-primary);
 }
 
-/* === BOTÓN DE SALIDA RÁPIDA === */
-.quick-exit {
-    position: fixed;
-    bottom: 1.5rem;
-    left: 1.5rem;
-    z-index: 200;
-    background-color: var(--color-text);
-    color: #ffffff;
-    border: none;
-    border-radius: 50px;
-    padding: 0.85rem 1.5rem;
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-}
-
-.quick-exit:hover {
-    background-color: #2a2826;
-    transform: translateY(-2px);
-}
-
 /* === TEAM SECTION === */
 .team-grid {
     display: grid;
@@ -1114,13 +1090,6 @@ body.page-with-bg::after {
     .illustration-box {
         min-height: 260px;
         order: -1;
-    }
-
-    .quick-exit {
-        bottom: 1rem;
-        left: 1rem;
-        padding: 0.7rem 1.1rem;
-        font-size: 0.8rem;
     }
 
     .back-to-top {
@@ -1465,5 +1434,267 @@ body.page-with-bg::after {
 
     .whatsapp-float__tooltip {
         display: none;
+    }
+}
+
+/* === BOTÓN DE ASISTENCIA / ATENCIÓN AL CLIENTE === */
+.atencion-bot {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 240;
+    font-family: var(--font-base);
+}
+
+.atencion-bot__toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    padding: 0.85rem 1.25rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.atencion-bot__toggle svg {
+    width: 22px;
+    height: 22px;
+}
+
+.atencion-bot__toggle:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 12px 40px rgba(122, 154, 168, 0.35);
+}
+
+.atencion-bot__window {
+    position: absolute;
+    bottom: 76px;
+    left: 0;
+    width: min(360px, calc(100vw - 2rem));
+    background-color: var(--color-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+    visibility: hidden;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+    max-height: calc(100vh - 140px);
+}
+
+.atencion-bot__window.is-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+}
+
+.atencion-bot__header {
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
+    color: #ffffff;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.atencion-bot__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.atencion-bot__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.atencion-bot__info strong {
+    display: block;
+    color: #ffffff;
+    font-size: 1rem;
+    margin-bottom: 0.1rem;
+}
+
+.atencion-bot__info span {
+    font-size: 0.8rem;
+    opacity: 0.92;
+}
+
+.atencion-bot__close {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.25rem;
+    opacity: 0.85;
+    transition: opacity var(--transition);
+}
+
+.atencion-bot__close:hover {
+    opacity: 1;
+}
+
+.atencion-bot__messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background-color: var(--color-bg);
+}
+
+.atencion-bot__message {
+    display: flex;
+}
+
+.atencion-bot__message--bot {
+    justify-content: flex-start;
+}
+
+.atencion-bot__message--user {
+    justify-content: flex-end;
+}
+
+.atencion-bot__bubble {
+    max-width: 85%;
+    padding: 0.85rem 1.1rem;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    white-space: pre-line;
+}
+
+.atencion-bot__message--bot .atencion-bot__bubble {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-bottom-left-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+.atencion-bot__message--user .atencion-bot__bubble {
+    background-color: var(--color-secondary);
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+}
+
+.atencion-bot__message--typing .atencion-bot__bubble {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background-color: var(--color-peace);
+    color: var(--color-text-light);
+}
+
+.atencion-bot__dots {
+    display: flex;
+    gap: 4px;
+}
+
+.atencion-bot__dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--color-secondary);
+    animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.atencion-bot__dots span:nth-child(1) { animation-delay: -0.32s; }
+.atencion-bot__dots span:nth-child(2) { animation-delay: -0.16s; }
+
+.atencion-bot__typing-text {
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.atencion-bot__options {
+    padding: 1rem 1.25rem 1.25rem;
+    background-color: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.atencion-bot__option {
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 50px;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--transition), border-color var(--transition), transform var(--transition);
+}
+
+.atencion-bot__option:hover {
+    background-color: var(--color-peace);
+    border-color: var(--color-secondary);
+    transform: translateX(3px);
+}
+
+.atencion-bot__option--primary {
+    background-color: var(--color-secondary);
+    color: #ffffff;
+    border-color: var(--color-secondary);
+}
+
+.atencion-bot__option--primary:hover {
+    background-color: var(--color-secondary-dark);
+    border-color: var(--color-secondary-dark);
+}
+
+@media (max-width: 768px) {
+    .atencion-bot {
+        bottom: 1rem;
+        left: 1rem;
+    }
+
+    .atencion-bot__toggle {
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .atencion-bot__toggle svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .atencion-bot__label {
+        display: none;
+    }
+
+    .atencion-bot__window {
+        bottom: 64px;
+        left: 0;
+        width: calc(100vw - 2rem);
+    }
+
+    .back-to-top {
+        bottom: 5rem;
+        left: 1rem;
     }
 }

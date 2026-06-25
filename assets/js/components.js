@@ -88,12 +88,6 @@
     </footer>
     `;
 
-    const quickExitHTML = `
-    <button class="quick-exit" type="button" aria-label="Salir rapido de la pagina">
-        Salir
-    </button>
-    `;
-
     function injectComponents() {
         const headerPlaceholder = document.getElementById('header-component');
         const footerPlaceholder = document.getElementById('footer-component');
@@ -105,18 +99,6 @@
         if (footerPlaceholder) {
             footerPlaceholder.outerHTML = footerHTML;
         }
-
-        // Boton de salida rapida
-        const existingQuickExit = document.querySelector('.quick-exit');
-        if (!existingQuickExit) {
-            const quickExitWrapper = document.createElement('div');
-            quickExitWrapper.innerHTML = quickExitHTML;
-            const quickExitBtn = quickExitWrapper.querySelector('.quick-exit');
-            quickExitBtn.addEventListener('click', () => {
-                window.location.href = 'https://www.google.com';
-            });
-            document.body.appendChild(quickExitBtn);
-        }
     }
 
     if (document.readyState === 'loading') {
@@ -125,8 +107,12 @@
         injectComponents();
     }
 
-    // Cargar chatbot cálido y botón de WhatsApp en todas las páginas
+    // Cargar chatbot cálido, WhatsApp y bot de atención al cliente
     const chatbotScript = document.createElement('script');
     chatbotScript.src = `${root}assets/js/chatbot.js`;
     document.head.appendChild(chatbotScript);
+
+    const atencionBotScript = document.createElement('script');
+    atencionBotScript.src = `${root}assets/js/atencion-bot.js`;
+    document.head.appendChild(atencionBotScript);
 })();
