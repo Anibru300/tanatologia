@@ -40,6 +40,12 @@ jobs:
       - name: Build
         run: cd platform/web && npm run build
 
+      - name: Add SPA fallback
+        run: |
+          cd platform/web/dist
+          cp index.html 404.html
+          touch .nojekyll
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
