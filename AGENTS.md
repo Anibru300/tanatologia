@@ -44,5 +44,6 @@ npm run dev   # servidor local
 5. Implementar pagos (Stripe/PayPal) cuando haya tracción.
 
 ## Despliegue
-- GitHub Pages con workflow en `.github/workflows/deploy-platform.yml`.
-- Base URL configurada en `platform/web/vite.config.ts` como `/tanatologia/`.
+- GitHub Pages publica la rama `main` (sitio estático original en raíz).
+- La plataforma React compilada se encuentra en `/app/`.
+- Base URL configurada en `platform/web/vite.config.ts` como `/tanatologia/app/`.

@@ -49,7 +49,7 @@ Más detalles en [`docs/paleta-colores.md`](docs/paleta-colores.md).
 
 El sitio ya está publicado en GitHub Pages:
 
-**https://anibru300.github.io/tanatologia/**
+**https://anibru300.github.io/tanatologia/app/**
 
 *Nota: el repositorio se llama `tanatologia`, pero la marca es SOMOS-CALMA. Cuando compres el dominio propio, solo hay que actualizar la URL.*
 
