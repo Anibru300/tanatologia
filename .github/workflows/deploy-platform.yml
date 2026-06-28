@@ -35,7 +35,7 @@ jobs:
           cache-dependency-path: 'platform/web/package.json'
 
       - name: Install dependencies
-        run: cd platform/web && npm ci
+        run: cd platform/web && npm install
 
       - name: Build
         run: cd platform/web && npm run build
