@@ -2,10 +2,26 @@ import { useAuth } from '@/features/auth/AuthProvider'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { Calendar, Clock, Users, DollarSign, Star, FileText, Video } from 'lucide-react'
+import {
+  Calendar,
+  Clock,
+  Users,
+  DollarSign,
+  Star,
+  FileText,
+  Video,
+  ArrowRight,
+  CheckCircle,
+} from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 export function ProfessionalDashboard() {
   const { user } = useAuth()
+
+  const upcomingAppointments = [
+    { id: 1, patient: 'Ana Martínez', time: '10:00', type: 'Videollamada' },
+    { id: 2, patient: 'Luis Hernández', time: '12:00', type: 'Videollamada' },
+  ]
 
   return (
     <div className="section-calma">
@@ -16,7 +32,7 @@ export function ProfessionalDashboard() {
         </div>
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="border-l-4 border-l-primary">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Calendar size={20} className="text-primary" />
@@ -24,47 +40,47 @@ export function ProfessionalDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">0</p>
-              <p className="text-text-light text-sm">Sin citas programadas</p>
+              <p className="text-3xl font-bold text-text">2</p>
+              <p className="text-text-light text-sm">2 confirmadas</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-l-4 border-l-secondary">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Users size={20} className="text-primary" />
+                <Users size={20} className="text-secondary" />
                 Pacientes activos
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">0</p>
+              <p className="text-3xl font-bold text-text">5</p>
               <p className="text-text-light text-sm">Este mes</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-l-4 border-l-accent">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign size={20} className="text-primary" />
+                <DollarSign size={20} className="text-accent" />
                 Ingresos del mes
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">$0</p>
+              <p className="text-3xl font-bold text-text">$1,200</p>
               <p className="text-text-light text-sm">Neto después de comisión</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-l-4 border-l-warning">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Star size={20} className="text-primary" />
+                <Star size={20} className="text-warning" />
                 Calificación
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">—</p>
-              <p className="text-text-light text-sm">Sin evaluaciones aún</p>
+              <p className="text-3xl font-bold text-text">4.9</p>
+              <p className="text-text-light text-sm">Basado en 12 reseñas</p>
             </CardContent>
           </Card>
         </div>
@@ -72,14 +88,42 @@ export function ProfessionalDashboard() {
         <div className="grid md:grid-cols-3 gap-8">
           <Card className="md:col-span-2">
             <CardHeader>
-              <CardTitle>Mi agenda</CardTitle>
-              <CardDescription>Próximas sesiones y solicitudes</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Mi agenda de hoy</CardTitle>
+                  <CardDescription>Próximas sesiones y solicitudes</CardDescription>
+                </div>
+                <Link to="/profesional/agenda">
+                  <Button variant="outline" size="sm" className="gap-1">
+                    Ver agenda
+                    <ArrowRight size={16} />
+                  </Button>
+                </Link>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12 text-text-light">
-                <Calendar size={48} className="mx-auto mb-4 text-muted" />
-                <p>No tienes citas programadas.</p>
-                <Button className="mt-4">Configurar disponibilidad</Button>
+              <div className="space-y-3">
+                {upcomingAppointments.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex items-center justify-between p-4 bg-bg-alt rounded-[12px]"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="bg-primary/10 rounded-[12px] p-3 text-center min-w-[60px]">
+                        <span className="block text-lg font-bold text-text">{a.time}</span>
+                        <span className="block text-xs text-text-light">hrs</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-text">{a.patient}</p>
+                        <p className="text-sm text-text-light">{a.type}</p>
+                      </div>
+                    </div>
+                    <Button size="sm" className="gap-1">
+                      <Video size={16} />
+                      Entrar
+                    </Button>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -89,22 +133,30 @@ export function ProfessionalDashboard() {
               <CardTitle>Acciones rápidas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Clock size={18} />
-                Configurar horarios
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <FileText size={18} />
-                Mis notas clínicas
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Video size={18} />
-                Sala de videollamada
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <DollarSign size={18} />
-                Mis ingresos
-              </Button>
+              <Link to="/profesional/disponibilidad">
+                <Button variant="outline" className="w-full justify-start gap-2">
+                  <Clock size={18} />
+                  Configurar horarios
+                </Button>
+              </Link>
+              <Link to="/profesional/notas">
+                <Button variant="outline" className="w-full justify-start gap-2">
+                  <FileText size={18} />
+                  Mis notas clínicas
+                </Button>
+              </Link>
+              <Link to="/profesional/videollamada">
+                <Button variant="outline" className="w-full justify-start gap-2">
+                  <Video size={18} />
+                  Sala de videollamada
+                </Button>
+              </Link>
+              <Link to="/profesional/ingresos">
+                <Button variant="outline" className="w-full justify-start gap-2">
+                  <DollarSign size={18} />
+                  Mis ingresos
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
@@ -116,9 +168,12 @@ export function ProfessionalDashboard() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3">
-                <Badge variant="warning">Pendiente</Badge>
+                <Badge variant="success" className="gap-1">
+                  <CheckCircle size={14} />
+                  Verificado
+                </Badge>
                 <p className="text-text-light text-sm">
-                  Completa tu perfil y sube tu cédula profesional para aparecer en el directorio.
+                  Tu perfil está completo y apareces en el directorio de terapeutas.
                 </p>
               </div>
             </CardContent>

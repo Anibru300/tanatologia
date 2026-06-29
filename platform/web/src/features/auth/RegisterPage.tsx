@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { User, Stethoscope, ShieldCheck, CheckCircle } from 'lucide-react'
 
 export function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -13,8 +14,30 @@ export function RegisterPage() {
   const [role, setRole] = useState<UserRole>('patient')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
+
+  const roles: { value: UserRole; label: string; icon: React.ElementType; description: string }[] = [
+    {
+      value: 'patient',
+      label: 'Paciente',
+      icon: User,
+      description: 'Busco apoyo emocional o acompañamiento',
+    },
+    {
+      value: 'professional',
+      label: 'Profesional',
+      icon: Stethoscope,
+      description: 'Soy psicólogo, tanatólogo o especialista',
+    },
+    {
+      value: 'admin',
+      label: 'Administración',
+      icon: ShieldCheck,
+      description: 'Gestiono la plataforma',
+    },
+  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,12 +45,33 @@ export function RegisterPage() {
     setIsLoading(true)
     try {
       await register(email, password, fullName, role)
-      navigate(role === 'patient' ? '/paciente' : role === 'professional' ? '/profesional' : '/admin')
+      setSuccess(true)
+      setTimeout(() => {
+        navigate(role === 'patient' ? '/paciente' : role === 'professional' ? '/profesional' : '/admin')
+      }, 1500)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al registrarse')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (success) {
+    return (
+      <div className="section-calma">
+        <div className="container-calma max-w-md mx-auto">
+          <Card className="text-center">
+            <CardContent className="p-12">
+              <div className="w-20 h-20 mx-auto rounded-full bg-success/10 flex items-center justify-center mb-6">
+                <CheckCircle size={40} className="text-success" />
+              </div>
+              <h2 className="text-2xl font-bold text-text mb-2">¡Cuenta creada!</h2>
+              <p className="text-text-light">Te estamos redirigiendo a tu portal...</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -37,10 +81,43 @@ export function RegisterPage() {
           <CardHeader className="text-center">
             <CardTitle>Crear cuenta</CardTitle>
             <CardDescription>
-              Comienza tu camino hacia el bienestar
+              Selecciona tu tipo de cuenta y completa tus datos
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="space-y-3 mb-6">
+              {roles.map((r) => {
+                const Icon = r.icon
+                const isActive = role === r.value
+                return (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => setRole(r.value)}
+                    className={`w-full flex items-center gap-4 p-4 rounded-[16px] border-2 text-left transition-all ${
+                      isActive
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border bg-surface hover:border-primary/50'
+                    }`}
+                  >
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
+                        isActive ? 'bg-primary text-white' : 'bg-bg-alt text-text-light'
+                      }`}
+                    >
+                      <Icon size={24} />
+                    </div>
+                    <div>
+                      <p className={`font-semibold ${isActive ? 'text-text' : 'text-text-light'}`}>
+                        {r.label}
+                      </p>
+                      <p className="text-sm text-text-light">{r.description}</p>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label>Nombre completo</Label>
@@ -73,18 +150,6 @@ export function RegisterPage() {
                   minLength={8}
                 />
               </div>
-              <div>
-                <Label>Tipo de cuenta</Label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="w-full px-4 py-3 rounded-[12px] border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                >
-                  <option value="patient">Paciente</option>
-                  <option value="professional">Profesional</option>
-                  <option value="admin">Administrador</option>
-                </select>
-              </div>
               {error && (
                 <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">
                   {error}
@@ -94,6 +159,7 @@ export function RegisterPage() {
                 {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
               </Button>
             </form>
+
             <div className="mt-6 text-center text-sm text-text-light">
               ¿Ya tienes cuenta?{' '}
               <Link to="/login" className="text-primary hover:underline font-medium">

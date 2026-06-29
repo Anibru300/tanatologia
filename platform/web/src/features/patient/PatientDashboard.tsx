@@ -2,7 +2,18 @@ import { useAuth } from '@/features/auth/AuthProvider'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { Calendar, Video, FileText, Heart, MessageCircle } from 'lucide-react'
+import { ProgressBar } from '@/components/ui/ProgressBar'
+import {
+  Calendar,
+  Video,
+  FileText,
+  Heart,
+  MessageCircle,
+  Clock,
+  ArrowRight,
+  Headphones,
+  CreditCard,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export function PatientDashboard() {
@@ -17,7 +28,7 @@ export function PatientDashboard() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card>
+          <Card className="border-l-4 border-l-primary">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Calendar size={20} className="text-primary" />
@@ -25,77 +36,109 @@ export function PatientDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-text-light text-sm mb-4">No tienes sesiones programadas.</p>
-              <Link to="/paciente/agendar">
-                <Button size="sm" className="w-full">Agendar sesión</Button>
+              <div className="flex items-start gap-3 mb-4">
+                <div className="bg-primary/10 rounded-[12px] p-3 text-center min-w-[60px]">
+                  <span className="block text-xs text-primary-dark font-semibold uppercase">Jul</span>
+                  <span className="block text-2xl font-bold text-text">02</span>
+                </div>
+                <div>
+                  <p className="font-medium text-text">Dra. María Rodríguez</p>
+                  <p className="text-sm text-text-light flex items-center gap-1">
+                    <Clock size={14} />
+                    10:00 hrs · 50 min
+                  </p>
+                  <p className="text-xs text-text-light mt-1">Videollamada privada</p>
+                </div>
+              </div>
+              <Link to="/paciente/citas">
+                <Button size="sm" className="w-full gap-1">
+                  <Video size={16} />
+                  Entrar a la sala
+                </Button>
               </Link>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-l-4 border-l-secondary">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Heart size={20} className="text-primary" />
+                <Heart size={20} className="text-secondary" />
                 Mi programa
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-text-light text-sm mb-4">No estás inscrito en un programa.</p>
+              <p className="text-text font-medium mb-1">Programa Salud Mental</p>
+              <p className="text-sm text-text-light mb-3">2 de 4 sesiones completadas</p>
+              <ProgressBar value={50} className="mb-4" />
               <Link to="/paciente/programas">
-                <Button variant="outline" size="sm" className="w-full">Ver programas</Button>
+                <Button variant="outline" size="sm" className="w-full">
+                  Ver avance
+                </Button>
               </Link>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-l-4 border-l-accent">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <FileText size={20} className="text-primary" />
+                <FileText size={20} className="text-accent" />
                 Historial
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-text-light text-sm mb-4">0 sesiones completadas.</p>
-              <Button variant="ghost" size="sm" className="w-full">Ver historial</Button>
+              <p className="text-3xl font-bold text-text mb-1">2</p>
+              <p className="text-sm text-text-light mb-4">Sesiones completadas</p>
+              <Link to="/paciente/historial">
+                <Button variant="ghost" size="sm" className="w-full">
+                  Ver historial
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <Card>
+        <div className="grid md:grid-cols-3 gap-8">
+          <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle>Acciones rápidas</CardTitle>
               <CardDescription>Lo que puedes hacer ahora</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <Link to="/paciente/agendar">
-                  <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
+                  <Button variant="outline" className="w-full h-28 flex flex-col gap-2">
                     <Calendar size={24} />
                     <span>Agendar</span>
                   </Button>
                 </Link>
                 <Link to="/paciente/terapeutas">
-                  <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
+                  <Button variant="outline" className="w-full h-28 flex flex-col gap-2">
                     <Video size={24} />
                     <span>Terapeutas</span>
                   </Button>
                 </Link>
-                <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
-                  <MessageCircle size={24} />
-                  <span>Mensajes</span>
-                </Button>
-                <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
-                  <FileText size={24} />
-                  <span>Recursos</span>
-                </Button>
+                <Link to="/paciente/mensajes">
+                  <Button variant="outline" className="w-full h-28 flex flex-col gap-2">
+                    <MessageCircle size={24} />
+                    <span>Mensajes</span>
+                  </Button>
+                </Link>
+                <Link to="/paciente/recursos">
+                  <Button variant="outline" className="w-full h-28 flex flex-col gap-2">
+                    <Headphones size={24} />
+                    <span>Recursos</span>
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Estado de cuenta</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard size={20} className="text-primary" />
+                Estado de cuenta
+              </CardTitle>
               <CardDescription>Tus pagos y membresías</CardDescription>
             </CardHeader>
             <CardContent>
@@ -113,6 +156,12 @@ export function PatientDashboard() {
                   <span className="text-sm text-text-light">No configurado</span>
                 </div>
               </div>
+              <Link to="/paciente/pagos">
+                <Button variant="outline" size="sm" className="w-full mt-4 gap-1">
+                  Gestionar pagos
+                  <ArrowRight size={16} />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
