@@ -9,7 +9,6 @@ export function RootLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navLinks = [
-    { to: '/', label: 'Inicio' },
     { to: '/cotizacion', label: 'Cotización' },
     ...(user?.role === 'patient' ? [{ to: '/paciente', label: 'Mi espacio' }] : []),
     ...(user?.role === 'professional' ? [{ to: '/profesional', label: 'Portal profesional' }] : []),
@@ -21,12 +20,12 @@ export function RootLayout() {
       <header className="sticky top-0 z-50 bg-bg/80 backdrop-blur-md border-b border-border">
         <div className="container-calma">
           <nav className="flex items-center justify-between h-20">
-            <Link to="/" className="flex items-center gap-3">
+            <a href="/tanatologia/" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
                 SC
               </div>
               <span className="text-xl font-semibold text-text">SOMOS-CALMA</span>
-            </Link>
+            </a>
 
             {/* Desktop nav */}
             <div className="hidden md:flex items-center gap-8">
@@ -124,7 +123,7 @@ export function RootLayout() {
             <div>
               <h4 className="font-semibold mb-4">Enlaces</h4>
               <ul className="space-y-2 text-sm text-white/80">
-                <li><Link to="/" className="hover:text-white">Inicio</Link></li>
+                <li><a href="/tanatologia/" className="hover:text-white">Inicio</a></li>
                 <li><Link to="/cotizacion" className="hover:text-white">Cotización</Link></li>
                 <li><Link to="/login" className="hover:text-white">Iniciar sesión</Link></li>
               </ul>

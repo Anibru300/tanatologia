@@ -6,7 +6,6 @@ import { ProfessionalLayout } from '@/app/layouts/ProfessionalLayout'
 import { AdminLayout } from '@/app/layouts/AdminLayout'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RegisterPage } from '@/features/auth/RegisterPage'
-import { LandingPage } from '@/app/pages/LandingPage'
 import { QuotePage } from '@/features/patient/QuotePage'
 
 // Patient pages
@@ -81,7 +80,7 @@ export function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<RootLayout />}>
-        <Route index element={<LandingPage />} />
+        <Route index element={<Navigate to="/login" replace />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="cotizacion" element={<QuotePage />} />
