@@ -31,7 +31,7 @@
                 <li><a href="${root}index.html#contacto">Contacto</a></li>
             </ul>
             <div class="nav__actions">
-                <a href="${root}pages/login.html" class="btn btn--ghost btn--sm">Iniciar sesión</a>
+                <a href="/tanatologia/app/" class="btn btn--ghost btn--sm">Iniciar sesión</a>
                 <a href="${root}pages/matching.html" class="btn btn--primary btn--sm">Comenzar</a>
             </div>
         </nav>
@@ -68,7 +68,7 @@
                     <ul class="footer__links">
                         <li><a href="${root}pages/profesionales.html">Únete al directorio</a></li>
                         <li><a href="${root}pages/profesionales.html#formacion">Formación</a></li>
-                        <li><a href="${root}pages/login.html">Iniciar sesión</a></li>
+                        <li><a href="/tanatologia/app/">Iniciar sesión</a></li>
                     </ul>
                 </div>
                 <div>
