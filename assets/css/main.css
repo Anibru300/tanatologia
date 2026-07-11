@@ -70,6 +70,30 @@ a:hover {
     color: var(--color-primary-dark);
 }
 
+a:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    z-index: 1000;
+    background-color: var(--color-text);
+    color: #ffffff;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-decoration: none;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 1rem;
+}
+
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     line-height: 1.3;
