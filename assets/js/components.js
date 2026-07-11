@@ -8,7 +8,7 @@
         return path.includes('/pages/') ? '../' : './';
     }
 
-    const root = getRootPath();
+    const root = window.SOMOS_CALMA_ROOT || getRootPath();
 
     const headerHTML = `
     <header class="header">
