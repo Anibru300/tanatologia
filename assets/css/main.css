@@ -1739,3 +1739,204 @@ body.page-with-bg::after {
         left: 1rem;
     }
 }
+
+/* === VIDEO DE BIENVENIDA === */
+.section--video {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.video-welcome {
+    position: relative;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    background-color: var(--color-text);
+}
+
+.video-welcome__player {
+    width: 100%;
+    height: auto;
+    max-height: 60vh;
+    object-fit: cover;
+    object-position: center 25%;
+    display: block;
+}
+
+.video-welcome__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    background: linear-gradient(180deg, rgba(61, 58, 54, 0.35) 0%, rgba(61, 58, 54, 0.55) 100%);
+    color: #ffffff;
+    pointer-events: none;
+}
+
+.video-welcome__overlay .section__eyebrow {
+    color: #ffffff;
+    opacity: 0.9;
+}
+
+.video-welcome__overlay h2 {
+    color: #ffffff;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: 0.75rem;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.video-welcome__overlay p {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 1.15rem;
+    margin: 0;
+    max-width: 480px;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* === CÓMO FUNCIONA - IMAGEN === */
+.how-it-works__visual {
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    margin-bottom: 3rem;
+    box-shadow: var(--shadow);
+    max-height: 420px;
+}
+
+.how-it-works__visual img {
+    width: 100%;
+    height: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    display: block;
+}
+
+/* === EQUIPO DESTACADO === */
+.team-highlight {
+    display: grid;
+    grid-template-columns: minmax(280px, 2fr) 3fr;
+    gap: 3.5rem;
+    align-items: center;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-xl);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+}
+
+.team-highlight__photo {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    min-height: 360px;
+}
+
+.team-highlight__photo img {
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    object-fit: cover;
+    display: block;
+}
+
+.team-highlight__content h3 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin-bottom: 0.5rem;
+}
+
+.team-highlight__role {
+    color: var(--color-primary);
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+}
+
+.team-highlight__content p {
+    color: var(--color-text-light);
+    margin-bottom: 1.75rem;
+}
+
+/* === GALERÍA DE INSPIRACIÓN === */
+.gallery-inspiration {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    align-items: stretch;
+}
+
+.gallery-inspiration__item {
+    margin: 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    background-color: var(--color-surface);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.gallery-inspiration__item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+}
+
+.gallery-inspiration__item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    min-height: 280px;
+}
+
+.gallery-inspiration__item--vertical {
+    grid-row: span 1;
+}
+
+/* === TESTIMONIOS CON FONDO === */
+.section--testimonios-bg {
+    background-image: linear-gradient(rgba(247, 245, 242, 0.82), rgba(247, 245, 242, 0.86)), url('../images/ventana-ciudad.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.section--testimonios-bg .card {
+    background-color: rgba(255, 255, 255, 0.92);
+}
+
+/* === RESPONSIVE ADICIONAL === */
+@media (max-width: 768px) {
+    .video-welcome__overlay {
+        padding: 1.25rem;
+    }
+
+    .video-welcome__overlay h2 {
+        font-size: 1.75rem;
+    }
+
+    .video-welcome__overlay p {
+        font-size: 1rem;
+    }
+
+    .team-highlight {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 1.5rem;
+    }
+
+    .team-highlight__photo,
+    .team-highlight__photo img {
+        min-height: 280px;
+    }
+
+    .gallery-inspiration {
+        grid-template-columns: 1fr;
+    }
+
+    .gallery-inspiration__item--vertical {
+        grid-row: auto;
+    }
+
+    .section--testimonios-bg {
+        background-attachment: scroll;
+    }
+}

@@ -15,6 +15,22 @@
     <div id="header-component"></div>
 
     <main>
+        <section class="section section--video">
+            <div class="container">
+                <div class="video-welcome">
+                    <video class="video-welcome__player" controls autoplay muted loop playsinline poster="assets/images/profesional-jardin.png">
+                        <source src="assets/images/bienvenida.mp4" type="video/mp4">
+                        Tu navegador no soporta la reproducción de video.
+                    </video>
+                    <div class="video-welcome__overlay">
+                        <span class="section__eyebrow">Bienvenido</span>
+                        <h2>Tu espacio seguro para sanar</h2>
+                        <p>Conoce Somos Calma en un minuto.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="hero">
             <div class="container">
                 <div class="hero__grid grid grid--2">
@@ -60,6 +76,9 @@
                         Pedir ayuda no debería ser complicado. En pocos minutos puedes elegir entre una consulta aislada o un programa guiado.
                     </p>
                 </div>
+                <div class="how-it-works__visual">
+                    <img src="assets/images/profesional-espacio.png" alt="Profesional de Somos Calma en un espacio tranquilo de trabajo" loading="lazy">
+                </div>
                 <div class="grid grid--3">
                     <article class="card">
                         <div class="card__icon">1</div>
@@ -76,23 +95,6 @@
                         <h3>Comienza tu proceso</h3>
                         <p>Agenda tu sesión por videollamada en el horario que te funcione, de 7 a.m. a 11 p.m.</p>
                     </article>
-                </div>
-            </div>
-        </section>
-
-        <section class="section section--alt">
-            <div class="container">
-                <div class="section__header">
-                    <span class="section__eyebrow">Conócenos</span>
-                    <h2 class="section__title">Te contamos de qué trata Somos Calma</h2>
-                    <p class="section__subtitle">Próximamente: un mensaje de quienes hacemos posible este espacio de acompañamiento.</p>
-                </div>
-                <div class="video-wrapper" style="max-width: 800px; margin: 0 auto; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg);">
-                    <div class="illustration-box" style="min-height: 420px; background: linear-gradient(135deg, var(--color-peace), var(--color-bg-alt)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center; padding: 2rem;">
-                        <div style="font-size: 4rem;">▶️</div>
-                        <p style="color: var(--color-text-light); margin: 0; max-width: 400px;">Aquí se integrará el video de bienvenida de la plataforma.</p>
-                        <span style="font-size: 0.85rem; color: var(--color-muted);">Formato sugerido: MP4 o embed de YouTube/Vimeo</span>
-                    </div>
                 </div>
             </div>
         </section>
@@ -116,7 +118,7 @@
                         <a href="pages/membresias.html" class="btn btn--primary">Ver opciones y precios</a>
                     </div>
                     <div class="illustration-box">
-                        <img src="assets/images/illustration-support.svg" alt="Ilustración de acompañamiento empático" loading="lazy">
+                        <img src="assets/images/profesional-jardin.png" alt="Profesional de Somos Calma acompañando en un espacio tranquilo" loading="lazy">
                     </div>
                 </div>
             </div>
@@ -126,7 +128,7 @@
             <div class="container">
                 <div class="feature">
                     <div class="illustration-box">
-                        <img src="assets/images/illustration-learning.svg" alt="Ilustración de formación profesional" loading="lazy">
+                        <img src="assets/images/profesional-trabajando.png" alt="Profesional de Somos Calma trabajando en su espacio" loading="lazy">
                     </div>
                     <div class="feature__content">
                         <span class="section__eyebrow">Para profesionales</span>
@@ -204,30 +206,44 @@
                     <h2 class="section__title">Quienes nos acompañan</h2>
                     <p class="section__subtitle">Profesionales comprometidos con crear un espacio seguro para sanar.</p>
                 </div>
-                <div class="team-grid">
-                    <article class="team-card">
-                        <div class="team-card__avatar">MR</div>
-                        <h3>Dra. María Rodríguez</h3>
-                        <p class="team-card__role">Directora Clínica · Tanatóloga</p>
-                        <p>15 años acompañando procesos de duelo y pérdida. Especialista en tanatología clínica y cuidados paliativos.</p>
-                    </article>
-                    <article class="team-card">
-                        <div class="team-card__avatar">JL</div>
-                        <h3>Lic. Javier López</h3>
-                        <p class="team-card__role">Coordinador de Formación</p>
-                        <p>Psicólogo clínico con enfoque en crisis vitales y acompañamiento emocional. Diseña nuestros programas de capacitación.</p>
-                    </article>
-                    <article class="team-card">
-                        <div class="team-card__avatar">SC</div>
-                        <h3>Dra. Sofía Castro</h3>
-                        <p class="team-card__role">Psicooncóloga · Supervisora</p>
-                        <p>Especialista en duelo anticipado, enfermedad crónica y supervisión clínica para profesionales de la red.</p>
-                    </article>
+                <div class="team-highlight">
+                    <div class="team-highlight__photo">
+                        <img src="assets/images/profesional-jardin.png" alt="Dra. Lupita Muñoz Campuzano, fundadora de Somos Calma" loading="lazy">
+                    </div>
+                    <div class="team-highlight__content">
+                        <h3>Dra. Lupita Muñoz Campuzano</h3>
+                        <p class="team-highlight__role">Fundadora · Tanatóloga</p>
+                        <p>
+                            Acompaño procesos de duelo, pérdida y crisis vitales desde una mirada cálida y profesional.
+                            En Somos Calma construimos un espacio donde pedir ayuda sea natural, seguro y humano.
+                        </p>
+                        <a href="pages/nosotros.html" class="btn btn--outline">Conoce nuestra historia</a>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="section">
+        <section class="section section--peace">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Un respiro</span>
+                    <h2 class="section__title">Reflexiones para tu camino</h2>
+                </div>
+                <div class="gallery-inspiration">
+                    <figure class="gallery-inspiration__item">
+                        <img src="assets/images/frase-batalla.png" alt="Después de cada batalla, regálate un momento de paz.">
+                    </figure>
+                    <figure class="gallery-inspiration__item gallery-inspiration__item--vertical">
+                        <img src="assets/images/frase-victoria.png" alt="La verdadera victoria no es evitar los problemas...">
+                    </figure>
+                    <figure class="gallery-inspiration__item">
+                        <img src="assets/images/frase-aceptar.jpeg" alt="Deberíamos aceptar las cosas tal como vienen...">
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section--testimonios-bg">
             <div class="container">
                 <div class="section__header">
                     <span class="section__eyebrow">Testimonios</span>
