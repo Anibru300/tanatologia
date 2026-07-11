@@ -960,6 +960,24 @@ body.page-with-bg::after {
     font-weight: 700;
 }
 
+.team-card__photo {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    margin: 0 auto 1.25rem;
+    overflow: hidden;
+    border: 3px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    background-color: var(--color-bg);
+}
+
+.team-card__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
 .team-card h3 {
     margin-bottom: 0.25rem;
 }
@@ -1748,7 +1766,7 @@ body.page-with-bg::after {
 
 .video-welcome {
     position: relative;
-    max-width: 580px;
+    max-width: 520px;
     margin: 0 auto;
     border-radius: var(--radius-xl);
     overflow: hidden;
@@ -1759,44 +1777,56 @@ body.page-with-bg::after {
 .video-welcome__player {
     width: 100%;
     height: auto;
-    max-height: 75vh;
+    max-height: 70vh;
     object-fit: contain;
     object-position: center;
     display: block;
 }
 
-.video-welcome__overlay {
+.video-unmute-btn {
     position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
+    bottom: 1rem;
+    right: 1rem;
+    display: none;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 50px;
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--color-text);
+    font-family: var(--font-base);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform var(--transition), background-color var(--transition);
+    z-index: 10;
+}
+
+.video-unmute-btn:hover {
+    transform: translateY(-2px);
+    background-color: #ffffff;
+}
+
+.video-welcome__caption {
     text-align: center;
-    padding: 2rem;
-    background: linear-gradient(180deg, rgba(61, 58, 54, 0.45) 0%, rgba(61, 58, 54, 0.25) 50%, rgba(61, 58, 54, 0.55) 100%);
-    color: #ffffff;
-    pointer-events: none;
+    margin-top: 1.75rem;
 }
 
-.video-welcome__overlay .section__eyebrow {
-    color: #ffffff;
-    opacity: 0.95;
+.video-welcome__caption .section__eyebrow {
+    color: var(--color-primary-dark);
 }
 
-.video-welcome__overlay h2 {
-    color: #ffffff;
+.video-welcome__caption h2 {
     font-size: clamp(1.75rem, 4.5vw, 2.75rem);
-    margin-bottom: 0.75rem;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+    margin-bottom: 0.5rem;
 }
 
-.video-welcome__overlay p {
-    color: rgba(255, 255, 255, 0.95);
+.video-welcome__caption p {
+    color: var(--color-text-light);
     font-size: 1.05rem;
     margin: 0;
-    max-width: 360px;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
 }
 
 /* === CÓMO FUNCIONA - IMAGEN === */
@@ -1876,7 +1906,7 @@ body.page-with-bg::after {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
-    align-items: stretch;
+    align-items: start;
 }
 
 .gallery-inspiration__item {
@@ -1886,6 +1916,7 @@ body.page-with-bg::after {
     box-shadow: var(--shadow-sm);
     background-color: var(--color-surface);
     transition: transform var(--transition), box-shadow var(--transition);
+    cursor: zoom-in;
 }
 
 .gallery-inspiration__item:hover {
@@ -1895,14 +1926,84 @@ body.page-with-bg::after {
 
 .gallery-inspiration__item img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    object-fit: contain;
     display: block;
-    min-height: 280px;
 }
 
 .gallery-inspiration__item--vertical {
     grid-row: span 1;
+}
+
+/* === LIGHTBOX === */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: rgba(61, 58, 54, 0.92);
+    backdrop-filter: blur(6px);
+}
+
+.lightbox.is-open {
+    display: flex;
+}
+
+.lightbox__img {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    object-fit: contain;
+}
+
+.lightbox__close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--color-text);
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--transition), background-color var(--transition);
+}
+
+.lightbox__close:hover {
+    transform: scale(1.05);
+    background-color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .gallery-inspiration {
+        grid-template-columns: 1fr;
+    }
+
+    .gallery-inspiration__item--vertical {
+        grid-row: auto;
+    }
+
+    .lightbox {
+        padding: 1rem;
+    }
+
+    .lightbox__close {
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
 }
 
 /* === IMAGEN DECORATIVA EN SECCIONES === */

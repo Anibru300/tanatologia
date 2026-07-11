@@ -18,15 +18,18 @@
         <section class="section section--video">
             <div class="container">
                 <div class="video-welcome">
-                    <video class="video-welcome__player" controls autoplay muted loop playsinline poster="assets/images/ventana-atardecer.png">
+                    <video id="welcome-video" class="video-welcome__player" controls autoplay loop playsinline poster="assets/images/ventana-atardecer.png">
                         <source src="assets/images/bienvenida.mp4" type="video/mp4">
                         Tu navegador no soporta la reproducción de video.
                     </video>
-                    <div class="video-welcome__overlay">
-                        <span class="section__eyebrow">Bienvenido</span>
-                        <h2>Tu espacio seguro para sanar</h2>
-                        <p>Conoce Somos Calma en un minuto.</p>
-                    </div>
+                    <button id="unmute-btn" class="video-unmute-btn" type="button" aria-label="Activar sonido del video">
+                        <span>🔇</span> Activar sonido
+                    </button>
+                </div>
+                <div class="video-welcome__caption">
+                    <span class="section__eyebrow">Bienvenido</span>
+                    <h2>Tu espacio seguro para sanar</h2>
+                    <p>Conoce Somos Calma en un minuto.</p>
                 </div>
             </div>
         </section>
@@ -246,6 +249,11 @@
             </div>
         </section>
 
+        <div id="lightbox" class="lightbox" aria-hidden="true">
+            <button class="lightbox__close" type="button" aria-label="Cerrar imagen">&times;</button>
+            <img class="lightbox__img" src="" alt="Imagen ampliada">
+        </div>
+
         <section class="section section--testimonios-bg">
             <div class="container">
                 <div class="section__header">
@@ -333,6 +341,77 @@
 
     <div id="footer-component"></div>
 
+    <script>
+        (function () {
+            const video = document.getElementById('welcome-video');
+            const unmuteBtn = document.getElementById('unmute-btn');
+            if (!video || !unmuteBtn) return;
+
+            video.volume = 1.0;
+
+            function tryUnmute() {
+                video.muted = false;
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        unmuteBtn.style.display = 'none';
+                    }).catch(() => {
+                        video.muted = true;
+                        video.play();
+                        unmuteBtn.style.display = 'inline-flex';
+                    });
+                }
+            }
+
+            unmuteBtn.addEventListener('click', () => {
+                tryUnmute();
+            });
+
+            // Intentar reproducir con sonido al cargar
+            tryUnmute();
+
+            // Ocultar botón si el usuario activa sonido desde los controles nativos
+            video.addEventListener('volumechange', () => {
+                if (!video.muted && video.volume > 0) {
+                    unmuteBtn.style.display = 'none';
+                }
+            });
+        })();
+
+        // Lightbox para galería de reflexiones
+        (function () {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = lightbox.querySelector('.lightbox__img');
+            const closeBtn = lightbox.querySelector('.lightbox__close');
+
+            document.querySelectorAll('.gallery-inspiration__item img').forEach(img => {
+                img.addEventListener('click', () => {
+                    lightboxImg.src = img.src;
+                    lightboxImg.alt = img.alt;
+                    lightbox.classList.add('is-open');
+                    lightbox.setAttribute('aria-hidden', 'false');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            function closeLightbox() {
+                lightbox.classList.remove('is-open');
+                lightbox.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+                lightboxImg.src = '';
+            }
+
+            closeBtn.addEventListener('click', closeLightbox);
+            lightbox.addEventListener('click', (e) => {
+                if (e.target === lightbox) closeLightbox();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && lightbox.classList.contains('is-open')) {
+                    closeLightbox();
+                }
+            });
+        })();
+    </script>
     <script src="assets/js/components.js"></script>
     <script src="assets/js/main.js"></script>
 </body>
