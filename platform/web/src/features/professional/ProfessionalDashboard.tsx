@@ -1,4 +1,5 @@
 import { useAuth } from '@/features/auth/AuthProvider'
+import { getAppointmentsForProfessional } from '@/features/appointments/mockAppointments'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -17,11 +18,7 @@ import { Link } from 'react-router-dom'
 
 export function ProfessionalDashboard() {
   const { user } = useAuth()
-
-  const upcomingAppointments = [
-    { id: 1, patient: 'Ana Martínez', time: '10:00', type: 'Videollamada' },
-    { id: 2, patient: 'Luis Hernández', time: '12:00', type: 'Videollamada' },
-  ]
+  const upcomingAppointments = getAppointmentsForProfessional(user?.id || '')
 
   return (
     <div className="section-calma">
@@ -114,14 +111,16 @@ export function ProfessionalDashboard() {
                         <span className="block text-xs text-text-light">hrs</span>
                       </div>
                       <div>
-                        <p className="font-medium text-text">{a.patient}</p>
-                        <p className="text-sm text-text-light">{a.type}</p>
+                        <p className="font-medium text-text">{a.patientName}</p>
+                        <p className="text-sm text-text-light">{a.serviceName}</p>
                       </div>
                     </div>
-                    <Button size="sm" className="gap-1">
-                      <Video size={16} />
-                      Entrar
-                    </Button>
+                    <Link to={`/profesional/sala/${a.id}`}>
+                      <Button size="sm" className="gap-1">
+                        <Video size={16} />
+                        Entrar
+                      </Button>
+                    </Link>
                   </div>
                 ))}
               </div>

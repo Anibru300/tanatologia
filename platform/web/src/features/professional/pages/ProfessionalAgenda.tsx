@@ -2,13 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ChevronLeft, ChevronRight, Video } from 'lucide-react'
-
-const appointments = [
-  { id: 1, patient: 'Ana Martínez', time: '10:00', status: 'confirmed' },
-  { id: 2, patient: 'Luis Hernández', time: '12:00', status: 'pending' },
-]
+import { Link } from 'react-router-dom'
+import { useAuth } from '@/features/auth/AuthProvider'
+import { getAppointmentsForProfessional } from '@/features/appointments/mockAppointments'
 
 export function ProfessionalAgenda() {
+  const { user } = useAuth()
+  const appointments = getAppointmentsForProfessional(user?.id || '')
+
   return (
     <div className="section-calma">
       <div className="container-calma">
@@ -23,6 +24,10 @@ export function ProfessionalAgenda() {
             <Button variant="outline" size="sm"><ChevronRight size={18} /></Button>
           </div>
         </div>
+
+        {appointments.length === 0 && (
+          <p className="text-text-light mb-6">No tienes citas registradas.</p>
+        )}
 
         <Card>
           <CardHeader>
@@ -48,17 +53,19 @@ export function ProfessionalAgenda() {
               {appointments.map((a) => (
                 <div key={a.id} className="flex items-center justify-between p-4 bg-bg-alt rounded-[12px]">
                   <div>
-                    <p className="font-medium text-text">{a.patient}</p>
-                    <p className="text-sm text-text-light">{a.time} hrs</p>
+                    <p className="font-medium text-text">{a.patientName}</p>
+                    <p className="text-sm text-text-light">{a.time} hrs · {a.serviceName}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={a.status === 'confirmed' ? 'success' : 'warning'}>
                       {a.status === 'confirmed' ? 'Confirmada' : 'Pendiente'}
                     </Badge>
-                    <Button size="sm" variant="primary" className="gap-1">
-                      <Video size={16} />
-                      Entrar
-                    </Button>
+                    <Link to={`/profesional/sala/${a.id}`}>
+                      <Button size="sm" variant="primary" className="gap-1">
+                        <Video size={16} />
+                        Entrar
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               ))}

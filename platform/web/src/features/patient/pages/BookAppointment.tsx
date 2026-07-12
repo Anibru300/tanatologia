@@ -1,8 +1,12 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/features/auth/AuthProvider'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Stepper } from '@/components/ui/Stepper'
 import { Calendar, Clock, Video, Check, User, ArrowLeft, ArrowRight, Star } from 'lucide-react'
+import { addAppointment } from '@/features/appointments/mockAppointments'
+import { generateJitsiRoomName } from '@/lib/video'
 
 const timeSlots = ['09:00', '10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '18:00', '19:00']
 
@@ -32,16 +36,16 @@ const services = [
 
 const therapists = [
   {
-    id: 1,
-    name: 'Dra. María Rodríguez',
+    id: 'profesional',
+    name: 'Dra. María Demo',
     specialty: 'Tanatología clínica',
     rating: 4.9,
     reviews: 24,
     price: '$400',
-    image: 'MR',
+    image: 'MD',
   },
   {
-    id: 2,
+    id: 'profesional-2',
     name: 'Lic. Javier López',
     specialty: 'Psicología clínica',
     rating: 4.8,
@@ -50,7 +54,7 @@ const therapists = [
     image: 'JL',
   },
   {
-    id: 3,
+    id: 'profesional-3',
     name: 'Dra. Sofía Castro',
     specialty: 'Psicooncología',
     rating: 5.0,
@@ -68,9 +72,11 @@ const steps = [
 ]
 
 export function BookAppointment() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [step, setStep] = useState(0)
   const [selectedService, setSelectedService] = useState('single')
-  const [selectedTherapist, setSelectedTherapist] = useState<number | null>(null)
+  const [selectedTherapist, setSelectedTherapist] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
   const [confirmed, setConfirmed] = useState(false)
@@ -86,6 +92,24 @@ export function BookAppointment() {
   }
 
   const handleConfirm = () => {
+    if (!selectedTherapistData || !selectedDate || !selectedTime) return
+
+    const appointmentId = crypto.randomUUID()
+    addAppointment({
+      id: appointmentId,
+      patientId: user?.id || 'paciente',
+      patientName: user?.fullName || 'Paciente',
+      professionalId: selectedTherapistData.id,
+      professionalName: selectedTherapistData.name,
+      date: selectedDate,
+      time: selectedTime,
+      durationMinutes: selectedService === 'single' ? 50 : 50,
+      status: 'confirmed',
+      sessionType: selectedService === 'single' ? 'single' : selectedService === 'program4' ? 'program_4' : 'program_6',
+      serviceName: selectedServiceData.name,
+      videoLink: generateJitsiRoomName(appointmentId),
+    })
+
     setConfirmed(true)
   }
 
@@ -108,7 +132,7 @@ export function BookAppointment() {
                 <p className="text-text"><strong>Fecha:</strong> {selectedDate}</p>
                 <p className="text-text"><strong>Hora:</strong> {selectedTime}</p>
               </div>
-              <Button onClick={() => window.location.href = '/tanatologia/app/paciente/citas'}>
+              <Button onClick={() => navigate('/paciente/citas')}>
                 Ver mis citas
               </Button>
             </CardContent>

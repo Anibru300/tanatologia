@@ -2,13 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Video, CalendarDays, CheckCircle, XCircle } from 'lucide-react'
-
-const appointments = [
-  { id: 1, patient: 'Ana Martínez', date: '2026-06-28', time: '10:00', status: 'confirmed', type: 'Videollamada' },
-  { id: 2, patient: 'Luis Hernández', date: '2026-06-28', time: '12:00', status: 'pending', type: 'Videollamada' },
-]
+import { Link } from 'react-router-dom'
+import { useAuth } from '@/features/auth/AuthProvider'
+import { getAppointmentsForProfessional } from '@/features/appointments/mockAppointments'
 
 export function ProfessionalAppointments() {
+  const { user } = useAuth()
+  const appointments = getAppointmentsForProfessional(user?.id || '')
+
   return (
     <div className="section-calma">
       <div className="container-calma">
@@ -22,6 +23,10 @@ export function ProfessionalAppointments() {
             Ver calendario
           </Button>
         </div>
+
+        {appointments.length === 0 && (
+          <p className="text-text-light mb-6">No tienes citas registradas.</p>
+        )}
 
         <Card>
           <CardHeader>
@@ -43,10 +48,10 @@ export function ProfessionalAppointments() {
                 <tbody>
                   {appointments.map((a) => (
                     <tr key={a.id} className="border-b border-border last:border-0">
-                      <td className="py-4 px-4 text-text font-medium">{a.patient}</td>
+                      <td className="py-4 px-4 text-text font-medium">{a.patientName}</td>
                       <td className="py-4 px-4 text-text">{a.date}</td>
                       <td className="py-4 px-4 text-text-light">{a.time}</td>
-                      <td className="py-4 px-4 text-text-light">{a.type}</td>
+                      <td className="py-4 px-4 text-text-light">{a.serviceName}</td>
                       <td className="py-4 px-4">
                         <Badge variant={a.status === 'confirmed' ? 'success' : 'warning'}>
                           {a.status === 'confirmed' ? 'Confirmada' : 'Pendiente'}
@@ -54,10 +59,12 @@ export function ProfessionalAppointments() {
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
-                          <Button size="sm" variant="primary" className="gap-1">
-                            <Video size={16} />
-                            Entrar
-                          </Button>
+                          <Link to={`/profesional/sala/${a.id}`}>
+                            <Button size="sm" variant="primary" className="gap-1">
+                              <Video size={16} />
+                              Entrar
+                            </Button>
+                          </Link>
                           <Button size="sm" variant="ghost"><CheckCircle size={16} /></Button>
                           <Button size="sm" variant="ghost" className="text-error"><XCircle size={16} /></Button>
                         </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth, type UserRole } from '@/features/auth/AuthProvider'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -15,6 +16,7 @@ export function RegisterPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
 
@@ -45,10 +47,15 @@ export function RegisterPage() {
     setIsLoading(true)
     try {
       await register(email, password, fullName, role)
-      setSuccess(true)
-      setTimeout(() => {
-        navigate(role === 'patient' ? '/paciente' : role === 'professional' ? '/profesional' : '/admin')
-      }, 1500)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        setSuccess(true)
+        setTimeout(() => {
+          navigate(role === 'patient' ? '/paciente' : role === 'professional' ? '/profesional' : '/admin')
+        }, 1500)
+      } else {
+        setNeedsConfirmation(true)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al registrarse')
     } finally {
@@ -56,7 +63,7 @@ export function RegisterPage() {
     }
   }
 
-  if (success) {
+  if (success || needsConfirmation) {
     return (
       <div className="section-calma">
         <div className="container-calma max-w-md mx-auto">
@@ -65,8 +72,14 @@ export function RegisterPage() {
               <div className="w-20 h-20 mx-auto rounded-full bg-success/10 flex items-center justify-center mb-6">
                 <CheckCircle size={40} className="text-success" />
               </div>
-              <h2 className="text-2xl font-bold text-text mb-2">¡Cuenta creada!</h2>
-              <p className="text-text-light">Te estamos redirigiendo a tu portal...</p>
+              <h2 className="text-2xl font-bold text-text mb-2">
+                {needsConfirmation ? 'Revisa tu correo' : '¡Cuenta creada!'}
+              </h2>
+              <p className="text-text-light">
+                {needsConfirmation
+                  ? 'Te enviamos un enlace de confirmación. Una vez confirmes, podrás iniciar sesión.'
+                  : 'Te estamos redirigiendo a tu portal...'}
+              </p>
             </CardContent>
           </Card>
         </div>

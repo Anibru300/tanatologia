@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { supabase } from '@/lib/supabase'
 
 export type UserRole = 'patient' | 'professional' | 'admin'
 
@@ -19,29 +20,31 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Mock users for beta development without Supabase keys
-const MOCK_USERS: Record<string, User & { password: string }> = {
-  'paciente@demo.com': {
-    id: '1',
-    email: 'paciente@demo.com',
-    password: 'demo123',
-    role: 'patient',
-    fullName: 'Ana Demo',
-  },
-  'profesional@demo.com': {
-    id: '2',
-    email: 'profesional@demo.com',
-    password: 'demo123',
-    role: 'professional',
-    fullName: 'Dra. María Demo',
-  },
-  'admin@demo.com': {
-    id: '3',
-    email: 'admin@demo.com',
-    password: 'demo123',
-    role: 'admin',
-    fullName: 'Admin Demo',
-  },
+function mapProfile(row: Record<string, unknown>): User {
+  return {
+    id: String(row.id),
+    email: String(row.email),
+    role: row.role as UserRole,
+    fullName: String(row.full_name),
+  }
+}
+
+async function fetchProfile(userId: string): Promise<User> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, email, role, full_name')
+    .eq('id', userId)
+    .single()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  if (!data) {
+    throw new Error('No se encontró el perfil asociado a la cuenta')
+  }
+
+  return mapProfile(data as Record<string, unknown>)
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -49,42 +52,108 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const stored = localStorage.getItem('somos-calma-user')
-    if (stored) {
-      setUser(JSON.parse(stored))
+    let mounted = true
+
+    // Cargar sesión existente al iniciar la app
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return
+
+      if (session?.user) {
+        try {
+          const profile = await fetchProfile(session.user.id)
+          setUser(profile)
+        } catch (err) {
+          console.error('Error cargando perfil:', err)
+          setUser(null)
+        }
+      }
+
+      setIsLoading(false)
+    })
+
+    // Escuchar cambios de autenticación de Supabase
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
+
+      if (event === 'SIGNED_OUT' || !session) {
+        setUser(null)
+        setIsLoading(false)
+        return
+      }
+
+      if (session.user) {
+        try {
+          const profile = await fetchProfile(session.user.id)
+          setUser(profile)
+        } catch (err) {
+          console.error('Error cargando perfil tras cambio de auth:', err)
+          setUser(null)
+        }
+      }
+
+      setIsLoading(false)
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
     }
-    setIsLoading(false)
   }, [])
 
   const login = async (email: string, password: string, role?: UserRole) => {
-    // TODO: Replace with Supabase Auth
-    const mock = MOCK_USERS[email.toLowerCase()]
-    if (!mock || mock.password !== password) {
-      throw new Error('Correo o contraseña incorrectos')
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      throw new Error(error.message)
     }
-    if (role && mock.role !== role) {
+
+    if (!data.user) {
+      throw new Error('No se pudo iniciar sesión')
+    }
+
+    const profile = await fetchProfile(data.user.id)
+
+    if (role && profile.role !== role) {
+      await supabase.auth.signOut()
       throw new Error('No tienes acceso a este portal')
     }
-    const { password: _, ...user } = mock
-    setUser(user)
-    localStorage.setItem('somos-calma-user', JSON.stringify(user))
+
+    setUser(profile)
   }
 
-  const register = async (email: string, _password: string, fullName: string, role: UserRole) => {
-    // TODO: Replace with Supabase Auth + profile creation
-    const newUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email: email.toLowerCase(),
-      role,
-      fullName,
+  const register = async (email: string, password: string, fullName: string, role: UserRole) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // Estos metadatos son leídos por el trigger handle_new_user() en la base de datos
+        // para crear el perfil atómicamente dentro de la misma transacción.
+        data: { full_name: fullName, role },
+      },
+    })
+
+    if (error) {
+      throw new Error(error.message)
     }
-    setUser(newUser)
-    localStorage.setItem('somos-calma-user', JSON.stringify(newUser))
+
+    if (!data.user) {
+      throw new Error('No se pudo crear la cuenta')
+    }
+
+    // Si Supabase requiere confirmación por email, data.session será null.
+    // El perfil ya se creó gracias al trigger, pero no iniciamos sesión automáticamente.
+    if (!data.session) {
+      return
+    }
+
+    const profile = await fetchProfile(data.user.id)
+    setUser(profile)
   }
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem('somos-calma-user')
+    supabase.auth.signOut().then(() => setUser(null))
   }
 
   return (

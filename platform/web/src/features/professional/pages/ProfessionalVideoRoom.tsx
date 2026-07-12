@@ -1,11 +1,62 @@
+import { useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Video, Mic, MicOff, Camera, CameraOff, PhoneOff } from 'lucide-react'
-import { useState } from 'react'
+import { Video, PhoneOff } from 'lucide-react'
+import { JitsiMeetingRoom } from '@/components/video/JitsiMeetingRoom'
+import { getAppointmentById } from '@/features/appointments/mockAppointments'
+import { useAuth } from '@/features/auth/AuthProvider'
+import { generateJitsiRoomName } from '@/lib/video'
 
 export function ProfessionalVideoRoom() {
-  const [micOn, setMicOn] = useState(true)
-  const [cameraOn, setCameraOn] = useState(true)
+  const { appointmentId } = useParams<{ appointmentId?: string }>()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [manualRoom, setManualRoom] = useState('')
+  const [activeRoom, setActiveRoom] = useState<string | null>(null)
+
+  const appointment = appointmentId ? getAppointmentById(appointmentId) : undefined
+
+  const handleEnterManual = () => {
+    const trimmed = manualRoom.trim()
+    if (trimmed) {
+      setActiveRoom(generateJitsiRoomName(trimmed))
+    }
+  }
+
+  // Si llegamos desde una cita, usamos su sala; si no, esperamos entrada manual.
+  const roomName = activeRoom || appointment?.videoLink
+
+  if (roomName) {
+    return (
+      <div className="section-calma flex-1 flex flex-col min-h-[calc(100vh-80px)]">
+        <div className="container-calma flex-1 flex flex-col">
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-text">Sesión en curso</h1>
+              {appointment ? (
+                <p className="text-text-light text-sm">
+                  {appointment.patientName} · {appointment.date} · {appointment.time} hrs
+                </p>
+              ) : (
+                <p className="text-text-light text-sm">Sala manual</p>
+              )}
+            </div>
+            <Button variant="outline" className="gap-2 self-start" onClick={() => navigate(-1)}>
+              <PhoneOff size={18} /> Colgar
+            </Button>
+          </div>
+          <div className="flex-1 min-h-[500px]">
+            <JitsiMeetingRoom
+              roomName={roomName}
+              displayName={user?.fullName || 'Profesional'}
+              onReadyToClose={() => navigate(-1)}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="section-calma">
@@ -15,46 +66,26 @@ export function ProfessionalVideoRoom() {
           <p className="text-text-light">Inicia o únete a una sesión con tu paciente.</p>
         </div>
 
-        <Card className="mb-6">
+        <Card className="mb-6 max-w-2xl">
           <CardHeader>
             <CardTitle>Unirse a sesión</CardTitle>
-            <CardDescription>Próximamente integración con Jitsi Meet.</CardDescription>
+            <CardDescription>
+              Normalmente entrarás desde una cita. Si necesitas unirte manualmente, escribe un ID de sala.
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row gap-4">
             <input
               type="text"
-              placeholder="ID de la sala o enlace"
+              value={manualRoom}
+              onChange={(e) => setManualRoom(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleEnterManual()}
+              placeholder="ID de la sala"
               className="flex-1 px-4 py-3 rounded-[12px] border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary"
             />
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={handleEnterManual}>
               <Video size={18} />
               Entrar a la sala
             </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-8">
-            <div className="aspect-video bg-bg-alt rounded-[24px] flex items-center justify-center mb-6">
-              <p className="text-text-light">Vista previa de cámara</p>
-            </div>
-            <div className="flex items-center justify-center gap-4">
-              <button
-                onClick={() => setMicOn(!micOn)}
-                className={`p-4 rounded-full ${micOn ? 'bg-bg-alt text-text' : 'bg-error/10 text-error'}`}
-              >
-                {micOn ? <Mic size={24} /> : <MicOff size={24} />}
-              </button>
-              <button
-                onClick={() => setCameraOn(!cameraOn)}
-                className={`p-4 rounded-full ${cameraOn ? 'bg-bg-alt text-text' : 'bg-error/10 text-error'}`}
-              >
-                {cameraOn ? <Camera size={24} /> : <CameraOff size={24} />}
-              </button>
-              <button className="p-4 rounded-full bg-error text-white">
-                <PhoneOff size={24} />
-              </button>
-            </div>
           </CardContent>
         </Card>
       </div>

@@ -30,6 +30,7 @@ import { ProfessionalAvailability } from '@/features/professional/pages/Professi
 import { ProfessionalPatients } from '@/features/professional/pages/ProfessionalPatients'
 import { ProfessionalAppointments } from '@/features/professional/pages/ProfessionalAppointments'
 import { ProfessionalVideoRoom } from '@/features/professional/pages/ProfessionalVideoRoom'
+import { PatientVideoRoom } from '@/features/patient/pages/PatientVideoRoom'
 import { ProfessionalNotes } from '@/features/professional/pages/ProfessionalNotes'
 import { ProfessionalEarnings } from '@/features/professional/pages/ProfessionalEarnings'
 import { ProfessionalMembership } from '@/features/professional/pages/ProfessionalMembership'
@@ -106,6 +107,7 @@ export function AppRouter() {
         <Route path="recursos" element={<PatientResources />} />
         <Route path="cotizacion" element={<QuotePage />} />
         <Route path="ayuda" element={<PatientHelp />} />
+        <Route path="sala/:appointmentId" element={<PatientVideoRoom />} />
       </Route>
 
       <Route
@@ -131,6 +133,7 @@ export function AppRouter() {
         <Route path="recursos" element={<ProfessionalResources />} />
         <Route path="configuracion" element={<ProfessionalSettings />} />
         <Route path="ayuda" element={<ProfessionalHelp />} />
+        <Route path="sala/:appointmentId" element={<ProfessionalVideoRoom />} />
       </Route>
 
       <Route

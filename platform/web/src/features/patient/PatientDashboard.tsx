@@ -1,4 +1,5 @@
 import { useAuth } from '@/features/auth/AuthProvider'
+import { getAppointmentsForPatient } from '@/features/appointments/mockAppointments'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -18,6 +19,10 @@ import { Link } from 'react-router-dom'
 
 export function PatientDashboard() {
   const { user } = useAuth()
+  const appointments = getAppointmentsForPatient(user?.id || '')
+  const nextAppointment = appointments
+    .filter((a) => a.status === 'confirmed')
+    .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`))[0]
 
   return (
     <div className="section-calma">
@@ -36,26 +41,41 @@ export function PatientDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-start gap-3 mb-4">
-                <div className="bg-primary/10 rounded-[12px] p-3 text-center min-w-[60px]">
-                  <span className="block text-xs text-primary-dark font-semibold uppercase">Jul</span>
-                  <span className="block text-2xl font-bold text-text">02</span>
+              {nextAppointment ? (
+                <>
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="bg-primary/10 rounded-[12px] p-3 text-center min-w-[60px]">
+                      <span className="block text-xs text-primary-dark font-semibold uppercase">
+                        {new Date(nextAppointment.date + 'T00:00:00').toLocaleString('es-MX', { month: 'short' })}
+                      </span>
+                      <span className="block text-2xl font-bold text-text">
+                        {new Date(nextAppointment.date + 'T00:00:00').getDate()}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-text">{nextAppointment.professionalName}</p>
+                      <p className="text-sm text-text-light flex items-center gap-1">
+                        <Clock size={14} />
+                        {nextAppointment.time} hrs · {nextAppointment.durationMinutes} min
+                      </p>
+                      <p className="text-xs text-text-light mt-1">Videollamada privada</p>
+                    </div>
+                  </div>
+                  <Link to={`/paciente/sala/${nextAppointment.id}`}>
+                    <Button size="sm" className="w-full gap-1">
+                      <Video size={16} />
+                      Entrar a la sala
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <div className="py-4 text-center">
+                  <p className="text-text-light text-sm mb-3">No tienes citas confirmadas próximas.</p>
+                  <Link to="/paciente/agendar">
+                    <Button size="sm" className="w-full">Agendar cita</Button>
+                  </Link>
                 </div>
-                <div>
-                  <p className="font-medium text-text">Dra. María Rodríguez</p>
-                  <p className="text-sm text-text-light flex items-center gap-1">
-                    <Clock size={14} />
-                    10:00 hrs · 50 min
-                  </p>
-                  <p className="text-xs text-text-light mt-1">Videollamada privada</p>
-                </div>
-              </div>
-              <Link to="/paciente/citas">
-                <Button size="sm" className="w-full gap-1">
-                  <Video size={16} />
-                  Entrar a la sala
-                </Button>
-              </Link>
+              )}
             </CardContent>
           </Card>
 

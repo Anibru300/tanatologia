@@ -110,10 +110,7 @@ export function LoginPage() {
             </div>
 
             <div className="mt-4 p-3 rounded-[12px] bg-bg-alt text-xs text-text-light">
-              <strong>Cuentas demo:</strong><br />
-              paciente@demo.com / demo123<br />
-              profesional@demo.com / demo123<br />
-              admin@demo.com / demo123
+              <strong>Nota:</strong> Las cuentas ahora viven en la base de datos real. Si aún no tienes una, regístrate primero.
             </div>
           </CardContent>
         </Card>
