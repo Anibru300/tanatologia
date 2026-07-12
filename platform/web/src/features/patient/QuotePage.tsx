@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Check, Mail, MessageCircle } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { sendEmail } from '@/lib/email'
 
 export function QuotePage() {
   const [formData, setFormData] = useState({
@@ -20,10 +22,44 @@ export function QuotePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // TODO: Send quote via email (Resend) and WhatsApp
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setSubmitted(true)
-    setIsLoading(false)
+
+    try {
+      const total = prices[formData.serviceType] * parseInt(formData.sessions)
+
+      // Guardar cotización en Supabase
+      const { error: dbError } = await supabase.from('quotes').insert({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service_type: formData.serviceType,
+        sessions: parseInt(formData.sessions),
+        notes: formData.notes,
+        total_amount: total * 100, // guardar en centavos
+      })
+
+      if (dbError) throw new Error(dbError.message)
+
+      // Enviar correo de confirmación al solicitante
+      await sendEmail({
+        to: formData.email,
+        subject: 'Hemos recibido tu cotización — SOMOS-CALMA',
+        html: `
+          <h1>Hola ${formData.name},</h1>
+          <p>Recibimos tu solicitud de cotización para <strong>${formData.serviceType}</strong>.</p>
+          <p>Sesiones: ${formData.sessions}</p>
+          <p>Total estimado: ${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(total)}</p>
+          <p>Te contactaremos en menos de 24 horas.</p>
+        `,
+        type: 'quote_confirmation',
+      })
+
+      setSubmitted(true)
+    } catch (err) {
+      console.error('Error enviando cotización:', err)
+      alert(err instanceof Error ? err.message : 'Error al enviar la cotización')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const prices: Record<string, number> = {
@@ -52,7 +88,7 @@ export function QuotePage() {
               <p className="text-text-light text-sm mb-4">
                 Mientras tanto, puedes crear una cuenta y explorar nuestros profesionales.
               </p>
-              <Button onClick={() => window.location.href = '/register'}>
+              <Button onClick={() => window.location.href = '/tanatologia/app/#/register'}>
                 Crear cuenta
               </Button>
             </CardContent>

@@ -1,66 +1,39 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/features/auth/AuthProvider'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Stepper } from '@/components/ui/Stepper'
 import { Calendar, Clock, Video, Check, User, ArrowLeft, ArrowRight, Star } from 'lucide-react'
-import { addAppointment } from '@/features/appointments/mockAppointments'
-import { generateJitsiRoomName } from '@/lib/video'
+import { useAuth } from '@/features/auth/AuthProvider'
+import {
+  getProfessionalProfiles,
+  getPatientProfileId,
+  createAppointment,
+  type ProfessionalProfile,
+  type SessionType,
+} from '@/features/appointments/appointmentsService'
+import { sendEmail } from '@/lib/email'
 
 const timeSlots = ['09:00', '10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '18:00', '19:00']
 
 const services = [
   {
-    id: 'single',
+    id: 'single' as SessionType,
     name: 'Consulta aislada',
-    price: '$400',
     duration: '50 min',
     description: 'Una sesión para hablar de lo que necesites sin compromiso de continuidad.',
   },
   {
-    id: 'program4',
+    id: 'program_4' as SessionType,
     name: 'Programa Salud Mental',
-    price: '$1,600',
     duration: '4 sesiones',
     description: 'Espacio guiado para ansiedad, estrés o rutinas de autocuidado.',
   },
   {
-    id: 'program6',
+    id: 'program_6' as SessionType,
     name: 'Acompañamiento por duelo',
-    price: '$2,200',
     duration: '6 sesiones',
     description: 'Acompañamiento especializado para atravesar una pérdida.',
-  },
-]
-
-const therapists = [
-  {
-    id: 'profesional',
-    name: 'Dra. María Demo',
-    specialty: 'Tanatología clínica',
-    rating: 4.9,
-    reviews: 24,
-    price: '$400',
-    image: 'MD',
-  },
-  {
-    id: 'profesional-2',
-    name: 'Lic. Javier López',
-    specialty: 'Psicología clínica',
-    rating: 4.8,
-    reviews: 18,
-    price: '$400',
-    image: 'JL',
-  },
-  {
-    id: 'profesional-3',
-    name: 'Dra. Sofía Castro',
-    specialty: 'Psicooncología',
-    rating: 5.0,
-    reviews: 12,
-    price: '$450',
-    image: 'SC',
   },
 ]
 
@@ -74,15 +47,46 @@ const steps = [
 export function BookAppointment() {
   const navigate = useNavigate()
   const { user } = useAuth()
+
   const [step, setStep] = useState(0)
-  const [selectedService, setSelectedService] = useState('single')
+  const [selectedService, setSelectedService] = useState<SessionType>('single')
   const [selectedTherapist, setSelectedTherapist] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
   const [confirmed, setConfirmed] = useState(false)
 
+  const [therapists, setTherapists] = useState<ProfessionalProfile[]>([])
+  const [loadingTherapists, setLoadingTherapists] = useState(true)
+  const [therapistsError, setTherapistsError] = useState('')
+
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+
   const selectedServiceData = services.find((s) => s.id === selectedService)!
   const selectedTherapistData = therapists.find((t) => t.id === selectedTherapist)
+
+  useEffect(() => {
+    getProfessionalProfiles()
+      .then((data) => {
+        setTherapists(data)
+        setLoadingTherapists(false)
+      })
+      .catch((err) => {
+        setTherapistsError(err instanceof Error ? err.message : 'Error cargando terapeutas')
+        setLoadingTherapists(false)
+      })
+  }, [])
+
+  const getPrice = (therapist?: ProfessionalProfile) => {
+    if (!therapist) return 0
+    if (selectedService === 'single') return therapist.session_price
+    if (selectedService === 'program_4') return therapist.program_4_price
+    return therapist.program_6_price
+  }
+
+  const formatPrice = (cents: number) => {
+    return `$${(cents / 100).toLocaleString('es-MX')}`
+  }
 
   const canContinue = () => {
     if (step === 0) return true
@@ -91,26 +95,54 @@ export function BookAppointment() {
     return true
   }
 
-  const handleConfirm = () => {
-    if (!selectedTherapistData || !selectedDate || !selectedTime) return
+  const handleConfirm = async () => {
+    if (!selectedTherapistData || !selectedDate || !selectedTime || !user) return
 
-    const appointmentId = crypto.randomUUID()
-    addAppointment({
-      id: appointmentId,
-      patientId: user?.id || 'paciente',
-      patientName: user?.fullName || 'Paciente',
-      professionalId: selectedTherapistData.id,
-      professionalName: selectedTherapistData.name,
-      date: selectedDate,
-      time: selectedTime,
-      durationMinutes: selectedService === 'single' ? 50 : 50,
-      status: 'confirmed',
-      sessionType: selectedService === 'single' ? 'single' : selectedService === 'program4' ? 'program_4' : 'program_6',
-      serviceName: selectedServiceData.name,
-      videoLink: generateJitsiRoomName(appointmentId),
-    })
+    setSubmitting(true)
+    setSubmitError('')
 
-    setConfirmed(true)
+    try {
+      const patientProfileId = await getPatientProfileId(user.id)
+      if (!patientProfileId) {
+        throw new Error('No se encontró tu perfil de paciente. Contacta soporte.')
+      }
+
+      const scheduledAt = `${selectedDate}T${selectedTime}:00`
+
+      const appointment = await createAppointment({
+        patient_profile_id: patientProfileId,
+        professional_profile_id: selectedTherapistData.id,
+        scheduled_at: scheduledAt,
+        duration_minutes: selectedService === 'single' ? 50 : 50,
+        session_type: selectedService,
+        serviceName: selectedServiceData.name,
+      })
+
+      // Enviar correo de confirmación al paciente
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: 'Tu cita en SOMOS-CALMA ha sido confirmada',
+          html: `
+            <h1>Hola ${user.fullName},</h1>
+            <p>Tu cita con <strong>${selectedTherapistData.full_name}</strong> ha sido confirmada.</p>
+            <p><strong>Servicio:</strong> ${selectedServiceData.name}</p>
+            <p><strong>Fecha:</strong> ${selectedDate}</p>
+            <p><strong>Hora:</strong> ${selectedTime}</p>
+            <p><strong>Link de videollamada:</strong> <a href="https://anibru300.github.io/tanatologia/app/#/paciente/sala/${appointment.id}">Entrar a la sala</a></p>
+          `,
+          type: 'appointment_confirmation',
+        })
+      } catch (emailErr) {
+        console.error('Error enviando correo de confirmación:', emailErr)
+      }
+
+      setConfirmed(true)
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Error al crear la cita')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (confirmed) {
@@ -128,7 +160,7 @@ export function BookAppointment() {
               </p>
               <div className="bg-bg-alt rounded-[16px] p-6 text-left space-y-3 max-w-md mx-auto mb-6">
                 <p className="text-text"><strong>Servicio:</strong> {selectedServiceData.name}</p>
-                <p className="text-text"><strong>Terapeuta:</strong> {selectedTherapistData?.name}</p>
+                <p className="text-text"><strong>Terapeuta:</strong> {selectedTherapistData?.full_name}</p>
                 <p className="text-text"><strong>Fecha:</strong> {selectedDate}</p>
                 <p className="text-text"><strong>Hora:</strong> {selectedTime}</p>
               </div>
@@ -180,7 +212,9 @@ export function BookAppointment() {
                         {service.duration}
                       </p>
                     </div>
-                    <span className="text-xl font-bold text-primary-dark whitespace-nowrap">{service.price}</span>
+                    <span className="text-xl font-bold text-primary-dark whitespace-nowrap">
+                      {selectedTherapistData ? formatPrice(getPrice(selectedTherapistData)) : '—'}
+                    </span>
                   </div>
                 </button>
               ))}
@@ -195,7 +229,15 @@ export function BookAppointment() {
               <CardDescription>Profesionales certificados disponibles para ti.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {therapists.map((therapist) => (
+              {loadingTherapists && (
+                <p className="text-text-light text-center py-8">Cargando terapeutas...</p>
+              )}
+              {therapistsError && (
+                <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">
+                  {therapistsError}
+                </div>
+              )}
+              {!loadingTherapists && therapists.map((therapist) => (
                 <button
                   key={therapist.id}
                   onClick={() => setSelectedTherapist(therapist.id)}
@@ -206,20 +248,19 @@ export function BookAppointment() {
                   }`}
                 >
                   <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center text-primary-dark font-bold text-lg shrink-0">
-                    {therapist.image}
+                    {therapist.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-text">{therapist.name}</h3>
-                    <p className="text-sm text-text-light">{therapist.specialty}</p>
+                    <h3 className="font-semibold text-text">{therapist.full_name}</h3>
+                    <p className="text-sm text-text-light">{therapist.specialties.slice(0, 2).join(', ')}</p>
                     <div className="flex items-center gap-1 mt-1">
                       <Star size={14} className="text-warning fill-warning" />
                       <span className="text-sm text-text font-medium">{therapist.rating}</span>
-                      <span className="text-sm text-text-light">({therapist.reviews} reseñas)</span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="block font-bold text-text">{therapist.price}</span>
-                    <span className="text-xs text-text-light">/sesión</span>
+                    <span className="block font-bold text-text">{formatPrice(getPrice(therapist))}</span>
+                    <span className="text-xs text-text-light">/servicio</span>
                   </div>
                 </button>
               ))}
@@ -274,15 +315,22 @@ export function BookAppointment() {
             <CardContent className="space-y-6">
               <div className="bg-bg-alt rounded-[16px] p-6 space-y-4">
                 <SummaryRow icon={Check} label="Servicio" value={selectedServiceData.name} />
-                <SummaryRow icon={User} label="Terapeuta" value={selectedTherapistData?.name || ''} />
+                <SummaryRow icon={User} label="Terapeuta" value={selectedTherapistData?.full_name || ''} />
                 <SummaryRow icon={Calendar} label="Fecha" value={selectedDate} />
                 <SummaryRow icon={Clock} label="Hora" value={selectedTime} />
                 <SummaryRow icon={Video} label="Modalidad" value="Videollamada privada" />
               </div>
               <div className="flex items-center justify-between p-4 bg-primary/5 rounded-[12px]">
                 <span className="text-text">Total a pagar</span>
-                <span className="text-xl font-bold text-primary-dark">{selectedServiceData.price}</span>
+                <span className="text-xl font-bold text-primary-dark">
+                  {selectedTherapistData ? formatPrice(getPrice(selectedTherapistData)) : '—'}
+                </span>
               </div>
+              {submitError && (
+                <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">
+                  {submitError}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -308,9 +356,9 @@ export function BookAppointment() {
               <ArrowRight size={18} />
             </Button>
           ) : (
-            <Button onClick={handleConfirm} className="gap-2">
+            <Button onClick={handleConfirm} disabled={submitting} className="gap-2">
               <Check size={18} />
-              Confirmar cita
+              {submitting ? 'Creando cita...' : 'Confirmar cita'}
             </Button>
           )}
         </div>

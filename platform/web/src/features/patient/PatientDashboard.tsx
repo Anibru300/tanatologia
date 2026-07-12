@@ -1,5 +1,5 @@
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/AuthProvider'
-import { getAppointmentsForPatient } from '@/features/appointments/mockAppointments'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -16,13 +16,44 @@ import {
   CreditCard,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import {
+  getPatientProfileId,
+  getAppointmentsForPatient,
+  type Appointment,
+} from '@/features/appointments/appointmentsService'
 
 export function PatientDashboard() {
   const { user } = useAuth()
-  const appointments = getAppointmentsForPatient(user?.id || '')
-  const nextAppointment = appointments
-    .filter((a) => a.status === 'confirmed')
-    .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`))[0]
+  const [nextAppointment, setNextAppointment] = useState<Appointment | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    const userId = user.id
+    let cancelled = false
+
+    async function load() {
+      try {
+        const patientProfileId = await getPatientProfileId(userId)
+        if (!patientProfileId) return
+        const appointments = await getAppointmentsForPatient(patientProfileId)
+        const upcoming = appointments
+          .filter((a) => a.status === 'confirmed')
+          .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0]
+        if (!cancelled) setNextAppointment(upcoming || null)
+      } catch (err) {
+        console.error('Error cargando próxima cita:', err)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+
+    return () => {
+      cancelled = true
+    }
+  }, [user])
 
   return (
     <div className="section-calma">
@@ -41,22 +72,24 @@ export function PatientDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {nextAppointment ? (
+              {loading ? (
+                <p className="text-text-light text-sm">Cargando...</p>
+              ) : nextAppointment ? (
                 <>
                   <div className="flex items-start gap-3 mb-4">
                     <div className="bg-primary/10 rounded-[12px] p-3 text-center min-w-[60px]">
                       <span className="block text-xs text-primary-dark font-semibold uppercase">
-                        {new Date(nextAppointment.date + 'T00:00:00').toLocaleString('es-MX', { month: 'short' })}
+                        {new Date(nextAppointment.scheduled_at).toLocaleString('es-MX', { month: 'short' })}
                       </span>
                       <span className="block text-2xl font-bold text-text">
-                        {new Date(nextAppointment.date + 'T00:00:00').getDate()}
+                        {new Date(nextAppointment.scheduled_at).getDate()}
                       </span>
                     </div>
                     <div>
                       <p className="font-medium text-text">{nextAppointment.professionalName}</p>
                       <p className="text-sm text-text-light flex items-center gap-1">
                         <Clock size={14} />
-                        {nextAppointment.time} hrs · {nextAppointment.durationMinutes} min
+                        {new Date(nextAppointment.scheduled_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false })} hrs · {nextAppointment.duration_minutes} min
                       </p>
                       <p className="text-xs text-text-light mt-1">Videollamada privada</p>
                     </div>

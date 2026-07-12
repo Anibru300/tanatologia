@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Video, PhoneOff } from 'lucide-react'
 import { JitsiMeetingRoom } from '@/components/video/JitsiMeetingRoom'
-import { getAppointmentById } from '@/features/appointments/mockAppointments'
+import { getAppointmentById, type Appointment } from '@/features/appointments/appointmentsService'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { generateJitsiRoomName } from '@/lib/video'
 
@@ -12,10 +12,39 @@ export function ProfessionalVideoRoom() {
   const { appointmentId } = useParams<{ appointmentId?: string }>()
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  const [appointment, setAppointment] = useState<Appointment | null>(null)
+  const [loadingAppointment, setLoadingAppointment] = useState(true)
+
   const [manualRoom, setManualRoom] = useState('')
   const [activeRoom, setActiveRoom] = useState<string | null>(null)
 
-  const appointment = appointmentId ? getAppointmentById(appointmentId) : undefined
+  useEffect(() => {
+    if (!appointmentId) {
+      setLoadingAppointment(false)
+      return
+    }
+    const appointmentIdRef = appointmentId
+
+    let cancelled = false
+
+    async function load() {
+      try {
+        const data = await getAppointmentById(appointmentIdRef)
+        if (!cancelled) setAppointment(data)
+      } catch (err) {
+        console.error('Error cargando cita:', err)
+      } finally {
+        if (!cancelled) setLoadingAppointment(false)
+      }
+    }
+
+    load()
+
+    return () => {
+      cancelled = true
+    }
+  }, [appointmentId])
 
   const handleEnterManual = () => {
     const trimmed = manualRoom.trim()
@@ -24,8 +53,7 @@ export function ProfessionalVideoRoom() {
     }
   }
 
-  // Si llegamos desde una cita, usamos su sala; si no, esperamos entrada manual.
-  const roomName = activeRoom || appointment?.videoLink
+  const roomName = activeRoom || appointment?.video_link
 
   if (roomName) {
     return (
@@ -36,7 +64,7 @@ export function ProfessionalVideoRoom() {
               <h1 className="text-2xl font-bold text-text">Sesión en curso</h1>
               {appointment ? (
                 <p className="text-text-light text-sm">
-                  {appointment.patientName} · {appointment.date} · {appointment.time} hrs
+                  {appointment.patientName} · {new Date(appointment.scheduled_at).toLocaleString('es-MX')}
                 </p>
               ) : (
                 <p className="text-text-light text-sm">Sala manual</p>
@@ -65,6 +93,12 @@ export function ProfessionalVideoRoom() {
           <h1 className="text-3xl font-bold text-text mb-2">Sala de videollamada</h1>
           <p className="text-text-light">Inicia o únete a una sesión con tu paciente.</p>
         </div>
+
+        {loadingAppointment ? (
+          <p className="text-text-light">Cargando...</p>
+        ) : appointment && !appointment.video_link ? (
+          <p className="text-text-light mb-6">Esta cita aún no tiene sala asignada.</p>
+        ) : null}
 
         <Card className="mb-6 max-w-2xl">
           <CardHeader>

@@ -1,5 +1,5 @@
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/AuthProvider'
-import { getAppointmentsForProfessional } from '@/features/appointments/mockAppointments'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -15,10 +15,45 @@ import {
   CheckCircle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import {
+  getProfessionalProfileId,
+  getAppointmentsForProfessional,
+  type Appointment,
+} from '@/features/appointments/appointmentsService'
 
 export function ProfessionalDashboard() {
   const { user } = useAuth()
-  const upcomingAppointments = getAppointmentsForProfessional(user?.id || '')
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    const userId = user.id
+    let cancelled = false
+
+    async function load() {
+      try {
+        const professionalProfileId = await getProfessionalProfileId(userId)
+        if (!professionalProfileId) return
+        const appointments = await getAppointmentsForProfessional(professionalProfileId)
+        const upcoming = appointments
+          .filter((a) => a.status === 'confirmed')
+          .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+          .slice(0, 5)
+        if (!cancelled) setUpcomingAppointments(upcoming)
+      } catch (err) {
+        console.error('Error cargando citas:', err)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+
+    return () => {
+      cancelled = true
+    }
+  }, [user])
 
   return (
     <div className="section-calma">
@@ -37,8 +72,8 @@ export function ProfessionalDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">2</p>
-              <p className="text-text-light text-sm">2 confirmadas</p>
+              <p className="text-3xl font-bold text-text">{upcomingAppointments.length}</p>
+              <p className="text-text-light text-sm">{upcomingAppointments.length} confirmadas</p>
             </CardContent>
           </Card>
 
@@ -99,31 +134,39 @@ export function ProfessionalDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {upcomingAppointments.map((a) => (
-                  <div
-                    key={a.id}
-                    className="flex items-center justify-between p-4 bg-bg-alt rounded-[12px]"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="bg-primary/10 rounded-[12px] p-3 text-center min-w-[60px]">
-                        <span className="block text-lg font-bold text-text">{a.time}</span>
-                        <span className="block text-xs text-text-light">hrs</span>
+              {loading ? (
+                <p className="text-text-light">Cargando citas...</p>
+              ) : upcomingAppointments.length === 0 ? (
+                <p className="text-text-light">No tienes citas confirmadas próximas.</p>
+              ) : (
+                <div className="space-y-3">
+                  {upcomingAppointments.map((a) => (
+                    <div
+                      key={a.id}
+                      className="flex items-center justify-between p-4 bg-bg-alt rounded-[12px]"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="bg-primary/10 rounded-[12px] p-3 text-center min-w-[60px]">
+                          <span className="block text-lg font-bold text-text">
+                            {new Date(a.scheduled_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                          </span>
+                          <span className="block text-xs text-text-light">hrs</span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-text">{a.patientName}</p>
+                          <p className="text-sm text-text-light">{a.serviceName}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-text">{a.patientName}</p>
-                        <p className="text-sm text-text-light">{a.serviceName}</p>
-                      </div>
+                      <Link to={`/profesional/sala/${a.id}`}>
+                        <Button size="sm" className="gap-1">
+                          <Video size={16} />
+                          Entrar
+                        </Button>
+                      </Link>
                     </div>
-                    <Link to={`/profesional/sala/${a.id}`}>
-                      <Button size="sm" className="gap-1">
-                        <Video size={16} />
-                        Entrar
-                      </Button>
-                    </Link>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 

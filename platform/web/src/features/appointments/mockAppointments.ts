@@ -20,8 +20,8 @@ export type Appointment = {
 
 // UUIDs reales de las cuentas demo creadas en Supabase.
 // Si regeneras los usuarios demo, actualiza estos valores.
-export const DEMO_PATIENT_ID = '3867b2ad-e762-4ac2-80c4-dc8ce6f703db'
-export const DEMO_PROFESSIONAL_ID = 'e08bf944-2ec8-4382-ae18-3058491ad6b5'
+export const DEMO_PATIENT_ID = '852a9980-b744-412d-adf9-022955a859fd'
+export const DEMO_PROFESSIONAL_ID = 'f91a2909-57a1-4c3b-9954-ba1c00af4e59'
 
 /**
  * Mock central de citas. Paciente y profesional leen/escriben aquí

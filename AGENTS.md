@@ -13,7 +13,7 @@ Plataforma de acompañamiento emocional y tanatología en México. Actualmente e
 - Tailwind CSS 3
 - React Router DOM 7
 - Lucide React (iconos)
-- Supabase Auth + PostgreSQL (conectado a proyecto cloud)
+- Supabase Auth + PostgreSQL + Edge Functions (conectado a proyecto cloud)
 - Jitsi Meet (pendiente de integración)
 - Resend (pendiente de API key)
 
@@ -59,8 +59,9 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 1. ✅ Autenticación conectada a Supabase Auth; `MOCK_USERS` eliminado.
 2. ✅ Migración SQL ACID ejecutada en proyecto Supabase Cloud.
 3. ✅ Integrar Jitsi Meet en `ProfessionalVideoRoom` y sala de paciente (usando `meet.jit.si`).
-4. Configurar Resend para enviar cotizaciones y notificaciones.
-5. Implementar pagos (Stripe/PayPal) cuando haya tracción.
+4. ✅ Citas conectadas a Supabase (agendar, listar, videollamada real).
+5. ✅ Edge Function `send-email` preparada para Resend (pendiente API key para activar).
+6. Implementar pagos (Stripe/PayPal) cuando haya tracción.
 3. Integrar Jitsi Meet en `ProfessionalVideoRoom` y sala de paciente.
 4. Configurar Resend para enviar cotizaciones y notificaciones.
 5. Implementar pagos (Stripe/PayPal) cuando haya tracción.

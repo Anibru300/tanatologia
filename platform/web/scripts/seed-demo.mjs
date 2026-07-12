@@ -62,6 +62,8 @@ async function seed() {
   }
 
   console.log('🌱 Creando usuarios demo...')
+  const createdIds = {}
+
   for (const demo of demoUsers) {
     const { data, error } = await supabase.auth.admin.createUser({
       email: demo.email,
@@ -76,11 +78,80 @@ async function seed() {
     if (error) {
       console.error(`❌ Error creando ${demo.email}:`, error.message)
     } else {
+      createdIds[demo.role] = data.user.id
       console.log(`✅ Creado: ${demo.email} (id: ${data.user.id})`)
     }
   }
 
-  console.log('🏁 Listo. Los perfiles se generaron automáticamente por el trigger handle_new_user().')
+  // Completar perfil del profesional demo para que aparezca en el directorio.
+  if (createdIds.professional) {
+    const { error: profError } = await supabase
+      .from('professional_profiles')
+      .update({
+        license_number: 'Psic. 12345 / Tanat. 67890',
+        university: 'Universidad Nacional Autónoma de México',
+        specialties: ['Tanatología clínica', 'Psicología del duelo', 'Salud mental'],
+        approach: 'Acompañamiento cálido y profesional para procesos de duelo, pérdida y crisis vitales.',
+        bio: 'Dra. María Demo cuenta con más de 10 años acompañando a personas y familias en momentos difíciles.',
+        session_price: 40000,
+        program_4_price: 160000,
+        program_6_price: 220000,
+        verification_status: 'verified',
+        is_visible: true,
+        rating: 4.9,
+      })
+      .eq('profile_id', createdIds.professional)
+
+    if (profError) {
+      console.error('⚠️  Error actualizando perfil profesional:', profError.message)
+    } else {
+      console.log('✅ Perfil profesional demo completado.')
+    }
+
+    // Crear disponibilidad básica para el profesional demo.
+    const { data: profProfile, error: profProfileError } = await supabase
+      .from('professional_profiles')
+      .select('id')
+      .eq('profile_id', createdIds.professional)
+      .single()
+
+    if (!profProfileError && profProfile) {
+      const availability = [
+        { professional_profile_id: profProfile.id, day_of_week: 1, start_time: '09:00', end_time: '14:00' },
+        { professional_profile_id: profProfile.id, day_of_week: 3, start_time: '09:00', end_time: '14:00' },
+        { professional_profile_id: profProfile.id, day_of_week: 5, start_time: '09:00', end_time: '12:00' },
+      ]
+      const { error: availError } = await supabase.from('availability').insert(availability)
+      if (availError) {
+        console.error('⚠️  Error creando disponibilidad:', availError.message)
+      } else {
+        console.log('✅ Disponibilidad del profesional demo creada.')
+      }
+    }
+  }
+
+  // Completar perfil del paciente demo.
+  if (createdIds.patient) {
+    const { error: patError } = await supabase
+      .from('patient_profiles')
+      .update({
+        birth_date: '1990-05-15',
+        gender: 'Mujer',
+        emergency_contact_name: 'Carlos Demo',
+        emergency_contact_phone: '5551234567',
+        emergency_contact_relationship: 'Familiar',
+        reason_for_visit: 'Ansiedad y estrés',
+      })
+      .eq('profile_id', createdIds.patient)
+
+    if (patError) {
+      console.error('⚠️  Error actualizando perfil paciente:', patError.message)
+    } else {
+      console.log('✅ Perfil paciente demo completado.')
+    }
+  }
+
+  console.log('🏁 Listo. Los perfiles se generaron y completaron automáticamente.')
 }
 
 seed().catch((err) => {

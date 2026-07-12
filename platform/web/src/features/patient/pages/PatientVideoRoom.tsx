@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { PhoneOff } from 'lucide-react'
 import { JitsiMeetingRoom } from '@/components/video/JitsiMeetingRoom'
-import { getAppointmentById } from '@/features/appointments/mockAppointments'
+import { getAppointmentById, type Appointment } from '@/features/appointments/appointmentsService'
 import { useAuth } from '@/features/auth/AuthProvider'
 
 export function PatientVideoRoom() {
@@ -10,25 +11,60 @@ export function PatientVideoRoom() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  if (!appointmentId) {
+  const [appointment, setAppointment] = useState<Appointment | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!appointmentId) {
+      setError('No se proporcionó un ID de cita.')
+      setLoading(false)
+      return
+    }
+    const appointmentIdRef = appointmentId
+
+    let cancelled = false
+
+    async function load() {
+      try {
+        const data = await getAppointmentById(appointmentIdRef)
+        if (!cancelled) {
+          if (data) {
+            setAppointment(data)
+          } else {
+            setError('La cita solicitada no existe o no tienes acceso.')
+          }
+        }
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Error cargando la cita')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+
+    return () => {
+      cancelled = true
+    }
+  }, [appointmentId])
+
+  if (loading) {
     return (
       <div className="section-calma">
         <div className="container-calma">
-          <h1 className="text-2xl font-bold text-text mb-2">Sala no encontrada</h1>
-          <p className="text-text-light">No se proporcionó un ID de cita.</p>
+          <p className="text-text-light">Cargando sala...</p>
         </div>
       </div>
     )
   }
 
-  const appointment = getAppointmentById(appointmentId)
-
-  if (!appointment) {
+  if (error || !appointment || !appointment.video_link) {
     return (
       <div className="section-calma">
         <div className="container-calma">
-          <h1 className="text-2xl font-bold text-text mb-2">Sala no encontrada</h1>
-          <p className="text-text-light">La cita solicitada no existe o no tienes acceso.</p>
+          <h1 className="text-2xl font-bold text-text mb-2">Sala no disponible</h1>
+          <p className="text-text-light">{error || 'Esta cita aún no tiene sala de videollamada.'}</p>
         </div>
       </div>
     )
@@ -41,7 +77,7 @@ export function PatientVideoRoom() {
           <div>
             <h1 className="text-2xl font-bold text-text">Tu sesión</h1>
             <p className="text-text-light text-sm">
-              {appointment.professionalName} · {appointment.date} · {appointment.time} hrs
+              {appointment.professionalName} · {new Date(appointment.scheduled_at).toLocaleString('es-MX')}
             </p>
           </div>
           <Button variant="outline" className="gap-2 self-start" onClick={() => navigate(-1)}>
@@ -50,7 +86,7 @@ export function PatientVideoRoom() {
         </div>
         <div className="flex-1 min-h-[500px]">
           <JitsiMeetingRoom
-            roomName={appointment.videoLink}
+            roomName={appointment.video_link}
             displayName={user?.fullName || 'Paciente'}
             onReadyToClose={() => navigate(-1)}
           />
