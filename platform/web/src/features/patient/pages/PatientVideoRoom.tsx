@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { PhoneOff } from 'lucide-react'
-import { JitsiMeetingRoom } from '@/components/video/JitsiMeetingRoom'
+const JitsiMeetingRoom = lazy(() =>
+  import('@/components/video/JitsiMeetingRoom').then((m) => ({ default: m.JitsiMeetingRoom }))
+)
 import { getAppointmentById, type Appointment } from '@/features/appointments/appointmentsService'
 import { useAuth } from '@/features/auth/AuthProvider'
 
@@ -85,11 +87,13 @@ export function PatientVideoRoom() {
           </Button>
         </div>
         <div className="flex-1 min-h-[500px]">
-          <JitsiMeetingRoom
-            roomName={appointment.video_link}
-            displayName={user?.fullName || 'Paciente'}
-            onReadyToClose={() => navigate(-1)}
-          />
+          <Suspense fallback={<p className="text-text-light">Cargando videollamada...</p>}>
+            <JitsiMeetingRoom
+              roomName={appointment.video_link}
+              displayName={user?.fullName || 'Paciente'}
+              onReadyToClose={() => navigate(-1)}
+            />
+          </Suspense>
         </div>
       </div>
     </div>

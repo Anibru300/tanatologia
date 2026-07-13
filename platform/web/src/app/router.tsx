@@ -1,9 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Suspense, lazy } from 'react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { RootLayout } from '@/app/layouts/RootLayout'
-import { PatientLayout } from '@/app/layouts/PatientLayout'
-import { ProfessionalLayout } from '@/app/layouts/ProfessionalLayout'
-import { AdminLayout } from '@/app/layouts/AdminLayout'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RegisterPage } from '@/features/auth/RegisterPage'
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
@@ -14,50 +12,139 @@ import { TermsPage } from '@/app/pages/TermsPage'
 import { CancellationPage } from '@/app/pages/CancellationPage'
 import { CrisisPage } from '@/app/pages/CrisisPage'
 
+// Lazy-load portals to reduce initial bundle size
+const PatientLayout = lazy(() =>
+  import('@/app/layouts/PatientLayout').then((m) => ({ default: m.PatientLayout }))
+)
+const ProfessionalLayout = lazy(() =>
+  import('@/app/layouts/ProfessionalLayout').then((m) => ({ default: m.ProfessionalLayout }))
+)
+const AdminLayout = lazy(() =>
+  import('@/app/layouts/AdminLayout').then((m) => ({ default: m.AdminLayout }))
+)
+
 // Patient pages
-import { PatientDashboard } from '@/features/patient/PatientDashboard'
-import { PatientProfile } from '@/features/patient/pages/PatientProfile'
-import { TherapistDirectory } from '@/features/patient/pages/TherapistDirectory'
-import { BookAppointment } from '@/features/patient/pages/BookAppointment'
-import { PatientAppointments } from '@/features/patient/pages/PatientAppointments'
-import { PatientPrograms } from '@/features/patient/pages/PatientPrograms'
-import { PatientHistory } from '@/features/patient/pages/PatientHistory'
-import { PatientPayments } from '@/features/patient/pages/PatientPayments'
-import { PatientMessages } from '@/features/patient/pages/PatientMessages'
-import { PatientResources } from '@/features/patient/pages/PatientResources'
-import { PatientHelp } from '@/features/patient/pages/PatientHelp'
+const PatientDashboard = lazy(() =>
+  import('@/features/patient/PatientDashboard').then((m) => ({ default: m.PatientDashboard }))
+)
+const PatientProfile = lazy(() =>
+  import('@/features/patient/pages/PatientProfile').then((m) => ({ default: m.PatientProfile }))
+)
+const TherapistDirectory = lazy(() =>
+  import('@/features/patient/pages/TherapistDirectory').then((m) => ({ default: m.TherapistDirectory }))
+)
+const BookAppointment = lazy(() =>
+  import('@/features/patient/pages/BookAppointment').then((m) => ({ default: m.BookAppointment }))
+)
+const PatientAppointments = lazy(() =>
+  import('@/features/patient/pages/PatientAppointments').then((m) => ({ default: m.PatientAppointments }))
+)
+const PatientPrograms = lazy(() =>
+  import('@/features/patient/pages/PatientPrograms').then((m) => ({ default: m.PatientPrograms }))
+)
+const PatientHistory = lazy(() =>
+  import('@/features/patient/pages/PatientHistory').then((m) => ({ default: m.PatientHistory }))
+)
+const PatientPayments = lazy(() =>
+  import('@/features/patient/pages/PatientPayments').then((m) => ({ default: m.PatientPayments }))
+)
+const PatientMessages = lazy(() =>
+  import('@/features/patient/pages/PatientMessages').then((m) => ({ default: m.PatientMessages }))
+)
+const PatientResources = lazy(() =>
+  import('@/features/patient/pages/PatientResources').then((m) => ({ default: m.PatientResources }))
+)
+const PatientHelp = lazy(() =>
+  import('@/features/patient/pages/PatientHelp').then((m) => ({ default: m.PatientHelp }))
+)
+const PatientVideoRoom = lazy(() =>
+  import('@/features/patient/pages/PatientVideoRoom').then((m) => ({ default: m.PatientVideoRoom }))
+)
 
 // Professional pages
-import { ProfessionalDashboard } from '@/features/professional/ProfessionalDashboard'
-import { ProfessionalProfile } from '@/features/professional/pages/ProfessionalProfile'
-import { ProfessionalVerification } from '@/features/professional/pages/ProfessionalVerification'
-import { ProfessionalAgenda } from '@/features/professional/pages/ProfessionalAgenda'
-import { ProfessionalAvailability } from '@/features/professional/pages/ProfessionalAvailability'
-import { ProfessionalPatients } from '@/features/professional/pages/ProfessionalPatients'
-import { ProfessionalAppointments } from '@/features/professional/pages/ProfessionalAppointments'
-import { ProfessionalVideoRoom } from '@/features/professional/pages/ProfessionalVideoRoom'
-import { PatientVideoRoom } from '@/features/patient/pages/PatientVideoRoom'
-import { ProfessionalNotes } from '@/features/professional/pages/ProfessionalNotes'
-import { ProfessionalEarnings } from '@/features/professional/pages/ProfessionalEarnings'
-import { ProfessionalMembership } from '@/features/professional/pages/ProfessionalMembership'
-import { ProfessionalMessages } from '@/features/professional/pages/ProfessionalMessages'
-import { ProfessionalResources } from '@/features/professional/pages/ProfessionalResources'
-import { ProfessionalHelp } from '@/features/professional/pages/ProfessionalHelp'
-import { ProfessionalSettings } from '@/features/professional/pages/ProfessionalSettings'
+const ProfessionalDashboard = lazy(() =>
+  import('@/features/professional/ProfessionalDashboard').then((m) => ({ default: m.ProfessionalDashboard }))
+)
+const ProfessionalProfile = lazy(() =>
+  import('@/features/professional/pages/ProfessionalProfile').then((m) => ({ default: m.ProfessionalProfile }))
+)
+const ProfessionalVerification = lazy(() =>
+  import('@/features/professional/pages/ProfessionalVerification').then((m) => ({ default: m.ProfessionalVerification }))
+)
+const ProfessionalAgenda = lazy(() =>
+  import('@/features/professional/pages/ProfessionalAgenda').then((m) => ({ default: m.ProfessionalAgenda }))
+)
+const ProfessionalAvailability = lazy(() =>
+  import('@/features/professional/pages/ProfessionalAvailability').then((m) => ({ default: m.ProfessionalAvailability }))
+)
+const ProfessionalPatients = lazy(() =>
+  import('@/features/professional/pages/ProfessionalPatients').then((m) => ({ default: m.ProfessionalPatients }))
+)
+const ProfessionalAppointments = lazy(() =>
+  import('@/features/professional/pages/ProfessionalAppointments').then((m) => ({ default: m.ProfessionalAppointments }))
+)
+const ProfessionalVideoRoom = lazy(() =>
+  import('@/features/professional/pages/ProfessionalVideoRoom').then((m) => ({ default: m.ProfessionalVideoRoom }))
+)
+const ProfessionalNotes = lazy(() =>
+  import('@/features/professional/pages/ProfessionalNotes').then((m) => ({ default: m.ProfessionalNotes }))
+)
+const ProfessionalEarnings = lazy(() =>
+  import('@/features/professional/pages/ProfessionalEarnings').then((m) => ({ default: m.ProfessionalEarnings }))
+)
+const ProfessionalMembership = lazy(() =>
+  import('@/features/professional/pages/ProfessionalMembership').then((m) => ({ default: m.ProfessionalMembership }))
+)
+const ProfessionalMessages = lazy(() =>
+  import('@/features/professional/pages/ProfessionalMessages').then((m) => ({ default: m.ProfessionalMessages }))
+)
+const ProfessionalResources = lazy(() =>
+  import('@/features/professional/pages/ProfessionalResources').then((m) => ({ default: m.ProfessionalResources }))
+)
+const ProfessionalHelp = lazy(() =>
+  import('@/features/professional/pages/ProfessionalHelp').then((m) => ({ default: m.ProfessionalHelp }))
+)
+const ProfessionalSettings = lazy(() =>
+  import('@/features/professional/pages/ProfessionalSettings').then((m) => ({ default: m.ProfessionalSettings }))
+)
 
 // Admin pages
-import { AdminDashboard } from '@/features/admin/AdminDashboard'
-import { AdminProfessionals } from '@/features/admin/pages/AdminProfessionals'
-import { AdminPatients } from '@/features/admin/pages/AdminPatients'
-import { AdminAppointments } from '@/features/admin/pages/AdminAppointments'
-import { AdminQuotes } from '@/features/admin/pages/AdminQuotes'
-import { AdminFinances } from '@/features/admin/pages/AdminFinances'
-import { AdminPayments } from '@/features/admin/pages/AdminPayments'
-import { AdminReports } from '@/features/admin/pages/AdminReports'
-import { AdminConfig } from '@/features/admin/pages/AdminConfig'
-import { AdminCMS } from '@/features/admin/pages/AdminCMS'
-import { AdminAudit } from '@/features/admin/pages/AdminAudit'
-import { AdminSupport } from '@/features/admin/pages/AdminSupport'
+const AdminDashboard = lazy(() =>
+  import('@/features/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard }))
+)
+const AdminProfessionals = lazy(() =>
+  import('@/features/admin/pages/AdminProfessionals').then((m) => ({ default: m.AdminProfessionals }))
+)
+const AdminPatients = lazy(() =>
+  import('@/features/admin/pages/AdminPatients').then((m) => ({ default: m.AdminPatients }))
+)
+const AdminAppointments = lazy(() =>
+  import('@/features/admin/pages/AdminAppointments').then((m) => ({ default: m.AdminAppointments }))
+)
+const AdminQuotes = lazy(() =>
+  import('@/features/admin/pages/AdminQuotes').then((m) => ({ default: m.AdminQuotes }))
+)
+const AdminFinances = lazy(() =>
+  import('@/features/admin/pages/AdminFinances').then((m) => ({ default: m.AdminFinances }))
+)
+const AdminPayments = lazy(() =>
+  import('@/features/admin/pages/AdminPayments').then((m) => ({ default: m.AdminPayments }))
+)
+const AdminReports = lazy(() =>
+  import('@/features/admin/pages/AdminReports').then((m) => ({ default: m.AdminReports }))
+)
+const AdminConfig = lazy(() =>
+  import('@/features/admin/pages/AdminConfig').then((m) => ({ default: m.AdminConfig }))
+)
+const AdminCMS = lazy(() =>
+  import('@/features/admin/pages/AdminCMS').then((m) => ({ default: m.AdminCMS }))
+)
+const AdminAudit = lazy(() =>
+  import('@/features/admin/pages/AdminAudit').then((m) => ({ default: m.AdminAudit }))
+)
+const AdminSupport = lazy(() =>
+  import('@/features/admin/pages/AdminSupport').then((m) => ({ default: m.AdminSupport }))
+)
 
 import type { UserRole } from '@/features/auth/AuthProvider'
 
@@ -83,6 +170,20 @@ function ProtectedRoute({ role, children }: { role: UserRole; children: React.Re
   return <>{children}</>
 }
 
+function PortalSuspense({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      }
+    >
+      {children}
+    </Suspense>
+  )
+}
+
 export function AppRouter() {
   return (
     <Routes>
@@ -103,7 +204,9 @@ export function AppRouter() {
         path="/paciente"
         element={
           <ProtectedRoute role="patient">
-            <PatientLayout />
+            <PortalSuspense>
+              <PatientLayout />
+            </PortalSuspense>
           </ProtectedRoute>
         }
       >
@@ -126,7 +229,9 @@ export function AppRouter() {
         path="/profesional"
         element={
           <ProtectedRoute role="professional">
-            <ProfessionalLayout />
+            <PortalSuspense>
+              <ProfessionalLayout />
+            </PortalSuspense>
           </ProtectedRoute>
         }
       >
@@ -152,7 +257,9 @@ export function AppRouter() {
         path="/admin"
         element={
           <ProtectedRoute role="admin">
-            <AdminLayout />
+            <PortalSuspense>
+              <AdminLayout />
+            </PortalSuspense>
           </ProtectedRoute>
         }
       >

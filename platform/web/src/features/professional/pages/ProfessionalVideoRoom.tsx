@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Video, PhoneOff } from 'lucide-react'
-import { JitsiMeetingRoom } from '@/components/video/JitsiMeetingRoom'
+const JitsiMeetingRoom = lazy(() =>
+  import('@/components/video/JitsiMeetingRoom').then((m) => ({ default: m.JitsiMeetingRoom }))
+)
 import { getAppointmentById, type Appointment } from '@/features/appointments/appointmentsService'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { generateJitsiRoomName } from '@/lib/video'
@@ -75,11 +77,13 @@ export function ProfessionalVideoRoom() {
             </Button>
           </div>
           <div className="flex-1 min-h-[500px]">
-            <JitsiMeetingRoom
-              roomName={roomName}
-              displayName={user?.fullName || 'Profesional'}
-              onReadyToClose={() => navigate(-1)}
-            />
+            <Suspense fallback={<p className="text-text-light">Cargando videollamada...</p>}>
+              <JitsiMeetingRoom
+                roomName={roomName}
+                displayName={user?.fullName || 'Profesional'}
+                onReadyToClose={() => navigate(-1)}
+              />
+            </Suspense>
           </div>
         </div>
       </div>
