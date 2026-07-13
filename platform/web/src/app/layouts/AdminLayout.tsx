@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react'
 import { useState } from 'react'
+import { QuickExitButton } from '@/components/QuickExitButton'
 
 const menuItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
@@ -126,6 +127,8 @@ export function AdminLayout() {
       <main className="flex-1 lg:ml-0 pt-16 lg:pt-0">
         <Outlet />
       </main>
+
+      <QuickExitButton />
     </div>
   )
 }

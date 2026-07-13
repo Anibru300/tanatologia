@@ -31,8 +31,11 @@
                              path === '/tanatologia/app' ||
                              path === '/tanatologia/app/';
             if (isAppRoute) {
-                document.write('<!doctype html><html lang="es"><head><meta charset="UTF-8" /><link rel="icon" type="image/svg+xml" href="/vite.svg" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>SOMOS-CALMA | Plataforma</title><script type="module" crossorigin src="/tanatologia/app/assets/index-CwC8gXFd.js"><\/script><link rel="stylesheet" crossorigin href="/tanatologia/app/assets/index-D4bszZdh.css" /></head><body><div id="root"></div></body></html>');
-                document.close();
+                // Redirigir al HashRouter de la app React sin depender de hashes de build.
+                var appPath = path.replace('/tanatologia/app', '').replace(/^\/+/, '') || '';
+                var search = location.search || '';
+                var hash = appPath ? '#/' + appPath : '';
+                location.replace('/tanatologia/app/' + search + hash);
             }
         })();
     </script>

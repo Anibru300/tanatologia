@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
-import { User, Stethoscope, ShieldCheck, CheckCircle } from 'lucide-react'
+import { User, Stethoscope, CheckCircle } from 'lucide-react'
 
 export function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -17,6 +17,7 @@ export function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [needsConfirmation, setNeedsConfirmation] = useState(false)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
 
@@ -33,17 +34,17 @@ export function RegisterPage() {
       icon: Stethoscope,
       description: 'Soy psicólogo, tanatólogo o especialista',
     },
-    {
-      value: 'admin',
-      label: 'Administración',
-      icon: ShieldCheck,
-      description: 'Gestiono la plataforma',
-    },
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (!acceptedTerms) {
+      setError('Debes aceptar el Aviso de Privacidad y los Términos y Condiciones para continuar.')
+      return
+    }
+
     setIsLoading(true)
     try {
       await register(email, password, fullName, role)
@@ -51,7 +52,7 @@ export function RegisterPage() {
       if (session) {
         setSuccess(true)
         setTimeout(() => {
-          navigate(role === 'patient' ? '/paciente' : role === 'professional' ? '/profesional' : '/admin')
+          navigate(role === 'patient' ? '/paciente' : '/profesional')
         }, 1500)
       } else {
         setNeedsConfirmation(true)
@@ -168,7 +169,28 @@ export function RegisterPage() {
                   {error}
                 </div>
               )}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <label className="flex items-start gap-3 text-sm text-text-light cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                  required
+                />
+                <span>
+                  He leído y acepto el{' '}
+                  <Link to="/aviso-de-privacidad" target="_blank" className="text-primary hover:underline">
+                    Aviso de Privacidad
+                  </Link>{' '}
+                  y los{' '}
+                  <Link to="/terminos" target="_blank" className="text-primary hover:underline">
+                    Términos y Condiciones
+                  </Link>
+                  .
+                </span>
+              </label>
+
+              <Button type="submit" className="w-full" disabled={isLoading || !acceptedTerms}>
                 {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
               </Button>
             </form>

@@ -6,7 +6,13 @@ import { ProfessionalLayout } from '@/app/layouts/ProfessionalLayout'
 import { AdminLayout } from '@/app/layouts/AdminLayout'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RegisterPage } from '@/features/auth/RegisterPage'
+import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
+import { UpdatePasswordPage } from '@/features/auth/UpdatePasswordPage'
 import { QuotePage } from '@/features/patient/QuotePage'
+import { PrivacyPage } from '@/app/pages/PrivacyPage'
+import { TermsPage } from '@/app/pages/TermsPage'
+import { CancellationPage } from '@/app/pages/CancellationPage'
+import { CrisisPage } from '@/app/pages/CrisisPage'
 
 // Patient pages
 import { PatientDashboard } from '@/features/patient/PatientDashboard'
@@ -84,7 +90,13 @@ export function AppRouter() {
         <Route index element={<Navigate to="/login" replace />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="recuperar-contrasena" element={<ForgotPasswordPage />} />
+        <Route path="actualizar-contrasena" element={<UpdatePasswordPage />} />
         <Route path="cotizacion" element={<QuotePage />} />
+        <Route path="aviso-de-privacidad" element={<PrivacyPage />} />
+        <Route path="terminos" element={<TermsPage />} />
+        <Route path="cancelacion" element={<CancellationPage />} />
+        <Route path="crisis" element={<CrisisPage />} />
       </Route>
 
       <Route

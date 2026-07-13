@@ -6,8 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Check, Mail, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { sendEmail } from '@/lib/email'
+import { siteConfig } from '@/lib/siteConfig'
+import { useAuth } from '@/features/auth/AuthProvider'
 
 export function QuotePage() {
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -24,7 +27,13 @@ export function QuotePage() {
     setIsLoading(true)
 
     try {
-      const total = prices[formData.serviceType] * parseInt(formData.sessions)
+      const sessions = parseInt(formData.sessions)
+      const total =
+        formData.serviceType === 'aislada'
+          ? pricing.session.single * sessions
+          : formData.serviceType === 'salud_mental'
+            ? pricing.program4.price
+            : pricing.program6.price
 
       // Guardar cotización en Supabase
       const { error: dbError } = await supabase.from('quotes').insert({
@@ -32,26 +41,29 @@ export function QuotePage() {
         email: formData.email,
         phone: formData.phone,
         service_type: formData.serviceType,
-        sessions: parseInt(formData.sessions),
+        sessions: sessions,
         notes: formData.notes,
         total_amount: total * 100, // guardar en centavos
       })
 
       if (dbError) throw new Error(dbError.message)
 
-      // Enviar correo de confirmación al solicitante
-      await sendEmail({
-        to: formData.email,
-        subject: 'Hemos recibido tu cotización — SOMOS-CALMA',
-        html: `
-          <h1>Hola ${formData.name},</h1>
-          <p>Recibimos tu solicitud de cotización para <strong>${formData.serviceType}</strong>.</p>
-          <p>Sesiones: ${formData.sessions}</p>
-          <p>Total estimado: ${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(total)}</p>
-          <p>Te contactaremos en menos de 24 horas.</p>
-        `,
-        type: 'quote_confirmation',
-      })
+      // Solo usuarios autenticados pueden enviar correos desde el frontend.
+      // Los visitantes anónimos reciben confirmación en pantalla.
+      if (user) {
+        await sendEmail({
+          to: formData.email,
+          subject: 'Hemos recibido tu cotización — SOMOS-CALMA',
+          html: `
+            <h1>Hola ${formData.name},</h1>
+            <p>Recibimos tu solicitud de cotización para <strong>${formData.serviceType}</strong>.</p>
+            <p>Sesiones: ${sessions}</p>
+            <p>Total estimado: ${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(total)}</p>
+            <p>Te contactaremos en menos de 24 horas.</p>
+          `,
+          type: 'quote_confirmation',
+        })
+      }
 
       setSubmitted(true)
     } catch (err) {
@@ -62,13 +74,14 @@ export function QuotePage() {
     }
   }
 
-  const prices: Record<string, number> = {
-    aislada: 400,
-    salud_mental: 1600,
-    duelo: 2200,
-  }
-
-  const total = prices[formData.serviceType] * parseInt(formData.sessions)
+  const { pricing } = siteConfig
+  const sessions = parseInt(formData.sessions)
+  const total =
+    formData.serviceType === 'aislada'
+      ? pricing.session.single * sessions
+      : formData.serviceType === 'salud_mental'
+        ? pricing.program4.price
+        : pricing.program6.price
 
   if (submitted) {
     return (
@@ -157,9 +170,9 @@ export function QuotePage() {
                     onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
                     className="w-full px-4 py-3 rounded-[12px] border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                   >
-                    <option value="aislada">Consulta aislada ($400)</option>
-                    <option value="salud_mental">Programa Salud Mental 4 sesiones ($1,600)</option>
-                    <option value="duelo">Acompañamiento por duelo 6 sesiones ($2,200)</option>
+                    <option value="aislada">{pricing.session.singleLabel} (${pricing.session.single})</option>
+                    <option value="salud_mental">{pricing.program4.label} {pricing.program4.sessions} sesiones (${pricing.program4.price.toLocaleString('es-MX')})</option>
+                    <option value="duelo">{pricing.program6.label} {pricing.program6.sessions} sesiones (${pricing.program6.price.toLocaleString('es-MX')})</option>
                   </select>
                 </div>
                 <div>

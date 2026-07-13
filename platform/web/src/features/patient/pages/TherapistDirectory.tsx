@@ -1,66 +1,83 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { Star, Search, Filter, X, Calendar, MessageCircle, Award, CheckCircle } from 'lucide-react'
-
-const therapists = [
-  {
-    id: 1,
-    name: 'Dra. María Rodríguez',
-    title: 'Psicóloga · Tanatóloga',
-    price: 400,
-    rating: 4.9,
-    reviews: 24,
-    specialties: ['Duelo', 'Pérdida', 'Adultos mayores'],
-    bio: '15 años acompañando procesos de duelo y pérdida. Especialista en tanatología clínica y cuidados paliativos.',
-    initials: 'MR',
-    verified: true,
-    languages: ['Español'],
-  },
-  {
-    id: 2,
-    name: 'Lic. Javier López',
-    title: 'Psicólogo Clínico',
-    price: 400,
-    rating: 4.8,
-    reviews: 18,
-    specialties: ['Ansiedad', 'Estrés', 'Depresión'],
-    bio: 'Acompaña ansiedad, estrés, depresión y crisis vitales con enfoque humanista y cognitivo-conductual.',
-    initials: 'JL',
-    verified: true,
-    languages: ['Español', 'Inglés'],
-  },
-  {
-    id: 3,
-    name: 'Dra. Sofía Castro',
-    title: 'Tanatóloga · Psicooncóloga',
-    price: 450,
-    rating: 5.0,
-    reviews: 12,
-    specialties: ['Duelo anticipado', 'Diagnóstico', 'Familias'],
-    bio: 'Especialista en duelo anticipado, diagnósticos difíciles y pérdidas complejas. Acompañamiento a familias.',
-    initials: 'SC',
-    verified: true,
-    languages: ['Español'],
-  },
-]
+import { Star, Search, Filter, X, Calendar, Award, CheckCircle } from 'lucide-react'
+import { getProfessionalProfiles, type ProfessionalProfile } from '@/features/appointments/appointmentsService'
 
 const specialtyOptions = ['Todas', 'Duelo', 'Ansiedad', 'Estrés', 'Depresión', 'Pérdida', 'Familias']
+
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+}
+
+function formatPrice(cents: number) {
+  return `$${(cents / 100).toLocaleString('es-MX')}`
+}
 
 export function TherapistDirectory() {
   const [search, setSearch] = useState('')
   const [specialty, setSpecialty] = useState('Todas')
-  const [selected, setSelected] = useState<typeof therapists[0] | null>(null)
+  const [therapists, setTherapists] = useState<ProfessionalProfile[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [selected, setSelected] = useState<ProfessionalProfile | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    getProfessionalProfiles()
+      .then((data) => {
+        if (!cancelled) setTherapists(data)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Error al cargar el directorio')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const filtered = therapists.filter((t) => {
-    const matchesSearch =
-      t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.specialties.some((s) => s.toLowerCase().includes(search.toLowerCase()))
-    const matchesSpecialty = specialty === 'Todas' || t.specialties.includes(specialty)
+    const name = t.full_name.toLowerCase()
+    const specs = (t.specialties || []).join(' ').toLowerCase()
+    const matchesSearch = name.includes(search.toLowerCase()) || specs.includes(search.toLowerCase())
+    const matchesSpecialty = specialty === 'Todas' || (t.specialties || []).some((s) => s.toLowerCase().includes(specialty.toLowerCase()))
     return matchesSearch && matchesSpecialty
   })
+
+  if (loading) {
+    return (
+      <div className="section-calma">
+        <div className="container-calma text-center py-16">
+          <p className="text-text-light">Cargando profesionales...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="section-calma">
+        <div className="container-calma text-center py-16">
+          <p className="text-error">{error}</p>
+          <Button className="mt-4" onClick={() => window.location.reload()}>
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="section-calma">
@@ -68,7 +85,7 @@ export function TherapistDirectory() {
         <div className="mb-8 text-center max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold text-text mb-2">Encuentra tu terapeuta</h1>
           <p className="text-text-light">
-            Filtra por especialidad o nombre y elige al profesional que mejor se ajuste a lo que necesitas.
+            Filtra por especialidad o nombre y elige al profesional verificado que mejor se ajuste a lo que necesitas.
           </p>
         </div>
 
@@ -103,62 +120,78 @@ export function TherapistDirectory() {
           </CardContent>
         </Card>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((t) => (
-            <Card key={t.id} className="flex flex-col hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary-dark font-bold text-xl">
-                    {t.initials}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Star size={16} className="text-warning fill-warning" />
-                    <span className="font-semibold text-text">{t.rating}</span>
-                    <span className="text-xs text-text-light">({t.reviews})</span>
-                  </div>
-                </div>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  {t.name}
-                  {t.verified && <CheckCircle size={16} className="text-success" />}
-                </CardTitle>
-                <CardDescription>{t.title}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
-                <p className="text-text-light text-sm mb-4 flex-1 line-clamp-3">{t.bio}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {t.specialties.slice(0, 3).map((s) => (
-                    <Badge key={s} variant="default">
-                      {s}
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between mt-auto gap-3">
-                  <span className="text-xl font-bold text-text">
-                    ${t.price}
-                    <span className="text-sm font-normal text-text-light">/sesión</span>
-                  </span>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setSelected(t)}>
-                      Ver perfil
-                    </Button>
-                    <Link to="/paciente/agendar">
-                      <Button size="sm">Agendar</Button>
-                    </Link>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filtered.length === 0 && (
+        {therapists.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto rounded-full bg-bg-alt flex items-center justify-center mb-4">
-              <Search size={32} className="text-text-light" />
+              <Award size={32} className="text-text-light" />
             </div>
-            <h3 className="text-lg font-semibold text-text mb-1">No encontramos resultados</h3>
-            <p className="text-text-light">Prueba con otro nombre o especialidad.</p>
+            <h3 className="text-lg font-semibold text-text mb-1">Pronto tendremos profesionales disponibles</h3>
+            <p className="text-text-light max-w-md mx-auto mb-6">
+              Estamos verificando a los primeros especialistas. Mientras tanto, puedes solicitar una cotización y te contactaremos para asignarte al terapeuta adecuado.
+            </p>
+            <Link to="/cotizacion">
+              <Button>Solicitar cotización</Button>
+            </Link>
           </div>
+        ) : (
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((t) => (
+                <Card key={t.id} className="flex flex-col hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary-dark font-bold text-xl">
+                        {getInitials(t.full_name)}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star size={16} className="text-warning fill-warning" />
+                        <span className="font-semibold text-text">{Number(t.rating || 0).toFixed(1)}</span>
+                      </div>
+                    </div>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      {t.full_name}
+                      {t.verification_status === 'verified' && <CheckCircle size={16} className="text-success" />}
+                    </CardTitle>
+                    <CardDescription>Psicólogo · Tanatólogo</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col">
+                    <p className="text-text-light text-sm mb-4 flex-1 line-clamp-3">{t.bio || 'Especialista en acompañamiento emocional y tanatología.'}</p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {(t.specialties || []).slice(0, 3).map((s) => (
+                        <Badge key={s} variant="default">
+                          {s}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between mt-auto gap-3">
+                      <span className="text-xl font-bold text-text">
+                        {formatPrice(t.session_price)}
+                        <span className="text-sm font-normal text-text-light">/sesión</span>
+                      </span>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setSelected(t)}>
+                          Ver perfil
+                        </Button>
+                        <Link to="/paciente/agendar">
+                          <Button size="sm">Agendar</Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {filtered.length === 0 && (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 mx-auto rounded-full bg-bg-alt flex items-center justify-center mb-4">
+                  <Search size={32} className="text-text-light" />
+                </div>
+                <h3 className="text-lg font-semibold text-text mb-1">No encontramos resultados</h3>
+                <p className="text-text-light">Prueba con otro nombre o especialidad.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -169,25 +202,21 @@ export function TherapistDirectory() {
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary-dark font-bold text-2xl">
-                    {selected.initials}
+                    {getInitials(selected.full_name)}
                   </div>
                   <div>
                     <CardTitle className="text-2xl flex items-center gap-2">
-                      {selected.name}
-                      {selected.verified && <CheckCircle size={20} className="text-success" />}
+                      {selected.full_name}
+                      {selected.verification_status === 'verified' && <CheckCircle size={20} className="text-success" />}
                     </CardTitle>
-                    <CardDescription className="text-base">{selected.title}</CardDescription>
+                    <CardDescription className="text-base">Psicólogo · Tanatólogo</CardDescription>
                     <div className="flex items-center gap-1 mt-1">
                       <Star size={16} className="text-warning fill-warning" />
-                      <span className="font-semibold text-text">{selected.rating}</span>
-                      <span className="text-sm text-text-light">({selected.reviews} reseñas)</span>
+                      <span className="font-semibold text-text">{Number(selected.rating || 0).toFixed(1)}</span>
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => setSelected(null)}
-                  className="p-2 rounded-full hover:bg-bg-alt text-text-light"
-                >
+                <button onClick={() => setSelected(null)} className="p-2 rounded-full hover:bg-bg-alt text-text-light">
                   <X size={24} />
                 </button>
               </div>
@@ -195,7 +224,7 @@ export function TherapistDirectory() {
             <CardContent className="space-y-6">
               <div>
                 <h4 className="font-semibold text-text mb-2">Sobre mí</h4>
-                <p className="text-text-light">{selected.bio}</p>
+                <p className="text-text-light">{selected.bio || 'Especialista en acompañamiento emocional y tanatología.'}</p>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
@@ -203,21 +232,14 @@ export function TherapistDirectory() {
                   <Award size={20} className="text-primary" />
                   <div>
                     <p className="text-xs text-text-light">Especialidades</p>
-                    <p className="text-text text-sm font-medium">{selected.specialties.join(', ')}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 bg-bg-alt rounded-[12px]">
-                  <MessageCircle size={20} className="text-primary" />
-                  <div>
-                    <p className="text-xs text-text-light">Idiomas</p>
-                    <p className="text-text text-sm font-medium">{selected.languages.join(', ')}</p>
+                    <p className="text-text text-sm font-medium">{(selected.specialties || []).join(', ') || '—'}</p>
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center justify-between p-4 bg-primary/5 rounded-[12px]">
                 <span className="text-text">Costo por sesión</span>
-                <span className="text-2xl font-bold text-primary-dark">${selected.price}</span>
+                <span className="text-2xl font-bold text-primary-dark">{formatPrice(selected.session_price)}</span>
               </div>
 
               <div className="flex gap-3">

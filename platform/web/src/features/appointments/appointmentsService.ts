@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase'
-import { generateJitsiRoomName } from '@/lib/video'
 
 export type SessionType = 'single' | 'program_4' | 'program_6'
 export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'
@@ -38,7 +37,7 @@ export async function getProfessionalProfiles(): Promise<ProfessionalProfile[]> 
   const { data, error } = await supabase
     .from('professional_profiles')
     .select(
-      'id, profile_id, specialties, session_price, program_4_price, program_6_price, verification_status, is_visible, rating, bio, profiles(full_name)'
+      'id, profile_id, full_name, specialties, session_price, program_4_price, program_6_price, verification_status, is_visible, rating, bio'
     )
     .eq('verification_status', 'verified')
     .eq('is_visible', true)
@@ -48,11 +47,10 @@ export async function getProfessionalProfiles(): Promise<ProfessionalProfile[]> 
   }
 
   return (data || []).map((row: Record<string, unknown>) => {
-    const profiles = row.profiles as { full_name: string } | null
     return {
       id: String(row.id),
       profile_id: String(row.profile_id),
-      full_name: profiles?.full_name || 'Profesional',
+      full_name: row.full_name ? String(row.full_name) : 'Profesional',
       specialties: (row.specialties as string[]) || [],
       session_price: Number(row.session_price),
       program_4_price: Number(row.program_4_price),
@@ -123,20 +121,10 @@ export async function createAppointment(params: {
     throw new Error('No se pudo crear la cita')
   }
 
-  // Generar sala de Jitsi a partir del ID real de la cita.
-  const videoLink = generateJitsiRoomName(String(data.id))
-  const { error: updateError } = await supabase
-    .from('appointments')
-    .update({ video_link: videoLink })
-    .eq('id', String(data.id))
-
-  if (updateError) {
-    throw new Error(updateError.message)
-  }
-
+  // El trigger set_appointment_video_link genera el enlace automáticamente.
   return {
     ...data,
-    video_link: videoLink,
+    video_link: data.video_link || null,
   } as Appointment
 }
 
@@ -155,15 +143,15 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
 }
 
 function mapAppointment(row: Record<string, unknown>): Appointment {
-  const patientProfiles = row.patient_profiles as { profiles: { full_name: string } | null } | null
-  const professionalProfiles = row.professional_profiles as { profiles: { full_name: string } | null } | null
+  const patientProfiles = row.patient_profiles as { full_name: string } | null
+  const professionalProfiles = row.professional_profiles as { full_name: string } | null
 
   return {
     id: String(row.id),
     patient_profile_id: String(row.patient_profile_id),
     professional_profile_id: String(row.professional_profile_id),
-    patientName: patientProfiles?.profiles?.full_name || 'Paciente',
-    professionalName: professionalProfiles?.profiles?.full_name || 'Profesional',
+    patientName: patientProfiles?.full_name || 'Paciente',
+    professionalName: professionalProfiles?.full_name || 'Profesional',
     scheduled_at: String(row.scheduled_at),
     duration_minutes: Number(row.duration_minutes),
     status: row.status as AppointmentStatus,
@@ -178,9 +166,7 @@ function mapAppointment(row: Record<string, unknown>): Appointment {
 export async function getAppointmentsForPatient(patientProfileId: string): Promise<Appointment[]> {
   const { data, error } = await supabase
     .from('appointments')
-    .select(
-      '*, patient_profiles(profiles(full_name)), professional_profiles(profiles(full_name))'
-    )
+    .select('*, patient_profiles(full_name), professional_profiles(full_name)')
     .eq('patient_profile_id', patientProfileId)
     .order('scheduled_at', { ascending: false })
 
@@ -194,9 +180,7 @@ export async function getAppointmentsForPatient(patientProfileId: string): Promi
 export async function getAppointmentsForProfessional(professionalProfileId: string): Promise<Appointment[]> {
   const { data, error } = await supabase
     .from('appointments')
-    .select(
-      '*, patient_profiles(profiles(full_name)), professional_profiles(profiles(full_name))'
-    )
+    .select('*, patient_profiles(full_name), professional_profiles(full_name)')
     .eq('professional_profile_id', professionalProfileId)
     .order('scheduled_at', { ascending: false })
 
@@ -210,9 +194,7 @@ export async function getAppointmentsForProfessional(professionalProfileId: stri
 export async function getAppointmentById(id: string): Promise<Appointment | null> {
   const { data, error } = await supabase
     .from('appointments')
-    .select(
-      '*, patient_profiles(profiles(full_name)), professional_profiles(profiles(full_name))'
-    )
+    .select('*, patient_profiles(full_name), professional_profiles(full_name)')
     .eq('id', id)
     .single()
 

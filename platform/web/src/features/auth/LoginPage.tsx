@@ -97,6 +97,11 @@ export function LoginPage() {
                   {error}
                 </div>
               )}
+              <div className="text-right">
+                <Link to="/recuperar-contrasena" className="text-sm text-primary hover:underline">
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Iniciando sesión...' : `Iniciar sesión como ${roles.find(r => r.value === role)?.label.toLowerCase()}`}
               </Button>

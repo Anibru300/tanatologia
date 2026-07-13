@@ -2113,3 +2113,37 @@ body.page-with-bg::after {
         background-attachment: scroll;
     }
 }
+
+
+/* === BOTÓN DE SALIDA RÁPIDA === */
+.quick-exit {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 200;
+    background-color: var(--color-text);
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    padding: 0.85rem 1.5rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.quick-exit:hover {
+    background-color: #2a2826;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .quick-exit {
+        bottom: 1rem;
+        right: 1rem;
+        padding: 0.7rem 1.1rem;
+        font-size: 0.8rem;
+    }
+}

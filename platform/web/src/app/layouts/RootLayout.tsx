@@ -1,6 +1,8 @@
 import { Link, Outlet } from 'react-router-dom'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { Button } from '@/components/ui/Button'
+import { QuickExitButton } from '@/components/QuickExitButton'
+import { siteConfig } from '@/lib/siteConfig'
 import { Menu, X, User } from 'lucide-react'
 import { useState } from 'react'
 
@@ -111,6 +113,8 @@ export function RootLayout() {
         <Outlet />
       </main>
 
+      <QuickExitButton />
+
       <footer className="bg-primary-dark text-white py-12">
         <div className="container-calma">
           <div className="grid md:grid-cols-3 gap-8">
@@ -129,8 +133,17 @@ export function RootLayout() {
               </ul>
             </div>
             <div>
+              <h4 className="font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm text-white/80">
+                <li><Link to="/aviso-de-privacidad" className="hover:text-white">Aviso de privacidad</Link></li>
+                <li><Link to="/terminos" className="hover:text-white">Términos y condiciones</Link></li>
+                <li><Link to="/cancelacion" className="hover:text-white">Cancelación y reembolsos</Link></li>
+                <li><Link to="/crisis" className="hover:text-white">Líneas de emergencia</Link></li>
+              </ul>
+            </div>
+            <div>
               <h4 className="font-semibold mb-4">Contacto</h4>
-              <p className="text-sm text-white/80">hola@somos-calma.com</p>
+              <p className="text-sm text-white/80">{siteConfig.contact.hello}</p>
             </div>
           </div>
           <div className="border-t border-white/20 mt-8 pt-8 text-center text-sm text-white/60">

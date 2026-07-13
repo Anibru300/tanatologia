@@ -101,11 +101,42 @@
         }
     }
 
+    function injectQuickExit() {
+        const existing = document.getElementById('quick-exit-btn');
+        if (existing) return;
+
+        const btn = document.createElement('button');
+        btn.id = 'quick-exit-btn';
+        btn.className = 'quick-exit';
+        btn.textContent = 'Salir rápido';
+        btn.setAttribute('aria-label', 'Salir rápido de este sitio');
+        btn.setAttribute('type', 'button');
+        btn.addEventListener('click', function () {
+            // Reemplaza la página actual por un sitio neutro y común.
+            // Esto ayuda a quienes comparten dispositivo o están en situación de riesgo.
+            try {
+                window.location.replace('https://www.google.com');
+            } catch (e) {
+                window.location.href = 'https://www.google.com';
+            }
+        });
+        document.body.appendChild(btn);
+    }
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectComponents);
+        document.addEventListener('DOMContentLoaded', function () {
+            injectComponents();
+            injectQuickExit();
+        });
     } else {
         injectComponents();
+        injectQuickExit();
     }
+
+    // Cargar configuración centralizada
+    const configScript = document.createElement('script');
+    configScript.src = `${root}assets/js/siteConfig.js`;
+    document.head.appendChild(configScript);
 
     // Cargar botón flotante de WhatsApp y bot de atención al cliente
     const whatsappScript = document.createElement('script');

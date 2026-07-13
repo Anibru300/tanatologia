@@ -1,11 +1,33 @@
 /**
  * Bot de Atención al Cliente de Somos Calma.
- * Tono humano, cercano y pausado. Simula escritura y ofrece respuestas útiles.
+ * Tono humano, cercano y pausado. Usa configuración centralizada cuando está disponible.
  */
 (function () {
-    const WHATSAPP_NUMBER = '5214772541540';
-    const WHATSAPP_MESSAGE = encodeURIComponent('Hola Lupita, tengo una pregunta sobre Somos Calma. ¿Me puedes ayudar?');
+    const cfg = window.SOMOS_CALMA_CONFIG || {};
+    const contact = cfg.contact || {};
+    const pricing = cfg.pricing || {};
+    const urls = cfg.urls || {};
+    const whatsapp = contact.whatsapp || {};
+
+    const WHATSAPP_NUMBER = whatsapp.number || '5214772541540';
+    const WHATSAPP_MESSAGE = encodeURIComponent(
+        whatsapp.message ||
+        'Hola, tengo una pregunta sobre Somos Calma. ¿Me pueden ayudar?'
+    );
     const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
+
+    // Rutas absolutas para evitar problemas en subcarpetas anidadas (p. ej. pages/profesionales/)
+    const BASE = '/tanatologia/';
+    const PATHS = {
+        matching: urls.app ? `${urls.app}#/cotizacion` : `${BASE}pages/matching.html`,
+        profesionales: `${BASE}pages/profesionales.html`,
+        profesionalDashboard: `${BASE}pages/profesionales/dashboard.html`,
+        crisis: `${BASE}pages/crisis.html`,
+    };
+
+    const singlePrice = pricing.session && pricing.session.single ? `$${pricing.session.single} MXN` : '$400 MXN';
+    const program4Price = pricing.program4 && pricing.program4.price ? `$${pricing.program4.price} MXN` : '$1,600 MXN';
+    const program6Price = pricing.program6 && pricing.program6.price ? `$${pricing.program6.price} MXN` : '$2,200 MXN';
 
     const typingMessages = [
         'Déjame buscar la mejor respuesta para ti...',
@@ -14,13 +36,6 @@
         'Gracias por tu paciencia. Ya casi está.',
         'Aquí estoy, con toda la atención para ti.'
     ];
-
-    function getRootPath() {
-        const path = window.location.pathname;
-        return path.includes('/pages/') ? '../' : './';
-    }
-
-    const root = getRootPath();
 
     const conversationTree = {
         welcome: {
@@ -35,7 +50,7 @@
             ]
         },
         precios: {
-            message: 'Tenemos opciones accesibles:\n\n• Consulta aislada: $400 MXN (una sesión de 50 minutos).\n• Programa de Salud Mental: 4 sesiones.\n• Programa de acompañamiento por duelo, muerte o pérdida: 6 sesiones por $2,200 MXN.\n\nSi quieres conocer el precio del programa de Salud Mental, escríbenos.',
+            message: `Tenemos opciones accesibles:\n\n• Consulta aislada: ${singlePrice} (una sesión de 50 minutos).\n• Programa de Salud Mental: 4 sesiones por ${program4Price}.\n• Programa de acompañamiento por duelo, muerte o pérdida: 6 sesiones por ${program6Price}.`,
             options: [
                 { id: 'como_pagar', label: '¿Cómo puedo pagar?' },
                 { id: 'descuento', label: '¿Hay descuentos?' },
@@ -44,7 +59,7 @@
             ]
         },
         como_pagar: {
-            message: 'Actualmente coordinamos el pago de forma sencilla. Al agendar te indicamos las opciones disponibles. También puedes escribirle a Lupita por WhatsApp y ella te guía paso a paso.',
+            message: 'Actualmente coordinamos el pago de forma sencilla. Al agendar te indicamos las opciones disponibles. También puedes escribirnos por WhatsApp y nuestro equipo te guía paso a paso.',
             options: [
                 { id: 'agendar', label: 'Quiero agendar una sesión', primary: true },
                 { id: 'whatsapp', label: 'Escribir por WhatsApp', primary: true, external: true },
@@ -52,7 +67,7 @@
             ]
         },
         descuento: {
-            message: 'De vez en cuando tenemos promociones de lanzamiento. Si te interesa, te sugiero escribirnos por WhatsApp para que Lupita te cuente las condiciones actuales.',
+            message: 'De vez en cuando tenemos promociones de lanzamiento. Si te interesa, escríbenos por WhatsApp para que te cuenten las condiciones actuales.',
             options: [
                 { id: 'whatsapp', label: 'Escribir por WhatsApp', primary: true, external: true },
                 { id: 'volver', label: 'Ver otras opciones' }
@@ -74,14 +89,14 @@
             ]
         },
         psicologo_vs_tanatologo: {
-            message: 'Te ayudo a decidir:\n\n• Si lo que vives está relacionado con ansiedad, depresión, estrés o salud mental general, te vinculamos con un psicólogo.\n\n• Si atraviesas un duelo por muerte, una ruptura, una pérdida importante o una enfermedad, te vinculamos con un tanatólogo.\n\nSi no estás seguro, el matching te orienta.',
+            message: 'Te ayudo a decidir:\n\n• Si lo que vives está relacionado con ansiedad, depresión, estrés o salud mental general, te vinculamos con un psicólogo.\n\n• Si atraviesas un duelo por muerte, una ruptura, una pérdida importante o una enfermedad, te vinculamos con un tanatólogo.\n\nSi no estás seguro, el cuestionario de matching te orienta.',
             options: [
                 { id: 'matching', label: 'Hacer el matching', primary: true },
                 { id: 'volver', label: 'Ver otras opciones' }
             ]
         },
         profesional: {
-            message: 'Qué gusto que quieras ser parte. La membresía para profesionales es de $300 MXN trimestrales e incluye:\n\n• Perfil en nuestro directorio.\n• 2 conferencias magistrales al mes grabadas.\n• Biblioteca con libros, mapas mentales y actividades.\n• Flexibilidad de horarios y flujo de pacientes.',
+            message: 'Qué gusto que quieras ser parte. La membresía para profesionales incluye:\n\n• Perfil en nuestro directorio.\n• Acceso a conferencias magistrales grabadas.\n• Biblioteca con recursos profesionales.\n• Flexibilidad de horarios y flujo de pacientes.',
             options: [
                 { id: 'requisitos', label: '¿Cuáles son los requisitos?' },
                 { id: 'portal', label: 'Ver demo del portal' },
@@ -97,9 +112,9 @@
             ]
         },
         humano: {
-            message: 'Por supuesto. A veces nada sustituye una conversación humana. Puedes escribirle a Lupita Muñoz por WhatsApp; ella te responderá con calma.',
+            message: 'Por supuesto. A veces nada sustituye una conversación humana. Puedes escribirnos por WhatsApp; nuestro equipo te responderá con calma.',
             options: [
-                { id: 'whatsapp', label: 'Escribir a Lupita por WhatsApp', primary: true, external: true },
+                { id: 'whatsapp', label: 'Escribir por WhatsApp', primary: true, external: true },
                 { id: 'volver', label: 'Ver otras opciones' }
             ]
         },
@@ -113,12 +128,12 @@
     };
 
     const actionHandlers = {
-        agendar: { href: 'pages/matching.html' },
-        matching: { href: 'pages/matching.html' },
+        agendar: { href: PATHS.matching },
+        matching: { href: PATHS.matching },
         whatsapp: { href: WHATSAPP_URL, external: true },
-        aplicar: { href: 'pages/profesionales.html' },
-        portal: { href: 'pages/profesionales/dashboard.html' },
-        crisis: { href: 'pages/crisis.html' }
+        aplicar: { href: PATHS.profesionales },
+        portal: { href: PATHS.profesionalDashboard },
+        crisis: { href: PATHS.crisis }
     };
 
     const botHTML = `
@@ -148,6 +163,7 @@
     `;
 
     function injectAtencionBot() {
+        if (document.getElementById('atencion-bot')) return;
         const wrapper = document.createElement('div');
         wrapper.innerHTML = botHTML;
         document.body.appendChild(wrapper);
@@ -217,8 +233,8 @@
         }
 
         function resolveHref(href) {
-            if (href.startsWith('http') || href.startsWith('tel:')) return href;
-            return root + href;
+            if (href.startsWith('http') || href.startsWith('tel:') || href.startsWith('/')) return href;
+            return href;
         }
 
         function handleOption(optionId, label) {
