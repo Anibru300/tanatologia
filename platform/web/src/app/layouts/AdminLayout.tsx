@@ -53,12 +53,15 @@ export function AdminLayout() {
     <div className="min-h-screen flex">
       <aside className="hidden lg:flex w-72 flex-col bg-surface border-r border-border sticky top-0 h-screen">
         <div className="p-6 border-b border-border">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-              SC
-            </div>
-            <span className="text-lg font-semibold text-text">SOMOS-CALMA</span>
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                SC
+              </div>
+              <span className="text-lg font-semibold text-text">SOMOS-CALMA</span>
+            </Link>
+            <NotificationBell />
+          </div>
           <p className="text-xs text-text-light mt-2 uppercase tracking-wider font-semibold">Administración</p>
         </div>
 
@@ -83,12 +86,9 @@ export function AdminLayout() {
         </nav>
 
         <div className="p-4 border-t border-border">
-          <div className="mb-4 px-4 flex items-center justify-between">
-            <div>
-              <p className="font-medium text-text text-sm">{user?.fullName}</p>
-              <p className="text-xs text-text-light">Administrador</p>
-            </div>
-            <NotificationBell />
+          <div className="mb-4 px-4">
+            <p className="font-medium text-text text-sm">{user?.fullName}</p>
+            <p className="text-xs text-text-light">Administrador</p>
           </div>
           <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
             <LogOut size={18} />
