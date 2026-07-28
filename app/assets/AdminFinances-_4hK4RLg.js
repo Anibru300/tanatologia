@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-bzQ4Vb5N.js";import{t}from"./ComingSoon-BG4OWAU4.js";var n=e();function r(){return(0,n.jsx)(t,{title:`Finanzas`,description:`El panel financiero se habilitará junto con la pasarela de pagos.`,actionLabel:`Ver citas`,actionTo:`/admin/citas`})}export{r as AdminFinances};

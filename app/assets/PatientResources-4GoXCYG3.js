@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-bzQ4Vb5N.js";import{t}from"./ComingSoon-BknkOenJ.js";var n=e();function r(){return(0,n.jsx)(t,{title:`Recursos`,description:`Pronto encontrarás aquí meditaciones, ejercicios y lecturas para acompañar tu proceso.`,actionLabel:`Ir al inicio`,actionTo:`/paciente`})}export{r as PatientResources};

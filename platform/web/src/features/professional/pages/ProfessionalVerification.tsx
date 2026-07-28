@@ -158,6 +158,7 @@ export function ProfessionalVerification() {
       setError(err instanceof Error ? err.message : 'No se pudo enviar a revisión')
     } finally {
       setSubmitting(false)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
