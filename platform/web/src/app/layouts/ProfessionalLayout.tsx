@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { QuickExitButton } from '@/components/QuickExitButton'
+import { NotificationBell } from '@/features/notifications/NotificationBell'
 
 const menuItems = [
   { to: '/profesional', icon: LayoutDashboard, label: 'Dashboard' },
@@ -85,9 +86,12 @@ export function ProfessionalLayout() {
         </nav>
 
         <div className="p-4 border-t border-border">
-          <div className="mb-4 px-4">
-            <p className="font-medium text-text text-sm">{user?.fullName}</p>
-            <p className="text-xs text-text-light">Profesional</p>
+          <div className="mb-4 px-4 flex items-center justify-between">
+            <div>
+              <p className="font-medium text-text text-sm">{user?.fullName}</p>
+              <p className="text-xs text-text-light">Profesional</p>
+            </div>
+            <NotificationBell />
           </div>
           <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
             <LogOut size={18} />
@@ -99,9 +103,12 @@ export function ProfessionalLayout() {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-surface border-b border-border">
         <div className="flex items-center justify-between p-4">
           <span className="font-semibold text-text">SOMOS-CALMA</span>
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2">
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2">
+              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
         {mobileOpen && (
           <nav className="p-4 border-t border-border space-y-1 max-h-[80vh] overflow-y-auto">

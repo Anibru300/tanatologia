@@ -115,6 +115,9 @@ const AdminDashboard = lazy(() =>
 const AdminProfessionals = lazy(() =>
   import('@/features/admin/pages/AdminProfessionals').then((m) => ({ default: m.AdminProfessionals }))
 )
+const AdminVerification = lazy(() =>
+  import('@/features/admin/pages/AdminVerification').then((m) => ({ default: m.AdminVerification }))
+)
 const AdminPatients = lazy(() =>
   import('@/features/admin/pages/AdminPatients').then((m) => ({ default: m.AdminPatients }))
 )
@@ -265,6 +268,7 @@ export function AppRouter() {
       >
         <Route index element={<AdminDashboard />} />
         <Route path="profesionales" element={<AdminProfessionals />} />
+        <Route path="verificacion" element={<AdminVerification />} />
         <Route path="pacientes" element={<AdminPatients />} />
         <Route path="citas" element={<AdminAppointments />} />
         <Route path="cotizaciones" element={<AdminQuotes />} />

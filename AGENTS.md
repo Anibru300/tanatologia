@@ -61,10 +61,10 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 3. ✅ Integrar Jitsi Meet en `ProfessionalVideoRoom` y sala de paciente (usando `meet.jit.si`).
 4. ✅ Citas conectadas a Supabase (agendar, listar, videollamada real).
 5. ✅ Edge Function `send-email` preparada para Resend (pendiente API key para activar).
-6. Implementar pagos (Stripe/PayPal) cuando haya tracción.
-3. Integrar Jitsi Meet en `ProfessionalVideoRoom` y sala de paciente.
-4. Configurar Resend para enviar cotizaciones y notificaciones.
-5. Implementar pagos (Stripe/PayPal) cuando haya tracción.
+6. ✅ Fase 1 (2026-07-27): perfiles editables con avatar (Supabase Storage), verificación documental de profesionistas + panel admin `/admin/verificacion`, disponibilidad real conectada al booking (RPC `get_booked_slots`), notificaciones in-app con Realtime, CI/CD con GitHub Actions.
+7. ⏳ Ejecutar `platform/supabase/migrations/005_phase1_profiles_documents_notifications.sql` en el SQL Editor (crea tablas `professional_documents`, `notifications`, `legal_acceptances`, `platform_settings`, buckets `avatars` y `professional-documents`).
+8. ⏳ Agregar secrets `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en GitHub (Settings > Secrets > Actions) para el workflow de deploy.
+9. Implementar pagos (Openpay recomendado para marketplace MX; ver `docs/investigacion-plataforma-2026-07-27.md`) cuando haya tracción.
 
 ## Despliegue
 - GitHub Pages publica la rama `main` (sitio estático original en raíz).
@@ -72,6 +72,7 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - Base URL configurada en `platform/web/vite.config.ts` como `/tanatologia/app/`.
 - Se usa `HashRouter` para evitar errores 404 en rutas de SPA en GitHub Pages.
 - El archivo `/app/404.html` redirige cualquier ruta desconocida al hash correspondiente (`/#/ruta`).
+- El workflow `.github/workflows/deploy-app.yml` compila `platform/web` y copia el build a `/app/` automáticamente en cada push a `main` que toque `platform/web/**` (requiere los secrets de Supabase configurados).
 
 ## Registro de nuevos usuarios
 - Al registrarse, el trigger `handle_new_user()` crea automáticamente el perfil en `profiles` y, según el rol, un registro en `patient_profiles` o `professional_profiles`.
@@ -79,3 +80,9 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
   **Supabase Dashboard > Authentication > Providers > Email > Confirm email**.
 - Para aplicar el trigger actualizado con subperfiles, ejecuta en el SQL Editor:
   `platform/supabase/migrations/002_update_trigger_subprofiles.sql`.
+
+## Verificación de profesionistas (Fase 1)
+- El profesional captura su cédula y sube documentos (cédula, título, INE, comprobante) desde `/profesional/verificacion`; los archivos van al bucket privado `professional-documents` (carpeta por `profile_id`).
+- `submit_for_review()` (RPC) valida requisitos mínimos y pasa el perfil a `in_review`.
+- El admin revisa en `/admin/verificacion` con URLs firmadas, consulta manualmente la cédula en https://cedulaprofesional.sep.gob.mx/ y aprueba (`verified` + visible en directorio) o rechaza con motivo.
+- La investigación completa (benchmark, pagos, legal, roadmap) está en `docs/investigacion-plataforma-2026-07-27.md`.

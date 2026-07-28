@@ -191,6 +191,42 @@ export async function getAppointmentsForProfessional(professionalProfileId: stri
   return (data || []).map(mapAppointment)
 }
 
+export type AppointmentTimeSlot = {
+  scheduled_at: string
+  duration_minutes: number
+  status: AppointmentStatus
+}
+
+/**
+ * Devuelve los horarios ocupados de un profesional para una fecha ('YYYY-MM-DD').
+ * Usa la RPC get_booked_slots (SECURITY DEFINER) porque el RLS solo permite
+ * leer las citas propias; la RPC expone solo horarios, sin datos del paciente.
+ */
+export async function getProfessionalAppointmentsForDate(
+  professionalProfileId: string,
+  date: string
+): Promise<AppointmentTimeSlot[]> {
+  const [year, month, day] = date.split('-').map(Number)
+  const dayStart = new Date(year, month - 1, day, 0, 0, 0, 0)
+  const dayEnd = new Date(year, month - 1, day + 1, 0, 0, 0, 0)
+
+  const { data, error } = await supabase.rpc('get_booked_slots', {
+    p_professional_profile_id: professionalProfileId,
+    p_start: dayStart.toISOString(),
+    p_end: dayEnd.toISOString(),
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return (data || []).map((row: Record<string, unknown>) => ({
+    scheduled_at: String(row.scheduled_at),
+    duration_minutes: Number(row.duration_minutes),
+    status: row.status as AppointmentStatus,
+  }))
+}
+
 export async function getAppointmentById(id: string): Promise<Appointment | null> {
   const { data, error } = await supabase
     .from('appointments')

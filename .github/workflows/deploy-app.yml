@@ -1,0 +1,47 @@
+# Build automático de la app React (platform/web) y publicación en /app
+# GitHub Pages publica la raíz de main; este workflow mantiene /app sincronizado.
+name: Build app React → /app
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'platform/web/**'
+      - '.github/workflows/deploy-app.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: platform/web/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: platform/web
+        run: npm ci
+
+      - name: Build (tsc + vite)
+        working-directory: platform/web
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Copiar build a /app
+        run: |
+          rm -rf app
+          cp -r platform/web/dist app
+
+      - name: Commit y push del build
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: build automático de /app'

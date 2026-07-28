@@ -8,13 +8,19 @@ import { useAuth } from '@/features/auth/AuthProvider'
 import {
   getProfessionalProfiles,
   getPatientProfileId,
+  getProfessionalAppointmentsForDate,
   createAppointment,
   type ProfessionalProfile,
   type SessionType,
 } from '@/features/appointments/appointmentsService'
+import {
+  getAvailabilityForProfessional,
+  computeAvailableSlots,
+  type AvailabilityRange,
+} from '@/features/availability/availabilityService'
 import { sendEmail } from '@/lib/email'
 
-const timeSlots = ['09:00', '10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '18:00', '19:00']
+const SESSION_DURATION_MINUTES = 50
 
 const services = [
   {
@@ -62,6 +68,12 @@ export function BookAppointment() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
+  const [availability, setAvailability] = useState<AvailabilityRange[] | null>(null)
+  const [availabilityError, setAvailabilityError] = useState('')
+  const [slots, setSlots] = useState<string[]>([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [slotsError, setSlotsError] = useState('')
+
   const selectedServiceData = services.find((s) => s.id === selectedService)!
   const selectedTherapistData = therapists.find((t) => t.id === selectedTherapist)
 
@@ -76,6 +88,71 @@ export function BookAppointment() {
         setLoadingTherapists(false)
       })
   }, [])
+
+  // Cargar la disponibilidad del terapeuta seleccionado.
+  useEffect(() => {
+    setSelectedDate('')
+    setSelectedTime('')
+    setSlots([])
+    setSlotsError('')
+    setAvailabilityError('')
+
+    if (!selectedTherapist) {
+      setAvailability(null)
+      return
+    }
+
+    let cancelled = false
+    getAvailabilityForProfessional(selectedTherapist)
+      .then((data) => {
+        if (!cancelled) setAvailability(data)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setAvailability([])
+          setAvailabilityError(
+            err instanceof Error ? err.message : 'Error cargando la disponibilidad del profesional'
+          )
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [selectedTherapist])
+
+  // Al elegir fecha, calcular los horarios realmente disponibles.
+  useEffect(() => {
+    setSelectedTime('')
+    setSlots([])
+    setSlotsError('')
+
+    if (!selectedDate || !selectedTherapist || !availability || availability.length === 0) {
+      return
+    }
+
+    // Parsear 'YYYY-MM-DD' como fecha local (no UTC).
+    const [year, month, day] = selectedDate.split('-').map(Number)
+    const date = new Date(year, month - 1, day)
+
+    let cancelled = false
+    setLoadingSlots(true)
+    getProfessionalAppointmentsForDate(selectedTherapist, selectedDate)
+      .then((appointments) => {
+        if (cancelled) return
+        setSlots(computeAvailableSlots(availability, appointments, date, SESSION_DURATION_MINUTES))
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setSlotsError(err instanceof Error ? err.message : 'Error cargando los horarios disponibles')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSlots(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [selectedDate, selectedTherapist, availability])
 
   const getPrice = (therapist?: ProfessionalProfile) => {
     if (!therapist) return 0
@@ -107,13 +184,17 @@ export function BookAppointment() {
         throw new Error('No se encontró tu perfil de paciente. Contacta soporte.')
       }
 
-      const scheduledAt = `${selectedDate}T${selectedTime}:00`
+      // Construir la fecha/hora en la zona horaria local del usuario
+      // y enviarla como timestamptz (ISO con zona horaria).
+      const [year, month, day] = selectedDate.split('-').map(Number)
+      const [hours, minutes] = selectedTime.split(':').map(Number)
+      const scheduledAt = new Date(year, month - 1, day, hours, minutes, 0, 0).toISOString()
 
       const appointment = await createAppointment({
         patient_profile_id: patientProfileId,
         professional_profile_id: selectedTherapistData.id,
         scheduled_at: scheduledAt,
-        duration_minutes: selectedService === 'single' ? 50 : 50,
+        duration_minutes: SESSION_DURATION_MINUTES,
         session_type: selectedService,
         serviceName: selectedServiceData.name,
       })
@@ -280,27 +361,56 @@ export function BookAppointment() {
                 <input
                   type="date"
                   value={selectedDate}
+                  min={new Date().toLocaleDateString('en-CA')}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full px-4 py-3 rounded-[12px] border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
               <div>
                 <LabelWithIcon icon={Clock} text="Horario disponible" />
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                  {timeSlots.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => setSelectedTime(time)}
-                      className={`px-4 py-3 rounded-[12px] border text-sm font-medium transition-colors ${
-                        selectedTime === time
-                          ? 'bg-primary text-white border-primary'
-                          : 'border-border text-text hover:border-primary bg-surface'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
+                {availabilityError && (
+                  <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">
+                    {availabilityError}
+                  </div>
+                )}
+                {!availabilityError && availability !== null && availability.length === 0 && (
+                  <div className="p-4 rounded-[12px] bg-bg-alt text-text-light text-sm">
+                    Este profesional aún no tiene horarios disponibles.
+                  </div>
+                )}
+                {!availabilityError && (!availability || availability.length > 0) && !selectedDate && (
+                  <p className="text-sm text-text-light">Primero selecciona una fecha.</p>
+                )}
+                {!availabilityError && availability !== null && availability.length > 0 && selectedDate && (
+                  <>
+                    {loadingSlots && <p className="text-sm text-text-light">Cargando horarios...</p>}
+                    {slotsError && (
+                      <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">{slotsError}</div>
+                    )}
+                    {!loadingSlots && !slotsError && slots.length === 0 && (
+                      <div className="p-4 rounded-[12px] bg-bg-alt text-text-light text-sm">
+                        No hay horarios disponibles para esta fecha. Prueba con otro día.
+                      </div>
+                    )}
+                    {!loadingSlots && !slotsError && slots.length > 0 && (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        {slots.map((time) => (
+                          <button
+                            key={time}
+                            onClick={() => setSelectedTime(time)}
+                            className={`px-4 py-3 rounded-[12px] border text-sm font-medium transition-colors ${
+                              selectedTime === time
+                                ? 'bg-primary text-white border-primary'
+                                : 'border-border text-text hover:border-primary bg-surface'
+                            }`}
+                          >
+                            {time}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -96,14 +97,32 @@ export function AdminProfessionals() {
                         </td>
                         <td className="py-4 px-4 text-text">{p.specialties.join(', ') || '—'}</td>
                         <td className="py-4 px-4">
-                          <Badge variant={p.verification_status === 'verified' ? 'success' : 'warning'}>
-                            {p.verification_status === 'verified' ? 'Verificado' : 'Pendiente'}
+                          <Badge
+                            variant={
+                              p.verification_status === 'verified'
+                                ? 'success'
+                                : p.verification_status === 'in_review'
+                                  ? 'warning'
+                                  : p.verification_status === 'rejected'
+                                    ? 'error'
+                                    : 'default'
+                            }
+                          >
+                            {p.verification_status === 'verified'
+                              ? 'Verificado'
+                              : p.verification_status === 'in_review'
+                                ? 'En revisión'
+                                : p.verification_status === 'rejected'
+                                  ? 'Rechazado'
+                                  : 'Pendiente'}
                           </Badge>
                         </td>
                         <td className="py-4 px-4 text-text-light">{p.is_visible ? 'Sí' : 'No'}</td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
-                            <Button size="sm" variant="ghost"><FileText size={16} /></Button>
+                            <Link to="/admin/verificacion">
+                              <Button size="sm" variant="ghost" title="Revisar expediente"><FileText size={16} /></Button>
+                            </Link>
                             {p.verification_status !== 'verified' && (
                               <Button size="sm" variant="ghost" className="text-success" onClick={() => verify(p, 'verified')}>
                                 <CheckCircle size={16} />
