@@ -39,8 +39,10 @@ export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  const userId = user?.id ?? null
+
   useEffect(() => {
-    if (!user) return
+    if (!userId) return
 
     let mounted = true
 
@@ -52,7 +54,7 @@ export function NotificationBell() {
       })
       .catch((err) => console.error('Error cargando notificaciones:', err))
 
-    const unsubscribe = subscribeToNotifications(user.id, (notification) => {
+    const unsubscribe = subscribeToNotifications(userId, (notification) => {
       setNotifications((prev) => [notification, ...prev].slice(0, 20))
       if (!notification.read_at) {
         setUnreadCount((prev) => prev + 1)
@@ -63,7 +65,7 @@ export function NotificationBell() {
       mounted = false
       unsubscribe()
     }
-  }, [user])
+  }, [userId])
 
   // Cerrar el panel al hacer click fuera
   useEffect(() => {

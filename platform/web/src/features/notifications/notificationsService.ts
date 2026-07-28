@@ -78,8 +78,12 @@ export function subscribeToNotifications(
   profileId: string,
   callback: (notification: Notification) => void
 ): () => void {
+  // Nombre único por suscripción: evita el error "cannot add postgres_changes
+  // callbacks after subscribe()" cuando el efecto se re-ejecuta y el cliente
+  // de Realtime aún tiene registrado el canal anterior con el mismo tópico.
+  const suffix = Math.random().toString(36).slice(2, 8)
   const channel = supabase
-    .channel(`notifications:${profileId}`)
+    .channel(`notifications:${profileId}:${suffix}`)
     .on(
       'postgres_changes',
       {
@@ -95,6 +99,7 @@ export function subscribeToNotifications(
     .subscribe()
 
   return () => {
+    channel.unsubscribe()
     supabase.removeChannel(channel)
   }
 }
