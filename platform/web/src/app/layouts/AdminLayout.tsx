@@ -53,15 +53,12 @@ export function AdminLayout() {
     <div className="min-h-screen flex">
       <aside className="hidden lg:flex w-72 flex-col bg-surface border-r border-border sticky top-0 h-screen">
         <div className="p-6 border-b border-border">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-                SC
-              </div>
-              <span className="text-lg font-semibold text-text">SOMOS-CALMA</span>
-            </Link>
-            <NotificationBell />
-          </div>
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+              SC
+            </div>
+            <span className="text-lg font-semibold text-text">SOMOS-CALMA</span>
+          </Link>
           <p className="text-xs text-text-light mt-2 uppercase tracking-wider font-semibold">Administración</p>
         </div>
 
@@ -134,6 +131,10 @@ export function AdminLayout() {
       </div>
 
       <main className="flex-1 lg:ml-0 pt-16 lg:pt-0">
+        {/* Barra superior de escritorio: notificaciones a la derecha */}
+        <div className="hidden lg:flex items-center justify-end px-6 py-2 border-b border-border bg-surface sticky top-0 z-40">
+          <NotificationBell />
+        </div>
         <Outlet />
       </main>
 

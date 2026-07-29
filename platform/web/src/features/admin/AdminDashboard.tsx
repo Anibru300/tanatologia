@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -7,24 +8,68 @@ import {
   Calendar,
   DollarSign,
   CheckCircle,
-  AlertCircle,
   ArrowRight,
-  FileText,
-  TrendingUp,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import {
+  getAdminPatients,
+  getAdminProfessionals,
+  getAdminAppointments,
+  type AdminProfessional,
+} from './adminService'
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Pendiente',
+  in_review: 'En revisión',
+  verified: 'Verificado',
+  rejected: 'Rechazado',
+}
 
 export function AdminDashboard() {
   const { user } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const [patientCount, setPatientCount] = useState(0)
+  const [professionals, setProfessionals] = useState<AdminProfessional[]>([])
+  const [appointmentsThisMonth, setAppointmentsThisMonth] = useState(0)
+  const [completedThisMonth, setCompletedThisMonth] = useState(0)
 
-  const pendingProfessionals = [
-    { id: 1, name: 'Dra. Carmen Ruiz', specialty: 'Psicología clínica', submitted: '2026-06-27' },
-  ]
+  useEffect(() => {
+    let cancelled = false
 
-  const alerts = [
-    { id: 1, message: 'Pago pendiente a profesional: Dra. María Rodríguez', type: 'warning' },
-    { id: 2, message: 'Nueva cotización de empresa solicitada', type: 'info' },
-  ]
+    async function load() {
+      try {
+        const [patients, profs, appointments] = await Promise.all([
+          getAdminPatients(),
+          getAdminProfessionals(),
+          getAdminAppointments(),
+        ])
+        if (cancelled) return
+
+        const now = new Date()
+        const thisMonth = appointments.filter((a) => {
+          const d = new Date(a.scheduled_at)
+          return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+        })
+
+        setPatientCount(patients.length)
+        setProfessionals(profs)
+        setAppointmentsThisMonth(thisMonth.length)
+        setCompletedThisMonth(thisMonth.filter((a) => a.status === 'completed').length)
+      } catch (err) {
+        console.error('Error cargando panel de administración:', err)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const verifiedCount = professionals.filter((p) => p.verification_status === 'verified').length
+  const pendingReview = professionals.filter((p) => p.verification_status === 'in_review')
 
   return (
     <div className="section-calma">
@@ -43,7 +88,7 @@ export function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">28</p>
+              <p className="text-3xl font-bold text-text">{loading ? '…' : patientCount}</p>
               <p className="text-text-light text-sm">Registrados</p>
             </CardContent>
           </Card>
@@ -56,8 +101,10 @@ export function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">6</p>
-              <p className="text-text-light text-sm">3 verificados · 1 pendiente</p>
+              <p className="text-3xl font-bold text-text">{loading ? '…' : professionals.length}</p>
+              <p className="text-text-light text-sm">
+                {verifiedCount} verificados · {pendingReview.length} en revisión
+              </p>
             </CardContent>
           </Card>
 
@@ -69,8 +116,8 @@ export function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">42</p>
-              <p className="text-text-light text-sm">Sesiones completadas</p>
+              <p className="text-3xl font-bold text-text">{loading ? '…' : appointmentsThisMonth}</p>
+              <p className="text-text-light text-sm">{completedThisMonth} sesiones completadas</p>
             </CardContent>
           </Card>
 
@@ -82,125 +129,56 @@ export function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">$3,240</p>
-              <p className="text-text-light text-sm">Comisiones retenidas</p>
+              <p className="text-3xl font-bold text-text">$0</p>
+              <p className="text-text-light text-sm">Los pagos aún no están habilitados</p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Profesionales pendientes</CardTitle>
-                  <CardDescription>Revisa cédulas y documentos</CardDescription>
-                </div>
-                <Badge variant="warning">1</Badge>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Profesionales pendientes</CardTitle>
+                <CardDescription>Revisa cédulas y documentos</CardDescription>
               </div>
-            </CardHeader>
-            <CardContent>
-              {pendingProfessionals.length > 0 ? (
-                <div className="space-y-3">
-                  {pendingProfessionals.map((p) => (
-                    <div
-                      key={p.id}
-                      className="flex items-center justify-between p-4 bg-bg-alt rounded-[12px]"
-                    >
-                      <div>
-                        <p className="font-medium text-text">{p.name}</p>
-                        <p className="text-sm text-text-light">{p.specialty}</p>
-                      </div>
-                      <Link to="/admin/profesionales">
-                        <Button size="sm" variant="outline" className="gap-1">
-                          Revisar
-                          <ArrowRight size={14} />
-                        </Button>
-                      </Link>
+              <Badge variant={pendingReview.length > 0 ? 'warning' : 'success'}>
+                {loading ? '…' : pendingReview.length}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {pendingReview.length > 0 ? (
+              <div className="space-y-3">
+                {pendingReview.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between p-4 bg-bg-alt rounded-[12px]"
+                  >
+                    <div>
+                      <p className="font-medium text-text">{p.full_name}</p>
+                      <p className="text-sm text-text-light">
+                        {STATUS_LABELS[p.verification_status] || p.verification_status}
+                        {p.license_number ? ` · Cédula ${p.license_number}` : ''}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-text-light">
-                  <CheckCircle size={48} className="mx-auto mb-4 text-muted" />
-                  <p>No hay solicitudes pendientes.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Alertas recientes</CardTitle>
-              <CardDescription>Eventos que requieren atención</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {alerts.length > 0 ? (
-                <div className="space-y-3">
-                  {alerts.map((a) => (
-                    <div
-                      key={a.id}
-                      className="flex items-start gap-3 p-4 bg-bg-alt rounded-[12px]"
-                    >
-                      <AlertCircle
-                        size={20}
-                        className={a.type === 'warning' ? 'text-warning shrink-0' : 'text-secondary shrink-0'}
-                      />
-                      <p className="text-text text-sm">{a.message}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-text-light">
-                  <CheckCircle size={48} className="mx-auto mb-4 text-muted" />
-                  <p>No hay alertas activas.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp size={20} className="text-primary" />
-                Crecimiento mensual
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-40 flex items-end justify-around gap-2">
-                {['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'].map((m, i) => (
-                  <div key={m} className="flex flex-col items-center gap-2 flex-1">
-                    <div
-                      className="w-full bg-primary/20 rounded-t-[8px]"
-                      style={{ height: `${(i + 1) * 12}%` }}
-                    />
-                    <span className="text-xs text-text-light">{m}</span>
+                    <Link to="/admin/verificacion">
+                      <Button size="sm" variant="outline" className="gap-1">
+                        Revisar
+                        <ArrowRight size={14} />
+                      </Button>
+                    </Link>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText size={20} className="text-primary" />
-                Reportes rápidos
-              </CardTitle>
-              <CardDescription>Descarga información para contabilidad</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline">Exportar citas</Button>
-                <Button variant="outline">Exportar ingresos</Button>
-                <Button variant="outline">Exportar profesionales</Button>
-                <Button variant="outline">Exportar pacientes</Button>
+            ) : (
+              <div className="text-center py-8 text-text-light">
+                <CheckCircle size={48} className="mx-auto mb-4 text-muted" />
+                <p>No hay solicitudes pendientes.</p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

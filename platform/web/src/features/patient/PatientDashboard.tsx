@@ -24,7 +24,7 @@ import {
 
 export function PatientDashboard() {
   const { user } = useAuth()
-  const [nextAppointment, setNextAppointment] = useState<Appointment | null>(null)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -36,11 +36,8 @@ export function PatientDashboard() {
       try {
         const patientProfileId = await getPatientProfileId(userId)
         if (!patientProfileId) return
-        const appointments = await getAppointmentsForPatient(patientProfileId)
-        const upcoming = appointments
-          .filter((a) => a.status === 'confirmed')
-          .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0]
-        if (!cancelled) setNextAppointment(upcoming || null)
+        const data = await getAppointmentsForPatient(patientProfileId)
+        if (!cancelled) setAppointments(data)
       } catch (err) {
         console.error('Error cargando próxima cita:', err)
       } finally {
@@ -54,6 +51,23 @@ export function PatientDashboard() {
       cancelled = true
     }
   }, [user])
+
+  const now = new Date()
+  const nextAppointment = appointments
+    .filter((a) => a.status === 'confirmed' && new Date(a.scheduled_at) >= now)
+    .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0]
+
+  const completedAppointments = appointments.filter((a) => a.status === 'completed')
+  const completedCount = completedAppointments.length
+
+  // Programa activo: se deduce del tipo de sesión de la última cita de programa
+  const lastProgram = [...appointments]
+    .filter((a) => a.session_type === 'program_4' || a.session_type === 'program_6')
+    .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())[0]
+  const programTarget = lastProgram?.session_type === 'program_4' ? 4 : lastProgram?.session_type === 'program_6' ? 6 : 0
+  const programCompleted = lastProgram
+    ? completedAppointments.filter((a) => a.session_type === lastProgram.session_type).length
+    : 0
 
   return (
     <div className="section-calma">
@@ -120,9 +134,21 @@ export function PatientDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-text font-medium mb-1">Programa Salud Mental</p>
-              <p className="text-sm text-text-light mb-3">2 de 4 sesiones completadas</p>
-              <ProgressBar value={50} className="mb-4" />
+              {programTarget > 0 ? (
+                <>
+                  <p className="text-text font-medium mb-1">
+                    Programa de {programTarget} sesiones
+                  </p>
+                  <p className="text-sm text-text-light mb-3">
+                    {programCompleted} de {programTarget} sesiones completadas
+                  </p>
+                  <ProgressBar value={Math.min(100, (programCompleted / programTarget) * 100)} className="mb-4" />
+                </>
+              ) : (
+                <p className="text-sm text-text-light mb-3">
+                  Aún no tienes un programa activo. Puedes agendar una consulta o un programa con tu terapeuta.
+                </p>
+              )}
               <Link to="/paciente/programas">
                 <Button variant="outline" size="sm" className="w-full">
                   Ver avance
@@ -139,7 +165,7 @@ export function PatientDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text mb-1">2</p>
+              <p className="text-3xl font-bold text-text mb-1">{loading ? '…' : completedCount}</p>
               <p className="text-sm text-text-light mb-4">Sesiones completadas</p>
               <Link to="/paciente/historial">
                 <Button variant="ghost" size="sm" className="w-full">

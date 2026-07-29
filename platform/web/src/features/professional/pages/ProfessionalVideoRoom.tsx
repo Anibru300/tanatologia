@@ -8,7 +8,6 @@ const JitsiMeetingRoom = lazy(() =>
 )
 import { getAppointmentById, type Appointment } from '@/features/appointments/appointmentsService'
 import { useAuth } from '@/features/auth/AuthProvider'
-import { generateJitsiRoomName } from '@/lib/video'
 
 export function ProfessionalVideoRoom() {
   const { appointmentId } = useParams<{ appointmentId?: string }>()
@@ -51,7 +50,8 @@ export function ProfessionalVideoRoom() {
   const handleEnterManual = () => {
     const trimmed = manualRoom.trim()
     if (trimmed) {
-      setActiveRoom(generateJitsiRoomName(trimmed))
+      // El texto capturado ES el nombre de la sala (video_link), no una semilla
+      setActiveRoom(trimmed)
     }
   }
 

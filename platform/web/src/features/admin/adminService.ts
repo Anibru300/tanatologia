@@ -42,14 +42,15 @@ export type AdminQuote = {
 export async function getAdminProfessionals(): Promise<AdminProfessional[]> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, email, full_name, professional_profiles(id, specialties, verification_status, is_visible, license_number)')
+    .select('id, email, full_name, professional_profiles!professional_profiles_profile_id_fkey(id, specialties, verification_status, is_visible, license_number)')
     .eq('role', 'professional')
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
 
   return (data || []).map((row: Record<string, unknown>) => {
-    const pp = (row.professional_profiles as Record<string, unknown>[])?.[0] || {}
+    const rawPp = row.professional_profiles
+    const pp = (Array.isArray(rawPp) ? rawPp[0] : rawPp) as Record<string, unknown> || {}
     return {
       profile_id: String(row.id),
       id: String(pp.id || row.id),

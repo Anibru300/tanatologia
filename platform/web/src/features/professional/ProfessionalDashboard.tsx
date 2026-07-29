@@ -13,6 +13,7 @@ import {
   Video,
   ArrowRight,
   CheckCircle,
+  AlertCircle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -20,10 +21,47 @@ import {
   getAppointmentsForProfessional,
   type Appointment,
 } from '@/features/appointments/appointmentsService'
+import {
+  getMyProfessionalProfile,
+  type MyProfessionalProfile,
+  type VerificationStatus,
+} from '@/features/verification/verificationService'
+
+const VERIFICATION_UI: Record<VerificationStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'info'; description: string }> = {
+  pending: {
+    label: 'Pendiente',
+    variant: 'info',
+    description: 'Completa tu expediente y envíalo a revisión para aparecer en el directorio.',
+  },
+  in_review: {
+    label: 'En revisión',
+    variant: 'warning',
+    description: 'Estamos revisando tus documentos. Te avisaremos cuando termine el proceso.',
+  },
+  verified: {
+    label: 'Verificado',
+    variant: 'success',
+    description: 'Tu perfil está completo y apareces en el directorio de terapeutas.',
+  },
+  rejected: {
+    label: 'Rechazado',
+    variant: 'error',
+    description: 'Tu expediente fue rechazado. Revisa el motivo en la sección de verificación.',
+  },
+}
+
+function isSameDay(a: Date, b: Date) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  )
+}
 
 export function ProfessionalDashboard() {
   const { user } = useAuth()
-  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([])
+  const [profile, setProfile] = useState<MyProfessionalProfile | null>(null)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -35,12 +73,13 @@ export function ProfessionalDashboard() {
       try {
         const professionalProfileId = await getProfessionalProfileId(userId)
         if (!professionalProfileId) return
-        const appointments = await getAppointmentsForProfessional(professionalProfileId)
-        const upcoming = appointments
-          .filter((a) => a.status === 'confirmed')
-          .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
-          .slice(0, 5)
-        if (!cancelled) setUpcomingAppointments(upcoming)
+        const [profileData, appointmentData] = await Promise.all([
+          getMyProfessionalProfile(),
+          getAppointmentsForProfessional(professionalProfileId),
+        ])
+        if (cancelled) return
+        setProfile(profileData)
+        setAppointments(appointmentData)
       } catch (err) {
         console.error('Error cargando citas:', err)
       } finally {
@@ -54,6 +93,17 @@ export function ProfessionalDashboard() {
       cancelled = true
     }
   }, [user])
+
+  const now = new Date()
+  const confirmedFuture = appointments
+    .filter((a) => a.status === 'confirmed' && new Date(a.scheduled_at) >= now)
+    .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+  const todayAppointments = confirmedFuture.filter((a) => isSameDay(new Date(a.scheduled_at), now))
+  const upcomingAppointments = confirmedFuture.slice(0, 5)
+  const activePatients = new Set(appointments.map((a) => a.patient_profile_id)).size
+
+  const verification = VERIFICATION_UI[profile?.verification_status ?? 'pending']
+  const rating = profile?.rating ?? 0
 
   return (
     <div className="section-calma">
@@ -72,8 +122,8 @@ export function ProfessionalDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">{upcomingAppointments.length}</p>
-              <p className="text-text-light text-sm">{upcomingAppointments.length} confirmadas</p>
+              <p className="text-3xl font-bold text-text">{loading ? '…' : todayAppointments.length}</p>
+              <p className="text-text-light text-sm">{upcomingAppointments.length} próximas confirmadas</p>
             </CardContent>
           </Card>
 
@@ -85,8 +135,8 @@ export function ProfessionalDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">5</p>
-              <p className="text-text-light text-sm">Este mes</p>
+              <p className="text-3xl font-bold text-text">{loading ? '…' : activePatients}</p>
+              <p className="text-text-light text-sm">Con al menos una cita</p>
             </CardContent>
           </Card>
 
@@ -98,8 +148,8 @@ export function ProfessionalDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">$1,200</p>
-              <p className="text-text-light text-sm">Neto después de comisión</p>
+              <p className="text-3xl font-bold text-text">$0</p>
+              <p className="text-text-light text-sm">Los pagos aún no están habilitados</p>
             </CardContent>
           </Card>
 
@@ -111,8 +161,8 @@ export function ProfessionalDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">4.9</p>
-              <p className="text-text-light text-sm">Basado en 12 reseñas</p>
+              <p className="text-3xl font-bold text-text">{loading ? '…' : rating > 0 ? rating.toFixed(1) : '—'}</p>
+              <p className="text-text-light text-sm">{rating > 0 ? 'Promedio de reseñas' : 'Sin reseñas aún'}</p>
             </CardContent>
           </Card>
         </div>
@@ -122,8 +172,8 @@ export function ProfessionalDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Mi agenda de hoy</CardTitle>
-                  <CardDescription>Próximas sesiones y solicitudes</CardDescription>
+                  <CardTitle>Mi agenda</CardTitle>
+                  <CardDescription>Próximas sesiones confirmadas</CardDescription>
                 </div>
                 <Link to="/profesional/agenda">
                   <Button variant="outline" size="sm" className="gap-1">
@@ -147,10 +197,12 @@ export function ProfessionalDashboard() {
                     >
                       <div className="flex items-center gap-4">
                         <div className="bg-primary/10 rounded-[12px] p-3 text-center min-w-[60px]">
+                          <span className="block text-xs text-primary-dark font-semibold uppercase">
+                            {new Date(a.scheduled_at).toLocaleString('es-MX', { month: 'short', day: 'numeric' })}
+                          </span>
                           <span className="block text-lg font-bold text-text">
                             {new Date(a.scheduled_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false })}
                           </span>
-                          <span className="block text-xs text-text-light">hrs</span>
                         </div>
                         <div>
                           <p className="font-medium text-text">{a.patientName}</p>
@@ -210,14 +262,20 @@ export function ProfessionalDashboard() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3">
-                <Badge variant="success" className="gap-1">
-                  <CheckCircle size={14} />
-                  Verificado
+                <Badge variant={verification.variant} className="gap-1">
+                  {profile?.verification_status === 'verified' ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
+                  {verification.label}
                 </Badge>
-                <p className="text-text-light text-sm">
-                  Tu perfil está completo y apareces en el directorio de terapeutas.
-                </p>
+                <p className="text-text-light text-sm">{verification.description}</p>
               </div>
+              {profile?.verification_status !== 'verified' && (
+                <Link to="/profesional/verificacion">
+                  <Button variant="outline" size="sm" className="mt-4 gap-1">
+                    Ir a verificación
+                    <ArrowRight size={14} />
+                  </Button>
+                </Link>
+              )}
             </CardContent>
           </Card>
         </div>

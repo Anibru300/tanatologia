@@ -39,6 +39,7 @@ export type MyProfessionalProfile = {
   rejection_reason?: string
   verified_at?: string
   is_visible: boolean
+  rating: number
 }
 
 export type ProfessionalWithDocuments = {
@@ -91,7 +92,7 @@ export async function getMyProfessionalProfile(): Promise<MyProfessionalProfile>
   const { data, error } = await supabase
     .from('professional_profiles')
     .select(
-      'id, profile_id, full_name, license_number, university, verification_status, rejection_reason, verified_at, is_visible'
+      'id, profile_id, full_name, license_number, university, verification_status, rejection_reason, verified_at, is_visible, rating'
     )
     .eq('profile_id', userId)
     .single()
@@ -110,6 +111,7 @@ export async function getMyProfessionalProfile(): Promise<MyProfessionalProfile>
     rejection_reason: row.rejection_reason ? String(row.rejection_reason) : undefined,
     verified_at: row.verified_at ? String(row.verified_at) : undefined,
     is_visible: Boolean(row.is_visible),
+    rating: Number(row.rating ?? 0),
   }
 }
 
@@ -233,7 +235,7 @@ export async function getProfessionalsWithDocuments(): Promise<ProfessionalWithD
     .from('profiles')
     .select(
       `id, email, full_name, created_at,
-       professional_profiles(
+       professional_profiles!professional_profiles_profile_id_fkey(
          id, full_name, license_number, university, verification_status, is_visible,
          professional_documents(count)
        )`
@@ -244,7 +246,9 @@ export async function getProfessionalsWithDocuments(): Promise<ProfessionalWithD
   if (error) throw new Error(error.message)
 
   return (data || []).map((row: Record<string, unknown>) => {
-    const pp = ((row.professional_profiles as Record<string, unknown>[]) || [])[0] || {}
+    // Con la FK explícita PostgREST devuelve objeto (1:1); se tolera arreglo por compatibilidad
+    const rawPp = row.professional_profiles
+    const pp = (Array.isArray(rawPp) ? rawPp[0] : rawPp) as Record<string, unknown> || {}
     const docsCount = ((pp.professional_documents as { count: number }[]) || [])[0]?.count ?? 0
 
     return {

@@ -1,12 +1,47 @@
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/features/auth/AuthProvider'
 import { Card, CardContent } from '@/components/ui/Card'
-import { FileText, Calendar } from 'lucide-react'
-
-const sessions = [
-  { id: 1, date: '2026-06-28', therapist: 'Lic. Javier López', type: 'Programa Salud Mental', notes: true },
-  { id: 2, date: '2026-06-21', therapist: 'Lic. Javier López', type: 'Programa Salud Mental', notes: true },
-]
+import { Calendar, FileText } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Button } from '@/components/ui/Button'
+import {
+  getPatientProfileId,
+  getAppointmentsForPatient,
+  type Appointment,
+} from '@/features/appointments/appointmentsService'
 
 export function PatientHistory() {
+  const { user } = useAuth()
+  const [completed, setCompleted] = useState<Appointment[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    const userId = user.id
+    let cancelled = false
+
+    async function load() {
+      try {
+        const patientProfileId = await getPatientProfileId(userId)
+        if (!patientProfileId) return
+        const appointments = await getAppointmentsForPatient(patientProfileId)
+        const done = appointments
+          .filter((a) => a.status === 'completed')
+          .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())
+        if (!cancelled) setCompleted(done)
+      } catch (err) {
+        console.error('Error cargando historial:', err)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [user])
+
   return (
     <div className="section-calma">
       <div className="container-calma">
@@ -15,33 +50,48 @@ export function PatientHistory() {
           <p className="text-text-light">Registro de tus sesiones completadas.</p>
         </div>
 
-        <div className="relative border-l-2 border-border ml-4 space-y-8">
-          {sessions.map((session) => (
-            <div key={session.id} className="relative pl-8">
-              <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary"></div>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-text">{session.therapist}</h3>
-                      <p className="text-text-light text-sm">{session.type}</p>
-                      <div className="flex items-center gap-2 mt-2 text-sm text-text-light">
-                        <Calendar size={14} />
-                        {session.date}
-                      </div>
+        {loading ? (
+          <p className="text-text-light">Cargando historial...</p>
+        ) : completed.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <FileText size={48} className="mx-auto mb-4 text-muted" />
+              <p className="text-text-light mb-4">Aún no tienes sesiones completadas.</p>
+              <Link to="/paciente/agendar">
+                <Button size="sm">Agendar tu primera cita</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="relative border-l-2 border-border ml-4 space-y-8">
+            {completed.map((session) => (
+              <div key={session.id} className="relative pl-8">
+                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary"></div>
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-text">{session.professionalName}</h3>
+                    <p className="text-text-light text-sm">{session.serviceName}</p>
+                    <div className="flex items-center gap-2 mt-2 text-sm text-text-light">
+                      <Calendar size={14} />
+                      {new Date(session.scheduled_at).toLocaleDateString('es-MX', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                      {' · '}
+                      {new Date(session.scheduled_at).toLocaleTimeString('es-MX', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                      })}
+                      {' hrs'}
                     </div>
-                    {session.notes && (
-                      <button className="flex items-center gap-2 text-primary text-sm font-medium hover:underline">
-                        <FileText size={16} />
-                        Ver notas
-                      </button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
-        </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
