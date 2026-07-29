@@ -63,7 +63,8 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 5. ✅ Edge Function `send-email` preparada para Resend (pendiente API key para activar).
 6. ✅ Fase 1 (2026-07-27): perfiles editables con avatar (Supabase Storage), verificación documental de profesionistas + panel admin `/admin/verificacion`, disponibilidad real conectada al booking (RPC `get_booked_slots`), notificaciones in-app con Realtime, CI/CD con GitHub Actions.
 7. ✅ Migraciones 005 y 006 aplicadas en Supabase Cloud (tablas `professional_documents`, `notifications`, `legal_acceptances`, `platform_settings`, buckets `avatars` y `professional-documents`).
-7b. ⏳ Ejecutar `platform/supabase/migrations/007_fix_patient_rls_and_review_validation.sql` en el SQL Editor (política UPDATE de `patient_profiles`, política "Professionals read assigned patients" con función SECURITY DEFINER `is_assigned_patient`, y validación estricta de documentos en `submit_for_review`).
+7b. ✅ Migración 007 aplicada en Cloud (política UPDATE de `patient_profiles`, `is_assigned_patient()` SECURITY DEFINER, validación estricta de docs en `submit_for_review`). **Ninguna migración pendiente.**
+7c. ✅ Dashboards admin/profesional/paciente con datos reales (sin mocks); historial del paciente, lista de pacientes y notas clínicas (`clinical_notes`) conectados a Supabase. Campana de notificaciones arriba a la derecha en los 3 portales.
 8. ⏳ Agregar secrets `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en GitHub (Settings > Secrets > Actions) para el workflow de deploy.
 9. Implementar pagos (Openpay recomendado para marketplace MX; ver `docs/investigacion-plataforma-2026-07-27.md`) cuando haya tracción.
 
