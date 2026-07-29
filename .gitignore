@@ -13,6 +13,8 @@ desktop.ini
 node_modules/
 package-lock.json
 yarn.lock
+# Excepción: la app React necesita su lockfile para npm ci en CI/CD
+!platform/web/package-lock.json
 
 # Builds
 dist/
