@@ -72,29 +72,28 @@ export function PatientVideoRoom() {
     )
   }
 
+  // La sala ocupa todo el viewport (overlay sobre el layout del portal).
   return (
-    <div className="section-calma flex-1 flex flex-col min-h-[calc(100vh-80px)]">
-      <div className="container-calma flex-1 flex flex-col">
-        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-text">Tu sesión</h1>
-            <p className="text-text-light text-sm">
-              {appointment.professionalName} · {new Date(appointment.scheduled_at).toLocaleString('es-MX')}
-            </p>
-          </div>
-          <Button variant="outline" className="gap-2 self-start" onClick={() => navigate(-1)}>
-            <PhoneOff size={18} /> Colgar
-          </Button>
+    <div className="fixed inset-0 z-[60] bg-bg flex flex-col">
+      <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-3 border-b border-border bg-surface shrink-0">
+        <div className="min-w-0">
+          <h1 className="text-lg font-bold text-text truncate">Tu sesión</h1>
+          <p className="text-text-light text-xs sm:text-sm truncate">
+            {appointment.professionalName} · {new Date(appointment.scheduled_at).toLocaleString('es-MX')}
+          </p>
         </div>
-        <div className="flex-1 min-h-[500px]">
-          <Suspense fallback={<p className="text-text-light">Cargando videollamada...</p>}>
-            <JitsiMeetingRoom
-              roomName={appointment.video_link}
-              displayName={user?.fullName || 'Paciente'}
-              onReadyToClose={() => navigate(-1)}
-            />
-          </Suspense>
-        </div>
+        <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={() => navigate(-1)}>
+          <PhoneOff size={16} /> Colgar
+        </Button>
+      </div>
+      <div className="flex-1 min-h-0">
+        <Suspense fallback={<p className="text-text-light p-6">Cargando videollamada...</p>}>
+          <JitsiMeetingRoom
+            roomName={appointment.video_link}
+            displayName={user?.fullName || 'Paciente'}
+            onReadyToClose={() => navigate(-1)}
+          />
+        </Suspense>
       </div>
     </div>
   )

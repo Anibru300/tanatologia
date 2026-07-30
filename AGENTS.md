@@ -65,8 +65,14 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 7. ✅ Migraciones 005 y 006 aplicadas en Supabase Cloud (tablas `professional_documents`, `notifications`, `legal_acceptances`, `platform_settings`, buckets `avatars` y `professional-documents`).
 7b. ✅ Migración 007 aplicada en Cloud (política UPDATE de `patient_profiles`, `is_assigned_patient()` SECURITY DEFINER, validación estricta de docs en `submit_for_review`). **Ninguna migración pendiente.**
 7c. ✅ Dashboards admin/profesional/paciente con datos reales (sin mocks); historial del paciente, lista de pacientes y notas clínicas (`clinical_notes`) conectados a Supabase. Campana de notificaciones arriba a la derecha en los 3 portales.
+7d. ⏳ Migración 008 (`008_date_specific_availability.sql`) creada, **pendiente de ejecutar en Cloud**: reemplaza `availability` (rangos recurrentes por día de semana) por `availability_slots` (fecha/hora específica, con constraint EXCLUDE anti-traslape, requiere extensión `btree_gist`). Hasta aplicarla, disponibilidad y agendado no funcionan.
 8. ⏳ Agregar secrets `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en GitHub (Settings > Secrets > Actions) para el workflow de deploy.
 9. Implementar pagos (Openpay recomendado para marketplace MX; ver `docs/investigacion-plataforma-2026-07-27.md`) cuando haya tracción.
+
+## Modelo de disponibilidad (2026-07-29)
+- El profesional publica **slots de fecha/hora específicos** desde un calendario (`/profesional/disponibilidad`); cada slot = sesión de 50 min (`availability_slots`, constraint EXCLUDE anti-traslape).
+- El paciente agenda sobre slots libres (mini-calendario en `BookAppointment`); si viene del directorio, el terapeuta ya va preseleccionado (state de navegación `therapistId`).
+- Salas de video (`PatientVideoRoom`, `ProfessionalVideoRoom`) renderizan Jitsi en **overlay a viewport completo** (`fixed inset-0 z-[60]`); el menú "Videollamada" del profesional lista sus próximas citas para entrar con un clic.
 
 ## Despliegue
 - GitHub Pages publica la rama `main` (sitio estático original en raíz).

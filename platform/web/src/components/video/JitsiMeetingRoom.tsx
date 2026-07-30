@@ -9,7 +9,7 @@ interface JitsiMeetingRoomProps {
 
 export function JitsiMeetingRoom({ roomName, displayName, email = '', onReadyToClose }: JitsiMeetingRoomProps) {
   return (
-    <div className="w-full h-full min-h-[400px] rounded-[24px] overflow-hidden bg-bg-alt">
+    <div className="w-full h-full min-h-0 overflow-hidden bg-bg-alt">
       <JitsiMeeting
         roomName={roomName}
         configOverwrite={{

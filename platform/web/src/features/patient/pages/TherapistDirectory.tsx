@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -23,6 +23,7 @@ function formatPrice(cents: number) {
 }
 
 export function TherapistDirectory() {
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [specialty, setSpecialty] = useState('Todas')
   const [therapists, setTherapists] = useState<ProfessionalProfile[]>([])
@@ -172,9 +173,12 @@ export function TherapistDirectory() {
                         <Button variant="outline" size="sm" onClick={() => setSelected(t)}>
                           Ver perfil
                         </Button>
-                        <Link to="/paciente/agendar">
-                          <Button size="sm">Agendar</Button>
-                        </Link>
+                        <Button
+                          size="sm"
+                          onClick={() => navigate('/paciente/agendar', { state: { therapistId: t.id } })}
+                        >
+                          Agendar
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -243,12 +247,16 @@ export function TherapistDirectory() {
               </div>
 
               <div className="flex gap-3">
-                <Link to="/paciente/agendar" className="flex-1" onClick={() => setSelected(null)}>
-                  <Button className="w-full gap-2">
-                    <Calendar size={18} />
-                    Agendar cita
-                  </Button>
-                </Link>
+                <Button
+                  className="flex-1 gap-2"
+                  onClick={() => {
+                    setSelected(null)
+                    navigate('/paciente/agendar', { state: { therapistId: selected.id } })
+                  }}
+                >
+                  <Calendar size={18} />
+                  Agendar cita
+                </Button>
                 <Button variant="outline" className="flex-1" onClick={() => setSelected(null)}>
                   Cerrar
                 </Button>

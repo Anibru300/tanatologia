@@ -1,57 +1,77 @@
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { useEffect, useMemo, useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Clock, Plus, Trash2, Save, Check } from 'lucide-react'
+import { Clock, Plus, Trash2, Check, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import {
   getMyAvailability,
-  saveMyAvailability,
-  type AvailabilityRangeInput,
+  addSlot,
+  deleteSlot,
+  SLOT_DURATION_MINUTES,
+  type AvailabilitySlot,
 } from '@/features/availability/availabilityService'
 
-// Orden de visualización: Lunes (1) ... Sábado (6), Domingo (0).
-const days: { value: number; label: string }[] = [
-  { value: 1, label: 'Lunes' },
-  { value: 2, label: 'Martes' },
-  { value: 3, label: 'Miércoles' },
-  { value: 4, label: 'Jueves' },
-  { value: 5, label: 'Viernes' },
-  { value: 6, label: 'Sábado' },
-  { value: 0, label: 'Domingo' },
-]
+const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'] // semana inicia en lunes
 
-type EditableRange = AvailabilityRangeInput & { key: string }
-
-let nextKey = 0
-function newKey() {
-  nextKey += 1
-  return `range-${nextKey}`
+function dateKey(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
-const inputClass =
-  'px-3 py-2 rounded-[12px] border border-border bg-surface text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/30'
+function startOfToday(): Date {
+  const now = new Date()
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate())
+}
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+}
+
+function formatSelectedDate(key: string): string {
+  const [y, m, d] = key.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('es-MX', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
 
 export function ProfessionalAvailability() {
   const { user } = useAuth()
 
-  const [ranges, setRanges] = useState<EditableRange[]>([])
+  const [slots, setSlots] = useState<AvailabilitySlot[]>([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [actionPending, setActionPending] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  const today = startOfToday()
+  const [viewMonth, setViewMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  const [newTime, setNewTime] = useState('09:00')
+
+  // Slots agrupados por fecha local 'YYYY-MM-DD'.
+  const slotsByDate = useMemo(() => {
+    const map = new Map<string, AvailabilitySlot[]>()
+    for (const slot of slots) {
+      const key = dateKey(new Date(slot.slot_start))
+      const list = map.get(key) || []
+      list.push(slot)
+      map.set(key, list)
+    }
+    return map
+  }, [slots])
+
+  const selectedSlots = selectedKey ? slotsByDate.get(selectedKey) || [] : []
 
   useEffect(() => {
     if (!user) return
     getMyAvailability(user.id)
       .then((data) => {
-        setRanges(
-          data.map((range) => ({
-            key: newKey(),
-            day_of_week: range.day_of_week,
-            start_time: range.start_time,
-            end_time: range.end_time,
-          }))
-        )
+        setSlots(data)
         setLoading(false)
       })
       .catch((err) => {
@@ -60,54 +80,70 @@ export function ProfessionalAvailability() {
       })
   }, [user])
 
-  const addRange = (dayOfWeek: number) => {
-    setSuccess('')
-    setRanges((prev) => [
-      ...prev,
-      { key: newKey(), day_of_week: dayOfWeek, start_time: '09:00', end_time: '10:00' },
-    ])
+  const changeMonth = (delta: number) => {
+    setViewMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + delta, 1))
   }
 
-  const updateRange = (key: string, field: 'start_time' | 'end_time', value: string) => {
-    setSuccess('')
-    setRanges((prev) => prev.map((r) => (r.key === key ? { ...r, [field]: value } : r)))
-  }
+  const isCurrentMonth =
+    viewMonth.getFullYear() === today.getFullYear() && viewMonth.getMonth() === today.getMonth()
 
-  const removeRange = (key: string) => {
-    setSuccess('')
-    setRanges((prev) => prev.filter((r) => r.key !== key))
-  }
+  const handleAddSlot = async () => {
+    if (!user || !selectedKey || !newTime) return
+    const [y, m, d] = selectedKey.split('-').map(Number)
+    const [hh, mm] = newTime.split(':').map(Number)
+    const start = new Date(y, m - 1, d, hh, mm, 0, 0)
 
-  const handleSave = async () => {
-    if (!user) return
-
-    const invalid = ranges.some((r) => r.start_time >= r.end_time)
-    if (invalid) {
-      setError('La hora de inicio debe ser menor que la hora de fin en todos los rangos.')
+    if (start <= new Date()) {
+      setError('No puedes agregar horarios en el pasado.')
       setSuccess('')
       return
     }
 
-    setSaving(true)
+    setActionPending(true)
     setError('')
     setSuccess('')
-
     try {
-      await saveMyAvailability(
-        user.id,
-        ranges.map((r) => ({
-          day_of_week: r.day_of_week,
-          start_time: r.start_time,
-          end_time: r.end_time,
-        }))
+      const created = await addSlot(user.id, start)
+      setSlots((prev) =>
+        [...prev, created].sort((a, b) => a.slot_start.localeCompare(b.slot_start))
       )
-      setSuccess('Tu disponibilidad se guardó correctamente.')
+      setSuccess(`Horario agregado: ${formatSelectedDate(selectedKey)} a las ${formatTime(created.slot_start)}.`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al guardar la disponibilidad')
+      setError(err instanceof Error ? err.message : 'Error al agregar el horario')
     } finally {
-      setSaving(false)
+      setActionPending(false)
     }
   }
+
+  const handleDeleteSlot = async (slot: AvailabilitySlot) => {
+    setActionPending(true)
+    setError('')
+    setSuccess('')
+    try {
+      await deleteSlot(slot.id)
+      setSlots((prev) => prev.filter((s) => s.id !== slot.id))
+      setSuccess('Horario eliminado.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar el horario')
+    } finally {
+      setActionPending(false)
+    }
+  }
+
+  // Construcción de la cuadrícula del mes (semana inicia en lunes).
+  const monthDays: (Date | null)[] = useMemo(() => {
+    const first = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1)
+    const offset = (first.getDay() + 6) % 7
+    const daysInMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0).getDate()
+    const cells: (Date | null)[] = []
+    for (let i = 0; i < offset; i++) cells.push(null)
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push(new Date(viewMonth.getFullYear(), viewMonth.getMonth(), d))
+    }
+    return cells
+  }, [viewMonth])
+
+  const monthLabel = viewMonth.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
 
   if (loading) {
     return (
@@ -122,17 +158,12 @@ export function ProfessionalAvailability() {
   return (
     <div className="section-calma">
       <div className="container-calma">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-text mb-2">Disponibilidad</h1>
-            <p className="text-text-light">
-              Configura tus horarios de atención. Los pacientes solo podrán agendar dentro de estos rangos.
-            </p>
-          </div>
-          <Button className="mt-4 md:mt-0 gap-2" onClick={handleSave} disabled={saving}>
-            <Save size={18} />
-            {saving ? 'Guardando...' : 'Guardar cambios'}
-          </Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-text mb-2">Disponibilidad</h1>
+          <p className="text-text-light">
+            Elige un día en el calendario y agrega las horas en las que puedes atender.
+            Los pacientes solo podrán agendar en los horarios que publiques aquí.
+          </p>
         </div>
 
         {error && (
@@ -145,66 +176,147 @@ export function ProfessionalAvailability() {
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {days.map((day) => {
-            const dayRanges = ranges.filter((r) => r.day_of_week === day.value)
-            return (
-              <Card key={day.value}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{day.label}</CardTitle>
-                    <Button variant="ghost" size="sm" className="gap-1" onClick={() => addRange(day.value)}>
+        <div className="grid lg:grid-cols-2 gap-6 items-start">
+          {/* Calendario mensual */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg capitalize flex items-center gap-2">
+                  <CalendarDays size={18} className="text-primary" />
+                  {monthLabel}
+                </CardTitle>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => changeMonth(-1)}
+                    disabled={isCurrentMonth}
+                    aria-label="Mes anterior"
+                  >
+                    <ChevronLeft size={18} />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => changeMonth(1)} aria-label="Mes siguiente">
+                    <ChevronRight size={18} />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-text-light mb-2">
+                {WEEKDAYS.map((d, i) => (
+                  <div key={i} className="py-1">{d}</div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {monthDays.map((date, i) => {
+                  if (!date) return <div key={`empty-${i}`} />
+                  const key = dateKey(date)
+                  const isPast = date < today
+                  const count = slotsByDate.get(key)?.length || 0
+                  const isSelected = key === selectedKey
+                  const isToday = key === dateKey(today)
+                  return (
+                    <button
+                      key={key}
+                      disabled={isPast}
+                      onClick={() => {
+                        setSelectedKey(key)
+                        setError('')
+                        setSuccess('')
+                      }}
+                      className={`relative aspect-square rounded-[10px] text-sm font-medium transition-colors flex flex-col items-center justify-center ${
+                        isSelected
+                          ? 'bg-primary text-white'
+                          : isPast
+                            ? 'text-text-light/40 cursor-not-allowed'
+                            : count > 0
+                              ? 'bg-primary/10 text-primary-dark hover:bg-primary/20'
+                              : 'text-text hover:bg-bg-alt'
+                      } ${isToday && !isSelected ? 'ring-1 ring-primary' : ''}`}
+                    >
+                      {date.getDate()}
+                      {count > 0 && (
+                        <span
+                          className={`absolute bottom-1 w-1.5 h-1.5 rounded-full ${
+                            isSelected ? 'bg-white' : 'bg-primary'
+                          }`}
+                        />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="mt-4 text-xs text-text-light flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-primary" />
+                Días con horarios publicados
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Panel del día seleccionado */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg capitalize">
+                {selectedKey ? formatSelectedDate(selectedKey) : 'Selecciona un día'}
+              </CardTitle>
+              <CardDescription>
+                {selectedKey
+                  ? `Cada horario genera una sesión de ${SLOT_DURATION_MINUTES} minutos.`
+                  : 'Haz clic en un día del calendario para ver y agregar horarios.'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {selectedKey && (
+                <div className="space-y-4">
+                  {selectedSlots.length === 0 ? (
+                    <p className="text-sm text-text-light">Aún no tienes horarios este día.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {selectedSlots.map((slot) => (
+                        <div
+                          key={slot.id}
+                          className="flex items-center gap-3 p-3 bg-bg-alt rounded-[12px]"
+                        >
+                          <Clock size={16} className="text-primary shrink-0" />
+                          <span className="text-text font-medium flex-1">
+                            {formatTime(slot.slot_start)} – {formatTime(slot.slot_end)}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-error"
+                            disabled={actionPending}
+                            onClick={() => handleDeleteSlot(slot)}
+                            aria-label="Eliminar horario"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3 pt-2 border-t border-border">
+                    <input
+                      type="time"
+                      value={newTime}
+                      onChange={(e) => setNewTime(e.target.value)}
+                      className="flex-1 min-w-0 px-3 py-2 rounded-[12px] border border-border bg-surface text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                    <Button
+                      size="sm"
+                      className="gap-1 shrink-0"
+                      onClick={handleAddSlot}
+                      disabled={actionPending || !newTime}
+                    >
                       <Plus size={16} />
                       Agregar
                     </Button>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {dayRanges.length === 0 ? (
-                    <p className="text-sm text-text-light">Sin horarios configurados.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {dayRanges.map((range) => {
-                        const isInvalid = range.start_time >= range.end_time
-                        return (
-                          <div key={range.key} className="p-3 bg-bg-alt rounded-[12px] space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Clock size={16} className="text-text-light shrink-0" />
-                              <input
-                                type="time"
-                                value={range.start_time}
-                                onChange={(e) => updateRange(range.key, 'start_time', e.target.value)}
-                                className={inputClass}
-                              />
-                              <span className="text-text-light">-</span>
-                              <input
-                                type="time"
-                                value={range.end_time}
-                                onChange={(e) => updateRange(range.key, 'end_time', e.target.value)}
-                                className={inputClass}
-                              />
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-error ml-auto"
-                                onClick={() => removeRange(range.key)}
-                                aria-label="Eliminar rango"
-                              >
-                                <Trash2 size={16} />
-                              </Button>
-                            </div>
-                            {isInvalid && (
-                              <p className="text-xs text-error">La hora de inicio debe ser menor que la de fin.</p>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )
-          })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

@@ -1,26 +1,27 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Stepper } from '@/components/ui/Stepper'
-import { Calendar, Clock, Video, Check, User, ArrowLeft, ArrowRight, Star } from 'lucide-react'
+import { Calendar, Clock, Video, Check, User, ArrowLeft, ArrowRight, Star, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import {
   getProfessionalProfiles,
   getPatientProfileId,
-  getProfessionalAppointmentsForDate,
   createAppointment,
   type ProfessionalProfile,
   type SessionType,
 } from '@/features/appointments/appointmentsService'
 import {
-  getAvailabilityForProfessional,
-  computeAvailableSlots,
-  type AvailabilityRange,
+  getAvailableSlotsForProfessional,
+  SLOT_DURATION_MINUTES,
+  type AvailabilitySlot,
 } from '@/features/availability/availabilityService'
 import { sendEmail } from '@/lib/email'
 
-const SESSION_DURATION_MINUTES = 50
+const BOOKING_WINDOW_DAYS = 60
+
+const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'] // semana inicia en lunes
 
 const services = [
   {
@@ -50,13 +51,29 @@ const steps = [
   { label: 'Confirmar', description: 'Revisa y agenda' },
 ]
 
+function dateKey(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function slotTimeHHmm(iso: string): string {
+  const date = new Date(iso)
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
 export function BookAppointment() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
+
+  // Terapeuta preseleccionado desde el directorio (state de navegación).
+  const preselectedTherapistId = (location.state as { therapistId?: string } | null)?.therapistId || null
 
   const [step, setStep] = useState(0)
   const [selectedService, setSelectedService] = useState<SessionType>('single')
-  const [selectedTherapist, setSelectedTherapist] = useState<string | null>(null)
+  const [selectedTherapist, setSelectedTherapist] = useState<string | null>(preselectedTherapistId)
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
   const [confirmed, setConfirmed] = useState(false)
@@ -68,11 +85,14 @@ export function BookAppointment() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
-  const [availability, setAvailability] = useState<AvailabilityRange[] | null>(null)
-  const [availabilityError, setAvailabilityError] = useState('')
-  const [slots, setSlots] = useState<string[]>([])
-  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [freeSlots, setFreeSlots] = useState<AvailabilitySlot[] | null>(null)
   const [slotsError, setSlotsError] = useState('')
+  const [loadingSlots, setLoadingSlots] = useState(false)
+
+  const today = new Date()
+  const [viewMonth, setViewMonth] = useState(
+    () => new Date(today.getFullYear(), today.getMonth(), 1)
+  )
 
   const selectedServiceData = services.find((s) => s.id === selectedService)!
   const selectedTherapistData = therapists.find((t) => t.id === selectedTherapist)
@@ -89,61 +109,33 @@ export function BookAppointment() {
       })
   }, [])
 
-  // Cargar la disponibilidad del terapeuta seleccionado.
+  // Cargar los horarios libres del terapeuta seleccionado (próximos 60 días).
   useEffect(() => {
     setSelectedDate('')
     setSelectedTime('')
-    setSlots([])
     setSlotsError('')
-    setAvailabilityError('')
 
     if (!selectedTherapist) {
-      setAvailability(null)
+      setFreeSlots(null)
       return
     }
 
-    let cancelled = false
-    getAvailabilityForProfessional(selectedTherapist)
-      .then((data) => {
-        if (!cancelled) setAvailability(data)
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setAvailability([])
-          setAvailabilityError(
-            err instanceof Error ? err.message : 'Error cargando la disponibilidad del profesional'
-          )
-        }
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [selectedTherapist])
-
-  // Al elegir fecha, calcular los horarios realmente disponibles.
-  useEffect(() => {
-    setSelectedTime('')
-    setSlots([])
-    setSlotsError('')
-
-    if (!selectedDate || !selectedTherapist || !availability || availability.length === 0) {
-      return
-    }
-
-    // Parsear 'YYYY-MM-DD' como fecha local (no UTC).
-    const [year, month, day] = selectedDate.split('-').map(Number)
-    const date = new Date(year, month - 1, day)
+    const from = new Date()
+    const to = new Date()
+    to.setDate(to.getDate() + BOOKING_WINDOW_DAYS)
 
     let cancelled = false
     setLoadingSlots(true)
-    getProfessionalAppointmentsForDate(selectedTherapist, selectedDate)
-      .then((appointments) => {
-        if (cancelled) return
-        setSlots(computeAvailableSlots(availability, appointments, date, SESSION_DURATION_MINUTES))
+    getAvailableSlotsForProfessional(selectedTherapist, from, to)
+      .then((data) => {
+        if (!cancelled) setFreeSlots(data)
       })
       .catch((err) => {
         if (!cancelled) {
-          setSlotsError(err instanceof Error ? err.message : 'Error cargando los horarios disponibles')
+          setFreeSlots([])
+          setSlotsError(
+            err instanceof Error ? err.message : 'Error cargando la disponibilidad del profesional'
+          )
         }
       })
       .finally(() => {
@@ -152,7 +144,34 @@ export function BookAppointment() {
     return () => {
       cancelled = true
     }
-  }, [selectedDate, selectedTherapist, availability])
+  }, [selectedTherapist])
+
+  // Slots libres agrupados por fecha local 'YYYY-MM-DD'.
+  const slotsByDate = useMemo(() => {
+    const map = new Map<string, AvailabilitySlot[]>()
+    for (const slot of freeSlots || []) {
+      const key = dateKey(new Date(slot.slot_start))
+      const list = map.get(key) || []
+      list.push(slot)
+      map.set(key, list)
+    }
+    return map
+  }, [freeSlots])
+
+  const daySlots = selectedDate ? slotsByDate.get(selectedDate) || [] : []
+
+  // Cuadrícula del mes visible (semana inicia en lunes).
+  const monthCells: (Date | null)[] = useMemo(() => {
+    const first = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1)
+    const offset = (first.getDay() + 6) % 7
+    const daysInMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0).getDate()
+    const cells: (Date | null)[] = []
+    for (let i = 0; i < offset; i++) cells.push(null)
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push(new Date(viewMonth.getFullYear(), viewMonth.getMonth(), d))
+    }
+    return cells
+  }, [viewMonth])
 
   const getPrice = (therapist?: ProfessionalProfile) => {
     if (!therapist) return 0
@@ -170,6 +189,23 @@ export function BookAppointment() {
     if (step === 1) return selectedTherapist !== null
     if (step === 2) return selectedDate && selectedTime
     return true
+  }
+
+  // Si el terapeuta ya viene elegido del directorio, se salta el paso 1.
+  const goNext = () => {
+    if (step === 0 && preselectedTherapistId && selectedTherapist) {
+      setStep(2)
+      return
+    }
+    setStep((s) => Math.min(steps.length - 1, s + 1))
+  }
+
+  const goBack = () => {
+    if (step === 2 && preselectedTherapistId) {
+      setStep(0)
+      return
+    }
+    setStep((s) => Math.max(0, s - 1))
   }
 
   const handleConfirm = async () => {
@@ -194,7 +230,7 @@ export function BookAppointment() {
         patient_profile_id: patientProfileId,
         professional_profile_id: selectedTherapistData.id,
         scheduled_at: scheduledAt,
-        duration_minutes: SESSION_DURATION_MINUTES,
+        duration_minutes: SLOT_DURATION_MINUTES,
         session_type: selectedService,
         serviceName: selectedServiceData.name,
       })
@@ -260,7 +296,7 @@ export function BookAppointment() {
       <div className="container-calma max-w-3xl">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-text mb-2">Agendar cita</h1>
-          <p className="text-text-light">En 4 pasos sencillos programa tu acompañamiento.</p>
+          <p className="text-text-light">En pocos pasos programa tu acompañamiento.</p>
         </div>
 
         <div className="mb-10">
@@ -353,65 +389,131 @@ export function BookAppointment() {
           <Card>
             <CardHeader>
               <CardTitle>Selecciona fecha y hora</CardTitle>
-              <CardDescription>Elige el momento que mejor te funcione.</CardDescription>
+              <CardDescription>
+                {selectedTherapistData
+                  ? `Horarios disponibles de ${selectedTherapistData.full_name}.`
+                  : 'Elige el momento que mejor te funcione.'}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div>
-                <LabelWithIcon icon={Calendar} text="Fecha" />
-                <input
-                  type="date"
-                  value={selectedDate}
-                  min={new Date().toLocaleDateString('en-CA')}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-4 py-3 rounded-[12px] border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-              <div>
-                <LabelWithIcon icon={Clock} text="Horario disponible" />
-                {availabilityError && (
-                  <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">
-                    {availabilityError}
-                  </div>
-                )}
-                {!availabilityError && availability !== null && availability.length === 0 && (
-                  <div className="p-4 rounded-[12px] bg-bg-alt text-text-light text-sm">
-                    Este profesional aún no tiene horarios disponibles.
-                  </div>
-                )}
-                {!availabilityError && (!availability || availability.length > 0) && !selectedDate && (
-                  <p className="text-sm text-text-light">Primero selecciona una fecha.</p>
-                )}
-                {!availabilityError && availability !== null && availability.length > 0 && selectedDate && (
-                  <>
-                    {loadingSlots && <p className="text-sm text-text-light">Cargando horarios...</p>}
-                    {slotsError && (
-                      <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">{slotsError}</div>
-                    )}
-                    {!loadingSlots && !slotsError && slots.length === 0 && (
-                      <div className="p-4 rounded-[12px] bg-bg-alt text-text-light text-sm">
-                        No hay horarios disponibles para esta fecha. Prueba con otro día.
+              {slotsError && (
+                <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">{slotsError}</div>
+              )}
+              {loadingSlots && <p className="text-sm text-text-light">Cargando disponibilidad...</p>}
+              {!loadingSlots && !slotsError && freeSlots !== null && freeSlots.length === 0 && (
+                <div className="p-4 rounded-[12px] bg-bg-alt text-text-light text-sm">
+                  Este profesional no tiene horarios disponibles en los próximos {BOOKING_WINDOW_DAYS} días.
+                </div>
+              )}
+
+              {!loadingSlots && !slotsError && freeSlots !== null && freeSlots.length > 0 && (
+                <>
+                  {/* Mini calendario: solo se habilitan días con horarios libres */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <LabelWithIcon
+                        icon={Calendar}
+                        text={viewMonth.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}
+                      />
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setViewMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
+                          }
+                          disabled={
+                            viewMonth.getFullYear() === today.getFullYear() &&
+                            viewMonth.getMonth() === today.getMonth()
+                          }
+                          aria-label="Mes anterior"
+                        >
+                          <ChevronLeft size={18} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setViewMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
+                          }
+                          aria-label="Mes siguiente"
+                        >
+                          <ChevronRight size={18} />
+                        </Button>
                       </div>
-                    )}
-                    {!loadingSlots && !slotsError && slots.length > 0 && (
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                        {slots.map((time) => (
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-text-light mb-2">
+                      {WEEKDAYS.map((d, i) => (
+                        <div key={i} className="py-1">{d}</div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {monthCells.map((date, i) => {
+                        if (!date) return <div key={`empty-${i}`} />
+                        const key = dateKey(date)
+                        const hasSlots = slotsByDate.has(key)
+                        const isSelected = key === selectedDate
+                        return (
                           <button
-                            key={time}
-                            onClick={() => setSelectedTime(time)}
-                            className={`px-4 py-3 rounded-[12px] border text-sm font-medium transition-colors ${
-                              selectedTime === time
-                                ? 'bg-primary text-white border-primary'
-                                : 'border-border text-text hover:border-primary bg-surface'
+                            key={key}
+                            disabled={!hasSlots}
+                            onClick={() => {
+                              setSelectedDate(key)
+                              setSelectedTime('')
+                            }}
+                            className={`aspect-square rounded-[10px] text-sm font-medium transition-colors ${
+                              isSelected
+                                ? 'bg-primary text-white'
+                                : hasSlots
+                                  ? 'bg-primary/10 text-primary-dark hover:bg-primary/20'
+                                  : 'text-text-light/40 cursor-not-allowed'
                             }`}
                           >
-                            {time}
+                            {date.getDate()}
                           </button>
-                        ))}
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Horarios del día elegido */}
+                  <div>
+                    <LabelWithIcon icon={Clock} text="Horario disponible" />
+                    {!selectedDate && (
+                      <p className="text-sm text-text-light">Primero selecciona una fecha.</p>
+                    )}
+                    {selectedDate && (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        {daySlots.map((slot) => {
+                          const time = slotTimeHHmm(slot.slot_start)
+                          return (
+                            <button
+                              key={slot.id}
+                              onClick={() => setSelectedTime(time)}
+                              className={`px-4 py-3 rounded-[12px] border text-sm font-medium transition-colors ${
+                                selectedTime === time
+                                  ? 'bg-primary text-white border-primary'
+                                  : 'border-border text-text hover:border-primary bg-surface'
+                              }`}
+                            >
+                              {time}
+                            </button>
+                          )
+                        })}
                       </div>
                     )}
-                  </>
-                )}
-              </div>
+                  </div>
+
+                  {preselectedTherapistId && (
+                    <button
+                      onClick={() => setStep(1)}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      ¿Prefieres otro terapeuta? Cambiar selección
+                    </button>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         )}
@@ -448,7 +550,7 @@ export function BookAppointment() {
         <div className="flex items-center justify-between mt-8">
           <Button
             variant="outline"
-            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            onClick={goBack}
             disabled={step === 0}
             className="gap-2"
           >
@@ -458,7 +560,7 @@ export function BookAppointment() {
 
           {step < steps.length - 1 ? (
             <Button
-              onClick={() => setStep((s) => s + 1)}
+              onClick={goNext}
               disabled={!canContinue()}
               className="gap-2"
             >
@@ -479,7 +581,7 @@ export function BookAppointment() {
 
 function LabelWithIcon({ icon: Icon, text }: { icon: typeof Calendar; text: string }) {
   return (
-    <label className="flex items-center gap-2 text-sm font-medium text-text mb-2">
+    <label className="flex items-center gap-2 text-sm font-medium text-text mb-2 capitalize">
       <Icon size={16} className="text-primary" />
       {text}
     </label>
