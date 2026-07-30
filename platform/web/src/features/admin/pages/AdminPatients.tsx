@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'
+import { LinkButton } from '@/components/ui/LinkButton'
+import { DataTable } from '@/components/ui/DataTable'
 import { Search, Mail } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { getAdminPatients, type AdminPatient } from '@/features/admin/adminService'
 
 export function AdminPatients() {
@@ -40,18 +42,18 @@ export function AdminPatients() {
             <h1 className="text-3xl font-bold text-text mb-2">Pacientes</h1>
             <p className="text-text-light">Gestión de usuarios pacientes.</p>
           </div>
-          <div className="relative w-64 mt-4 md:mt-0">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <div className="w-64 mt-4 md:mt-0">
             <Input
               placeholder="Buscar paciente..."
+              icon={<Search size={18} />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
+              aria-label="Buscar pacientes"
             />
           </div>
         </div>
 
-        {error && <div className="mb-4 p-3 rounded-[12px] bg-error/10 text-error text-sm">{error}</div>}
+        {error && <Alert variant="error" className="mb-4">{error}</Alert>}
 
         <Card>
           <CardHeader>
@@ -59,49 +61,40 @@ export function AdminPatients() {
             <CardDescription>{filtered.length} registrados</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <p className="text-text-light">Cargando...</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Nombre</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Teléfono</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Registro</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((p) => (
-                      <tr key={p.id} className="border-b border-border last:border-0">
-                        <td className="py-4 px-4">
-                          <div>
-                            <p className="font-medium text-text">{p.full_name}</p>
-                            <p className="text-sm text-text-light">{p.email}</p>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4 text-text">{p.phone || '—'}</td>
-                        <td className="py-4 px-4 text-text-light">{new Date(p.created_at).toLocaleDateString('es-MX')}</td>
-                        <td className="py-4 px-4">
-                          <a
-                            href={`mailto:${p.email}`}
-                            className={cn(
-                              'inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-250 hover:-translate-y-0.5',
-                              'bg-transparent text-primary border-2 border-primary hover:bg-primary hover:text-white',
-                              'px-4 py-2 text-sm'
-                            )}
-                          >
-                            <Mail size={16} />
-                            Contactar
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <DataTable
+              loading={loading}
+              rows={filtered}
+              keyOf={(p) => p.id}
+              emptyMessage={search ? 'Sin resultados para tu búsqueda.' : 'Aún no hay pacientes registrados.'}
+              caption="Listado de pacientes registrados"
+              columns={[
+                {
+                  header: 'Nombre',
+                  render: (p) => (
+                    <div>
+                      <p className="font-medium text-text">{p.full_name}</p>
+                      <p className="text-sm text-text-light">{p.email}</p>
+                    </div>
+                  ),
+                },
+                { header: 'Teléfono', render: (p) => <span className="text-text">{p.phone || '—'}</span> },
+                {
+                  header: 'Registro',
+                  render: (p) => (
+                    <span className="text-text-light">{new Date(p.created_at).toLocaleDateString('es-MX')}</span>
+                  ),
+                },
+                {
+                  header: 'Acciones',
+                  render: (p) => (
+                    <LinkButton variant="outline" size="sm" href={`mailto:${p.email}`}>
+                      <Mail size={16} />
+                      Contactar
+                    </LinkButton>
+                  ),
+                },
+              ]}
+            />
           </CardContent>
         </Card>
       </div>

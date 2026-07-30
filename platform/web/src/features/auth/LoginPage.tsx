@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth, type UserRole } from '@/features/auth/AuthProvider'
 import { Button } from '@/components/ui/Button'
+import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
@@ -58,7 +59,7 @@ export function LoginPage() {
                     key={r.value}
                     type="button"
                     onClick={() => setRole(r.value)}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-[16px] border-2 transition-all ${
+                    className={`flex flex-col items-center gap-2 p-3 rounded-md border-2 transition-all ${
                       isActive
                         ? 'border-primary bg-primary/10 text-primary-dark'
                         : 'border-border bg-surface text-text-light hover:bg-bg-alt'
@@ -92,11 +93,7 @@ export function LoginPage() {
                   required
                 />
               </div>
-              {error && (
-                <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">
-                  {error}
-                </div>
-              )}
+              {error && <Alert variant="error" className="p-3 rounded-sm">{error}</Alert>}
               <div className="text-right">
                 <Link to="/recuperar-contrasena" className="text-sm text-primary hover:underline">
                   ¿Olvidaste tu contraseña?
@@ -114,7 +111,7 @@ export function LoginPage() {
               </Link>
             </div>
 
-            <div className="mt-4 p-3 rounded-[12px] bg-bg-alt text-xs text-text-light">
+            <div className="mt-4 p-3 rounded-sm bg-bg-alt text-xs text-text-light">
               <strong>Nota:</strong> Las cuentas ahora viven en la base de datos real. Si aún no tienes una, regístrate primero.
             </div>
           </CardContent>

@@ -82,7 +82,7 @@ export function PatientVideoRoom() {
             {appointment.professionalName} · {new Date(appointment.scheduled_at).toLocaleString('es-MX')}
           </p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={() => navigate(-1)}>
+        <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={() => navigate('/paciente/citas')}>
           <PhoneOff size={16} /> Colgar
         </Button>
       </div>
@@ -91,7 +91,7 @@ export function PatientVideoRoom() {
           <JitsiMeetingRoom
             roomName={appointment.video_link}
             displayName={user?.fullName || 'Paciente'}
-            onReadyToClose={() => navigate(-1)}
+            onReadyToClose={() => navigate('/paciente/citas')}
           />
         </Suspense>
       </div>

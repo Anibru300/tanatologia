@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import {
   Upload,
   CheckCircle,
@@ -12,7 +14,6 @@ import {
   Trash2,
   ShieldCheck,
   Send,
-  AlertTriangle,
 } from 'lucide-react'
 import {
   getMyProfessionalProfile,
@@ -58,6 +59,8 @@ export function ProfessionalVerification() {
   const [profile, setProfile] = useState<MyProfessionalProfile | null>(null)
   const [documents, setDocuments] = useState<ProfessionalDocument[]>([])
   const [loading, setLoading] = useState(true)
+  const [confirmDelete, setConfirmDelete] = useState<ProfessionalDocument | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -134,15 +137,18 @@ export function ProfessionalVerification() {
   }
 
   async function handleDelete(doc: ProfessionalDocument) {
-    if (!window.confirm(`¿Eliminar "${doc.file_name}"?`)) return
     setError('')
     setSuccess('')
+    setDeleting(true)
     try {
       await deleteDocument(doc.id, doc.storage_path)
       setSuccess('Documento eliminado.')
       await load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo eliminar el documento')
+    } finally {
+      setDeleting(false)
+      setConfirmDelete(null)
     }
   }
 
@@ -176,17 +182,11 @@ export function ProfessionalVerification() {
           <p className="text-text-light">Sube tus documentos para aparecer en el directorio.</p>
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 rounded-[12px] bg-error/10 text-error text-sm flex items-start gap-2">
-            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
+        {error && <Alert variant="error" className="mb-4">{error}</Alert>}
         {success && (
-          <div className="mb-4 p-3 rounded-[12px] bg-success/10 text-success text-sm flex items-start gap-2">
-            <CheckCircle size={16} className="mt-0.5 shrink-0" />
-            <span>{success}</span>
-          </div>
+          <Alert variant="success" className="mb-4" autoDismiss={6000} onDismiss={() => setSuccess('')}>
+            {success}
+          </Alert>
         )}
 
         {loading ? (
@@ -218,9 +218,9 @@ export function ProfessionalVerification() {
                 </div>
 
                 {status === 'rejected' && profile?.rejection_reason && (
-                  <div className="mb-6 p-3 rounded-[12px] bg-error/10 text-error text-sm">
+                  <Alert variant="error" className="mb-6">
                     <strong>Motivo del rechazo:</strong> {profile.rejection_reason}
-                  </div>
+                  </Alert>
                 )}
 
                 <div className="flex items-center">
@@ -229,7 +229,7 @@ export function ProfessionalVerification() {
                       <div className="flex flex-col items-center">
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                            step.done ? 'bg-primary text-white' : 'bg-bg-alt text-muted'
+                            step.done ? 'bg-primary-dark text-white' : 'bg-bg-alt text-muted'
                           }`}
                         >
                           {step.done ? <CheckCircle size={16} /> : i + 1}
@@ -291,12 +291,12 @@ export function ProfessionalVerification() {
                 {DOCUMENT_TYPES.map((dt) => {
                   const docs = docsByType(dt.type)
                   return (
-                    <div key={dt.type} className="border border-border rounded-[16px] p-4">
+                    <div key={dt.type} className="border border-border rounded-md p-4">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
                           <p className="font-medium text-text">
                             {dt.label}
-                            {dt.required && <span className="text-error"> *</span>}
+                            {dt.required && <span className="text-error-dark"> *</span>}
                           </p>
                           <p className="text-sm text-text-light">{dt.hint}</p>
                         </div>
@@ -328,7 +328,7 @@ export function ProfessionalVerification() {
                           {docs.map((doc) => (
                             <li
                               key={doc.id}
-                              className="flex items-center justify-between gap-3 bg-bg-alt rounded-[12px] px-3 py-2"
+                              className="flex items-center justify-between gap-3 bg-bg-alt rounded-sm px-3 py-2"
                             >
                               <div className="flex items-center gap-2 min-w-0">
                                 <FileText size={16} className="text-text-light shrink-0" />
@@ -341,8 +341,10 @@ export function ProfessionalVerification() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="text-error shrink-0"
-                                  onClick={() => handleDelete(doc)}
+                                  className="text-error-dark shrink-0"
+                                  aria-label={`Eliminar ${doc.file_name}`}
+                                  title="Eliminar documento"
+                                  onClick={() => setConfirmDelete(doc)}
                                 >
                                   <Trash2 size={16} />
                                 </Button>
@@ -350,7 +352,7 @@ export function ProfessionalVerification() {
                             </li>
                           ))}
                           {docs.some((d) => d.status === 'rejected' && d.rejection_reason) && (
-                            <li className="text-xs text-error px-1 list-none">
+                            <li className="text-xs text-error-dark px-1 list-none">
                               {docs
                                 .filter((d) => d.status === 'rejected' && d.rejection_reason)
                                 .map((d) => `Motivo: ${d.rejection_reason}`)
@@ -369,7 +371,7 @@ export function ProfessionalVerification() {
             <Card>
               <CardContent className="p-6">
                 {canEdit && missing.length > 0 && (
-                  <div className="mb-4 p-3 rounded-[12px] bg-warning/10 text-sm text-text">
+                  <div className="mb-4 p-3 rounded-sm bg-warning/10 text-sm text-text">
                     <p className="font-medium mb-1">Para enviar a revisión te falta:</p>
                     <ul className="list-disc list-inside text-text-light space-y-0.5">
                       {missing.map((m) => (
@@ -398,6 +400,21 @@ export function ProfessionalVerification() {
             </Card>
           </>
         )}
+
+        <ConfirmDialog
+          open={confirmDelete !== null}
+          title="Eliminar documento"
+          destructive
+          loading={deleting}
+          message={
+            confirmDelete
+              ? `¿Eliminar "${confirmDelete.file_name}"? Tendrás que subirlo de nuevo si lo necesitas para tu verificación.`
+              : ''
+          }
+          confirmLabel="Sí, eliminar"
+          onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+        />
       </div>
     </div>
   )

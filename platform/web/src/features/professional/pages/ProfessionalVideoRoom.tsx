@@ -1,6 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Video, PhoneOff, ChevronDown, ChevronUp } from 'lucide-react'
 const JitsiMeetingRoom = lazy(() =>
@@ -28,6 +29,8 @@ export function ProfessionalVideoRoom() {
   const [manualRoom, setManualRoom] = useState('')
   const [showManual, setShowManual] = useState(false)
   const [activeRoom, setActiveRoom] = useState<string | null>(null)
+  const [appointmentError, setAppointmentError] = useState('')
+  const [upcomingError, setUpcomingError] = useState('')
 
   // Cargar la cita cuando se entra con /profesional/sala/:appointmentId
   useEffect(() => {
@@ -42,9 +45,14 @@ export function ProfessionalVideoRoom() {
     async function load() {
       try {
         const data = await getAppointmentById(appointmentIdRef)
-        if (!cancelled) setAppointment(data)
+        if (!cancelled) {
+          setAppointment(data)
+          if (!data) setAppointmentError('No se encontró esta cita o no tienes acceso a ella.')
+        }
       } catch (err) {
-        console.error('Error cargando cita:', err)
+        if (!cancelled) {
+          setAppointmentError(err instanceof Error ? err.message : 'Error cargando la cita.')
+        }
       } finally {
         if (!cancelled) setLoadingAppointment(false)
       }
@@ -80,7 +88,9 @@ export function ProfessionalVideoRoom() {
           .slice(0, 5)
         if (!cancelled) setUpcoming(next)
       } catch (err) {
-        console.error('Error cargando próximas citas:', err)
+        if (!cancelled) {
+          setUpcomingError(err instanceof Error ? err.message : 'No se pudieron cargar tus próximas citas.')
+        }
       } finally {
         if (!cancelled) setLoadingUpcoming(false)
       }
@@ -118,7 +128,7 @@ export function ProfessionalVideoRoom() {
               <p className="text-text-light text-xs sm:text-sm truncate">Sala manual</p>
             )}
           </div>
-          <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={() => navigate(-1)}>
+          <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={() => navigate('/profesional/citas')}>
             <PhoneOff size={16} /> Colgar
           </Button>
         </div>
@@ -127,7 +137,7 @@ export function ProfessionalVideoRoom() {
             <JitsiMeetingRoom
               roomName={roomName}
               displayName={user?.fullName || 'Profesional'}
-              onReadyToClose={() => navigate(-1)}
+              onReadyToClose={() => navigate('/profesional/citas')}
             />
           </Suspense>
         </div>
@@ -145,6 +155,17 @@ export function ProfessionalVideoRoom() {
 
         {loadingAppointment ? (
           <p className="text-text-light">Cargando...</p>
+        ) : appointmentError ? (
+          <Alert variant="error" className="mb-6 max-w-2xl">
+            {appointmentError}{' '}
+            <button
+              type="button"
+              className="underline font-medium"
+              onClick={() => navigate('/profesional/citas')}
+            >
+              Ir a mis citas
+            </button>
+          </Alert>
         ) : appointment && !appointment.video_link ? (
           <p className="text-text-light mb-6">Esta cita aún no tiene sala asignada.</p>
         ) : null}
@@ -157,14 +178,17 @@ export function ProfessionalVideoRoom() {
           </CardHeader>
           <CardContent className="space-y-3">
             {loadingUpcoming && <p className="text-text-light text-sm">Cargando citas...</p>}
-            {!loadingUpcoming && upcoming.length === 0 && (
+            {upcomingError && (
+              <p className="text-error-dark text-sm" role="alert">{upcomingError}</p>
+            )}
+            {!loadingUpcoming && !upcomingError && upcoming.length === 0 && (
               <p className="text-text-light text-sm">No tienes citas próximas programadas.</p>
             )}
             {!loadingUpcoming &&
               upcoming.map((appt) => (
                 <div
                   key={appt.id}
-                  className="flex items-center gap-3 p-3 bg-bg-alt rounded-[12px]"
+                  className="flex items-center gap-3 p-3 bg-bg-alt rounded-sm"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-text font-medium truncate">{appt.patientName}</p>
@@ -203,7 +227,7 @@ export function ProfessionalVideoRoom() {
                   onChange={(e) => setManualRoom(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleEnterManual()}
                   placeholder="Nombre de la sala"
-                  className="flex-1 px-4 py-3 rounded-[12px] border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="flex-1 px-4 py-3 rounded-sm border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <Button className="gap-2" onClick={handleEnterManual}>
                   <Video size={18} />

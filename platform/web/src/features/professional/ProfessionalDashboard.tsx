@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -63,6 +64,7 @@ export function ProfessionalDashboard() {
   const [profile, setProfile] = useState<MyProfessionalProfile | null>(null)
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -72,7 +74,7 @@ export function ProfessionalDashboard() {
     async function load() {
       try {
         const professionalProfileId = await getProfessionalProfileId(userId)
-        if (!professionalProfileId) return
+        if (!professionalProfileId) throw new Error('No se encontró tu perfil profesional.')
         const [profileData, appointmentData] = await Promise.all([
           getMyProfessionalProfile(),
           getAppointmentsForProfessional(professionalProfileId),
@@ -81,7 +83,7 @@ export function ProfessionalDashboard() {
         setProfile(profileData)
         setAppointments(appointmentData)
       } catch (err) {
-        console.error('Error cargando citas:', err)
+        if (!cancelled) setError(err instanceof Error ? err.message : 'No se pudo cargar tu panel.')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -112,6 +114,8 @@ export function ProfessionalDashboard() {
           <h1 className="text-3xl font-bold text-text mb-2">Hola, {user?.fullName}</h1>
           <p className="text-text-light">Gestiona tu práctica y acompaña a tus pacientes.</p>
         </div>
+
+        {error && <Alert variant="error" className="mb-6 p-3 rounded-sm">{error}</Alert>}
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="border-l-4 border-l-primary">
@@ -187,16 +191,21 @@ export function ProfessionalDashboard() {
               {loading ? (
                 <p className="text-text-light">Cargando citas...</p>
               ) : upcomingAppointments.length === 0 ? (
-                <p className="text-text-light">No tienes citas confirmadas próximas.</p>
+                <div className="text-center py-4">
+                  <p className="text-text-light text-sm mb-3">No tienes citas confirmadas próximas.</p>
+                  <Link to="/profesional/disponibilidad">
+                    <Button size="sm" variant="outline">Publicar horarios</Button>
+                  </Link>
+                </div>
               ) : (
                 <div className="space-y-3">
                   {upcomingAppointments.map((a) => (
                     <div
                       key={a.id}
-                      className="flex items-center justify-between p-4 bg-bg-alt rounded-[12px]"
+                      className="flex items-center justify-between p-4 bg-bg-alt rounded-sm"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="bg-primary/10 rounded-[12px] p-3 text-center min-w-[60px]">
+                        <div className="bg-primary/10 rounded-sm p-3 text-center min-w-[60px]">
                           <span className="block text-xs text-primary-dark font-semibold uppercase">
                             {new Date(a.scheduled_at).toLocaleString('es-MX', { month: 'short', day: 'numeric' })}
                           </span>

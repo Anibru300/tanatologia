@@ -23,7 +23,7 @@ export function CancellationPage() {
           <CardContent className="p-8">
             <p className="text-sm text-text-light mb-6">Última actualización: 20 de junio de 2026</p>
 
-            <div className="p-4 rounded-[12px] bg-secondary/10 text-secondary text-sm mb-8">
+            <div className="p-4 rounded-sm bg-secondary/10 text-secondary text-sm mb-8">
               Al contratar una membresía o agendar una sesión en SOMOS-CALMA, aceptas las reglas de cancelación y reembolso descritas aquí, las cuales forman parte de nuestros{' '}
               <Link to="/terminos" className="underline">
                 Términos y Condiciones

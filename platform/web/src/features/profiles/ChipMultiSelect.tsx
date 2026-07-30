@@ -31,7 +31,7 @@ export function ChipMultiSelect({ label, options, values, onChange }: ChipMultiS
               className={cn(
                 'px-3 py-1.5 rounded-full text-sm font-medium border transition-all',
                 selected
-                  ? 'bg-primary text-white border-primary'
+                  ? 'bg-primary-dark text-white border-primary'
                   : 'bg-surface text-text-light border-border hover:border-primary hover:text-primary'
               )}
             >

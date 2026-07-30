@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
@@ -25,6 +26,7 @@ export function ProfessionalNotes() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [notes, setNotes] = useState<ClinicalNote[]>([])
   const [patientId, setPatientId] = useState('')
+  const [appointmentId, setAppointmentId] = useState('')
   const [motivo, setMotivo] = useState('')
   const [desarrollo, setDesarrollo] = useState('')
   const [observaciones, setObservaciones] = useState('')
@@ -40,7 +42,7 @@ export function ProfessionalNotes() {
     async function load() {
       try {
         const ppId = await getProfessionalProfileId(userId)
-        if (!ppId) return
+        if (!ppId) throw new Error('No se encontró tu perfil profesional.')
         const [appointmentData, notesData] = await Promise.all([
           getAppointmentsForProfessional(ppId),
           loadNotes(ppId),
@@ -50,7 +52,12 @@ export function ProfessionalNotes() {
         setAppointments(appointmentData)
         setNotes(notesData)
       } catch (err) {
-        console.error('Error cargando notas:', err)
+        if (!cancelled) {
+          setMessage({
+            type: 'error',
+            text: err instanceof Error ? err.message : 'No se pudieron cargar las notas.',
+          })
+        }
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -104,8 +111,8 @@ export function ProfessionalNotes() {
     const patientAppointments = appointments
       .filter((a) => a.patient_profile_id === patientId)
       .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())
-    const lastAppointment = patientAppointments[0]
-    if (!lastAppointment) {
+    const targetAppointment = patientAppointments.find((a) => a.id === appointmentId) || patientAppointments[0]
+    if (!targetAppointment) {
       setMessage({ type: 'error', text: 'El paciente no tiene citas registradas para asociar la nota.' })
       return
     }
@@ -119,7 +126,7 @@ export function ProfessionalNotes() {
     setSaving(true)
     try {
       const { error } = await supabase.from('clinical_notes').insert({
-        appointment_id: lastAppointment.id,
+        appointment_id: targetAppointment.id,
         professional_profile_id: professionalProfileId,
         patient_profile_id: patientId,
         content: sections.join('\n\n'),
@@ -131,7 +138,7 @@ export function ProfessionalNotes() {
       setMotivo('')
       setDesarrollo('')
       setObservaciones('')
-      setPatientId('')
+      // Se conserva el paciente seleccionado para capturar varias notas seguidas
       setMessage({ type: 'success', text: 'Nota guardada correctamente.' })
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'No se pudo guardar la nota' })
@@ -155,22 +162,38 @@ export function ProfessionalNotes() {
           </CardHeader>
           <CardContent className="space-y-4">
             {message && (
-              <div
-                className={`p-3 rounded-[12px] text-sm ${
-                  message.type === 'success' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
-                }`}
-              >
-                {message.text}
-              </div>
+              <Alert variant={message.type}>{message.text}</Alert>
             )}
             <Select
+              label="Paciente"
               value={patientId}
-              onChange={(e) => setPatientId(e.target.value)}
+              onChange={(e) => {
+                setPatientId(e.target.value)
+                setAppointmentId('')
+              }}
               options={[{ value: '', label: 'Seleccionar paciente' }, ...patients]}
             />
-            <Textarea placeholder="Motivo de consulta" rows={3} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
-            <Textarea placeholder="Desarrollo de la sesión" rows={4} value={desarrollo} onChange={(e) => setDesarrollo(e.target.value)} />
-            <Textarea placeholder="Observaciones y plan de trabajo" rows={3} value={observaciones} onChange={(e) => setObservaciones(e.target.value)} />
+            {patientId && (
+              <Select
+                label="Sesión a la que corresponde la nota"
+                value={appointmentId}
+                onChange={(e) => setAppointmentId(e.target.value)}
+                options={[
+                  { value: '', label: 'La más reciente' },
+                  ...appointments
+                    .filter((a) => a.patient_profile_id === patientId)
+                    .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())
+                    .slice(0, 10)
+                    .map((a) => ({
+                      value: a.id,
+                      label: `${new Date(a.scheduled_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })} · ${a.serviceName || 'Sesión'}`,
+                    })),
+                ]}
+              />
+            )}
+            <Textarea label="Motivo de consulta" rows={3} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+            <Textarea label="Desarrollo de la sesión" rows={4} value={desarrollo} onChange={(e) => setDesarrollo(e.target.value)} />
+            <Textarea label="Observaciones y plan de trabajo" rows={3} value={observaciones} onChange={(e) => setObservaciones(e.target.value)} />
             <Button className="gap-2" onClick={handleSave} disabled={saving || loading}>
               <Save size={18} />
               {saving ? 'Guardando...' : 'Guardar nota'}

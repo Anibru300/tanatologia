@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
 import { Phone, Mail, MessageCircle, AlertTriangle } from 'lucide-react'
+import { LinkButton } from '@/components/ui/LinkButton'
+import { siteConfig } from '@/lib/siteConfig'
 
 const faqs = [
   { q: '¿Cómo agendo una cita?', a: 'Ve a "Agendar cita", elige el tipo de servicio, fecha y hora.' },
@@ -26,7 +27,7 @@ export function PatientHelp() {
                 <p className="text-text-light text-sm mb-3">
                   Esta plataforma no sustituye la atención de emergencia. Si estás en riesgo, llama a la línea de emergencias.
                 </p>
-                <a href="tel:911" className="text-error font-semibold hover:underline">Llamar al 911</a>
+                <a href="tel:911" className="text-error-dark font-semibold hover:underline">Llamar al 911</a>
               </div>
             </div>
           </CardContent>
@@ -53,18 +54,23 @@ export function PatientHelp() {
           </CardHeader>
           <CardContent>
             <div className="grid sm:grid-cols-3 gap-4">
-              <Button variant="outline" className="gap-2">
+              <LinkButton variant="outline" href={`mailto:${siteConfig.contact.support}`}>
                 <Mail size={18} />
                 Correo
-              </Button>
-              <Button variant="outline" className="gap-2">
+              </LinkButton>
+              <LinkButton variant="outline" href={`tel:+52${siteConfig.legal.phone.replace(/\s/g, '')}`}>
                 <Phone size={18} />
                 Teléfono
-              </Button>
-              <Button variant="outline" className="gap-2">
+              </LinkButton>
+              <LinkButton
+                variant="outline"
+                href={`https://wa.me/${siteConfig.contact.whatsapp.number}?text=${encodeURIComponent(siteConfig.contact.whatsapp.message)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <MessageCircle size={18} />
                 WhatsApp
-              </Button>
+              </LinkButton>
             </div>
           </CardContent>
         </Card>

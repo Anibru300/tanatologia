@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -28,6 +29,7 @@ const STATUS_LABELS: Record<string, string> = {
 export function AdminDashboard() {
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [patientCount, setPatientCount] = useState(0)
   const [professionals, setProfessionals] = useState<AdminProfessional[]>([])
   const [appointmentsThisMonth, setAppointmentsThisMonth] = useState(0)
@@ -56,7 +58,7 @@ export function AdminDashboard() {
         setAppointmentsThisMonth(thisMonth.length)
         setCompletedThisMonth(thisMonth.filter((a) => a.status === 'completed').length)
       } catch (err) {
-        console.error('Error cargando panel de administración:', err)
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Error cargando el panel')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -78,6 +80,8 @@ export function AdminDashboard() {
           <h1 className="text-3xl font-bold text-text mb-2">Panel de administración</h1>
           <p className="text-text-light">Bienvenido, {user?.fullName}. Control total de la plataforma.</p>
         </div>
+
+        {error && <Alert variant="error" className="mb-6 p-3 rounded-sm">{error}</Alert>}
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="border-l-4 border-l-primary">
@@ -153,7 +157,7 @@ export function AdminDashboard() {
                 {pendingReview.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between p-4 bg-bg-alt rounded-[12px]"
+                    className="flex items-center justify-between p-4 bg-bg-alt rounded-sm"
                   >
                     <div>
                       <p className="font-medium text-text">{p.full_name}</p>

@@ -1,8 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { Card, CardContent } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'
-import { Search, Users } from 'lucide-react'
+import { Search, Users, ChevronDown, ChevronUp } from 'lucide-react'
+import { Badge } from '@/components/ui/Badge'
+import { Link } from 'react-router-dom'
+import { Button } from '@/components/ui/Button'
 import {
   getProfessionalProfileId,
   getAppointmentsForProfessional,
@@ -44,11 +48,22 @@ function buildPatientRows(appointments: Appointment[]): PatientRow[] {
   return [...byPatient.values()].sort((a, b) => a.name.localeCompare(b.name))
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Pendiente',
+  confirmed: 'Confirmada',
+  completed: 'Completada',
+  cancelled: 'Cancelada',
+  no_show: 'No asistió',
+}
+
 export function ProfessionalPatients() {
   const { user } = useAuth()
   const [patients, setPatients] = useState<PatientRow[]>([])
+  const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [error, setError] = useState('')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -58,11 +73,14 @@ export function ProfessionalPatients() {
     async function load() {
       try {
         const professionalProfileId = await getProfessionalProfileId(userId)
-        if (!professionalProfileId) return
+        if (!professionalProfileId) throw new Error('No se encontró tu perfil profesional.')
         const appointments = await getAppointmentsForProfessional(professionalProfileId)
-        if (!cancelled) setPatients(buildPatientRows(appointments))
+        if (!cancelled) {
+          setAppointments(appointments)
+          setPatients(buildPatientRows(appointments))
+        }
       } catch (err) {
-        console.error('Error cargando pacientes:', err)
+        if (!cancelled) setError(err instanceof Error ? err.message : 'No se pudieron cargar tus pacientes.')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -99,11 +117,13 @@ export function ProfessionalPatients() {
           </div>
         </div>
 
+        {error && <Alert variant="error" className="mb-4 p-3 rounded-sm">{error}</Alert>}
+
         <Card>
           <CardContent className="p-0">
             {loading ? (
               <p className="text-text-light p-6">Cargando pacientes...</p>
-            ) : filtered.length === 0 ? (
+            ) : error ? null : filtered.length === 0 ? (
               <div className="text-center py-12 text-text-light">
                 <Users size={48} className="mx-auto mb-4 text-muted" />
                 <p>{patients.length === 0 ? 'Aún no tienes pacientes con citas.' : 'Sin resultados para tu búsqueda.'}</p>
@@ -120,32 +140,90 @@ export function ProfessionalPatients() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((p) => (
-                      <tr key={p.id} className="border-b border-border last:border-0">
-                        <td className="py-4 px-4">
-                          <p className="font-medium text-text">{p.name}</p>
-                        </td>
-                        <td className="py-4 px-4 text-text">{p.sessions}</td>
-                        <td className="py-4 px-4 text-text-light">
-                          {p.lastSession
-                            ? new Date(p.lastSession).toLocaleDateString('es-MX', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                              })
-                            : '—'}
-                        </td>
-                        <td className="py-4 px-4">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              p.active ? 'bg-success/10 text-success' : 'bg-muted/20 text-text-light'
-                            }`}
+                    {filtered.map((p) => {
+                      const expanded = expandedId === p.id
+                      const history = expanded
+                        ? appointments
+                            .filter((a) => a.patient_profile_id === p.id)
+                            .sort((a, b) => b.scheduled_at.localeCompare(a.scheduled_at))
+                            .slice(0, 5)
+                        : []
+                      return (
+                        <Fragment key={p.id}>
+                          <tr
+                            className="border-b border-border last:border-0 hover:bg-bg-alt/50 cursor-pointer"
+                            onClick={() => setExpandedId(expanded ? null : p.id)}
                           >
-                            {p.active ? 'Activo' : 'Sin cita próxima'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                            <td className="py-4 px-4">
+                              <p className="font-medium text-text flex items-center gap-2">
+                                {expanded ? <ChevronUp size={16} aria-hidden /> : <ChevronDown size={16} aria-hidden />}
+                                {p.name}
+                              </p>
+                            </td>
+                            <td className="py-4 px-4 text-text">{p.sessions}</td>
+                            <td className="py-4 px-4 text-text-light">
+                              {p.lastSession
+                                ? new Date(p.lastSession).toLocaleDateString('es-MX', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                  })
+                                : '—'}
+                            </td>
+                            <td className="py-4 px-4">
+                              <Badge variant={p.active ? 'success' : 'default'}>
+                                {p.active ? 'Activo' : 'Sin cita próxima'}
+                              </Badge>
+                            </td>
+                          </tr>
+                          {expanded && (
+                            <tr key={`${p.id}-detail`} className="border-b border-border last:border-0 bg-bg-alt/30">
+                              <td colSpan={4} className="py-4 px-4">
+                                <p className="text-xs font-semibold text-text-light uppercase tracking-wide mb-2">
+                                  Últimas citas
+                                </p>
+                                {history.length === 0 ? (
+                                  <p className="text-sm text-text-light">Sin citas registradas.</p>
+                                ) : (
+                                  <ul className="space-y-1 mb-3">
+                                    {history.map((a) => (
+                                      <li key={a.id} className="flex items-center gap-3 text-sm">
+                                        <span className="text-text">
+                                          {new Date(a.scheduled_at).toLocaleDateString('es-MX', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: 'numeric',
+                                          })}
+                                        </span>
+                                        <span className="text-text-light">{a.serviceName || 'Sesión'}</span>
+                                        <Badge
+                                          variant={
+                                            a.status === 'confirmed'
+                                              ? 'success'
+                                              : a.status === 'completed'
+                                                ? 'info'
+                                                : a.status === 'cancelled' || a.status === 'no_show'
+                                                  ? 'error'
+                                                  : 'warning'
+                                          }
+                                        >
+                                          {STATUS_LABELS[a.status] || a.status}
+                                        </Badge>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                                <Link to="/profesional/notas">
+                                  <Button size="sm" variant="outline">
+                                    Escribir nota clínica
+                                  </Button>
+                                </Link>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>

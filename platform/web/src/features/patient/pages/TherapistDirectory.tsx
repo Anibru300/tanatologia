@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
-import { Star, Search, Filter, X, Calendar, Award, CheckCircle } from 'lucide-react'
+import { Star, Search, Filter, Calendar, Award, CheckCircle } from 'lucide-react'
 import { getProfessionalProfiles, type ProfessionalProfile } from '@/features/appointments/appointmentsService'
 
 const specialtyOptions = ['Todas', 'Duelo', 'Ansiedad', 'Estrés', 'Depresión', 'Pérdida', 'Familias']
@@ -71,7 +72,7 @@ export function TherapistDirectory() {
     return (
       <div className="section-calma">
         <div className="container-calma text-center py-16">
-          <p className="text-error">{error}</p>
+          <p className="text-error-dark">{error}</p>
           <Button className="mt-4" onClick={() => window.location.reload()}>
             Reintentar
           </Button>
@@ -100,7 +101,7 @@ export function TherapistDirectory() {
                   placeholder="Buscar por nombre o especialidad..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 rounded-[12px] border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full pl-11 pr-4 py-3 rounded-sm border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
               <div className="relative">
@@ -108,7 +109,7 @@ export function TherapistDirectory() {
                 <select
                   value={specialty}
                   onChange={(e) => setSpecialty(e.target.value)}
-                  className="w-full md:w-56 pl-11 pr-8 py-3 rounded-[12px] border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none"
+                  className="w-full md:w-56 pl-11 pr-8 py-3 rounded-sm border border-border bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none"
                 >
                   {specialtyOptions.map((s) => (
                     <option key={s} value={s}>
@@ -151,9 +152,9 @@ export function TherapistDirectory() {
                     </div>
                     <CardTitle className="text-lg flex items-center gap-2">
                       {t.full_name}
-                      {t.verification_status === 'verified' && <CheckCircle size={16} className="text-success" />}
+                      {t.verification_status === 'verified' && <CheckCircle size={16} className="text-success-dark" />}
                     </CardTitle>
-                    <CardDescription>Psicólogo · Tanatólogo</CardDescription>
+                    <CardDescription>{(t.specialties || []).slice(0, 2).join(' · ') || 'Acompañamiento emocional'}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col">
                     <p className="text-text-light text-sm mb-4 flex-1 line-clamp-3">{t.bio || 'Especialista en acompañamiento emocional y tanatología.'}</p>
@@ -199,40 +200,35 @@ export function TherapistDirectory() {
         )}
       </div>
 
-      {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-text/40 backdrop-blur-sm">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary-dark font-bold text-2xl">
-                    {getInitials(selected.full_name)}
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl flex items-center gap-2">
-                      {selected.full_name}
-                      {selected.verification_status === 'verified' && <CheckCircle size={20} className="text-success" />}
-                    </CardTitle>
-                    <CardDescription className="text-base">Psicólogo · Tanatólogo</CardDescription>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star size={16} className="text-warning fill-warning" />
-                      <span className="font-semibold text-text">{Number(selected.rating || 0).toFixed(1)}</span>
-                    </div>
-                  </div>
-                </div>
-                <button onClick={() => setSelected(null)} className="p-2 rounded-full hover:bg-bg-alt text-text-light">
-                  <X size={24} />
-                </button>
+      <Modal open={selected !== null} onClose={() => setSelected(null)} title={selected?.full_name} className="max-w-2xl">
+        {selected && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 -mt-2">
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary-dark font-bold text-2xl">
+                {getInitials(selected.full_name)}
               </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
+              <div>
+                <p className="text-text-light">{(selected.specialties || []).slice(0, 2).join(' · ') || 'Acompañamiento emocional'}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  {selected.verification_status === 'verified' && (
+                    <span className="flex items-center gap-1 text-success-dark text-sm">
+                      <CheckCircle size={16} /> Verificado
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <Star size={16} className="text-warning fill-warning" />
+                    <span className="font-semibold text-text">{Number(selected.rating || 0).toFixed(1)}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
               <div>
                 <h4 className="font-semibold text-text mb-2">Sobre mí</h4>
                 <p className="text-text-light">{selected.bio || 'Especialista en acompañamiento emocional y tanatología.'}</p>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-bg-alt rounded-[12px]">
+                <div className="flex items-center gap-3 p-4 bg-bg-alt rounded-sm">
                   <Award size={20} className="text-primary" />
                   <div>
                     <p className="text-xs text-text-light">Especialidades</p>
@@ -241,7 +237,7 @@ export function TherapistDirectory() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-[12px]">
+              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-sm">
                 <span className="text-text">Costo por sesión</span>
                 <span className="text-2xl font-bold text-primary-dark">{formatPrice(selected.session_price)}</span>
               </div>
@@ -261,10 +257,9 @@ export function TherapistDirectory() {
                   Cerrar
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -13,7 +14,7 @@ import {
   Clock,
   ArrowRight,
   Headphones,
-  CreditCard,
+  Users,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -26,6 +27,7 @@ export function PatientDashboard() {
   const { user } = useAuth()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -35,11 +37,11 @@ export function PatientDashboard() {
     async function load() {
       try {
         const patientProfileId = await getPatientProfileId(userId)
-        if (!patientProfileId) return
+        if (!patientProfileId) throw new Error('No se encontró tu perfil de paciente.')
         const data = await getAppointmentsForPatient(patientProfileId)
         if (!cancelled) setAppointments(data)
       } catch (err) {
-        console.error('Error cargando próxima cita:', err)
+        if (!cancelled) setError(err instanceof Error ? err.message : 'No se pudieron cargar tus citas.')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -60,6 +62,11 @@ export function PatientDashboard() {
   const completedAppointments = appointments.filter((a) => a.status === 'completed')
   const completedCount = completedAppointments.length
 
+  const upcomingAppointments = appointments
+    .filter((a) => a.status === 'confirmed' && new Date(a.scheduled_at) >= now)
+    .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+    .slice(0, 3)
+
   // Programa activo: se deduce del tipo de sesión de la última cita de programa
   const lastProgram = [...appointments]
     .filter((a) => a.session_type === 'program_4' || a.session_type === 'program_6')
@@ -77,6 +84,8 @@ export function PatientDashboard() {
           <p className="text-text-light">Este es tu espacio seguro para sanar.</p>
         </div>
 
+        {error && <Alert variant="error" className="mb-6 p-3 rounded-sm">{error}</Alert>}
+
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="border-l-4 border-l-primary">
             <CardHeader>
@@ -91,7 +100,7 @@ export function PatientDashboard() {
               ) : nextAppointment ? (
                 <>
                   <div className="flex items-start gap-3 mb-4">
-                    <div className="bg-primary/10 rounded-[12px] p-3 text-center min-w-[60px]">
+                    <div className="bg-primary/10 rounded-sm p-3 text-center min-w-[60px]">
                       <span className="block text-xs text-primary-dark font-semibold uppercase">
                         {new Date(nextAppointment.scheduled_at).toLocaleString('es-MX', { month: 'short' })}
                       </span>
@@ -192,7 +201,7 @@ export function PatientDashboard() {
                 </Link>
                 <Link to="/paciente/terapeutas">
                   <Button variant="outline" className="w-full h-28 flex flex-col gap-2">
-                    <Video size={24} />
+                    <Users size={24} />
                     <span>Terapeutas</span>
                   </Button>
                 </Link>
@@ -215,29 +224,37 @@ export function PatientDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard size={20} className="text-primary" />
-                Estado de cuenta
+                <Calendar size={20} className="text-primary-dark" />
+                Próximas citas
               </CardTitle>
-              <CardDescription>Tus pagos y membresías</CardDescription>
+              <CardDescription>Tus sesiones confirmadas</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-border">
-                  <span className="text-text-light">Saldo pendiente</span>
-                  <span className="font-semibold text-text">$0.00 MXN</span>
+              {loading ? (
+                <p className="text-text-light text-sm">Cargando...</p>
+              ) : upcomingAppointments.length === 0 ? (
+                <p className="text-sm text-text-light py-3">
+                  No tienes citas próximas. Agenda una sesión cuando estés lista/o.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {upcomingAppointments.map((a) => (
+                    <div key={a.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                      <div>
+                        <p className="text-sm font-medium text-text">{a.professionalName}</p>
+                        <p className="text-xs text-text-light">
+                          {new Date(a.scheduled_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })} ·{' '}
+                          {new Date(a.scheduled_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false })} hrs
+                        </p>
+                      </div>
+                      <Badge variant="success">Confirmada</Badge>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center justify-between py-3 border-b border-border">
-                  <span className="text-text-light">Próximo pago</span>
-                  <Badge variant="success">Al día</Badge>
-                </div>
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-text-light">Método de pago</span>
-                  <span className="text-sm text-text-light">No configurado</span>
-                </div>
-              </div>
-              <Link to="/paciente/pagos">
+              )}
+              <Link to="/paciente/citas">
                 <Button variant="outline" size="sm" className="w-full mt-4 gap-1">
-                  Gestionar pagos
+                  Ver todas mis citas
                   <ArrowRight size={16} />
                 </Button>
               </Link>

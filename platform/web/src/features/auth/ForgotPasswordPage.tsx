@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
+import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
@@ -39,7 +40,7 @@ export function ForgotPasswordPage() {
           <Card className="text-center">
             <CardContent className="p-12">
               <div className="w-20 h-20 mx-auto rounded-full bg-success/10 flex items-center justify-center mb-6">
-                <CheckCircle size={40} className="text-success" />
+                <CheckCircle size={40} className="text-success-dark" />
               </div>
               <h2 className="text-2xl font-bold text-text mb-2">Revisa tu correo</h2>
               <p className="text-text-light">
@@ -78,11 +79,7 @@ export function ForgotPasswordPage() {
                   />
                 </div>
               </div>
-              {error && (
-                <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">
-                  {error}
-                </div>
-              )}
+              {error && <Alert variant="error" className="p-3 rounded-sm">{error}</Alert>}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Enviando...' : 'Enviar enlace de recuperación'}
               </Button>

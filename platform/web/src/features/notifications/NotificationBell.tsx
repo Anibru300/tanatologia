@@ -77,8 +77,16 @@ export function NotificationBell() {
       }
     }
 
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
   }, [open])
 
   if (!user) return null
@@ -116,26 +124,28 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-[12px] text-text-light hover:bg-bg-alt hover:text-text transition-colors"
-        aria-label="Notificaciones"
+        className="relative p-2 rounded-sm text-text-light hover:bg-bg-alt hover:text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-dark/60"
+        aria-label={unreadCount > 0 ? `Notificaciones, ${unreadCount} sin leer` : 'Notificaciones'}
+        aria-expanded={open}
+        aria-haspopup="true"
       >
         <Bell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] font-semibold flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-error-dark text-white text-[11px] font-semibold flex items-center justify-center">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-surface border border-border rounded-[12px] shadow-lg z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-surface border border-border rounded-sm shadow-lg z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <span className="font-semibold text-text text-sm">Notificaciones</span>
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={handleMarkAllAsRead}
-                className="flex items-center gap-1 text-xs text-primary hover:underline"
+                className="flex items-center gap-1 text-xs text-primary-dark hover:underline"
               >
                 <CheckCheck size={14} />
                 Marcar todas como leídas
@@ -159,10 +169,13 @@ export function NotificationBell() {
                   }`}
                 >
                   <div className="flex items-start gap-2">
-                    {!notification.read_at && (
-                      <span className="mt-1.5 w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                    )}
-                    <div className={notification.read_at ? 'pl-4' : ''}>
+                    <span
+                      className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${
+                        notification.read_at ? 'invisible' : 'bg-primary'
+                      }`}
+                      aria-hidden
+                    />
+                    <div className="min-w-0">
                       <p className="text-sm font-medium text-text">{notification.title}</p>
                       {notification.body && (
                         <p className="text-xs text-text-light mt-0.5">{notification.body}</p>

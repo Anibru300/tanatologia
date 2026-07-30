@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
-import { Clock, Plus, Trash2, Check, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Clock, Plus, Trash2, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import {
   getMyAvailability,
@@ -26,7 +28,7 @@ function startOfToday(): Date {
 }
 
 function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
 function formatSelectedDate(key: string): string {
@@ -45,6 +47,7 @@ export function ProfessionalAvailability() {
   const [slots, setSlots] = useState<AvailabilitySlot[]>([])
   const [loading, setLoading] = useState(true)
   const [actionPending, setActionPending] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState<AvailabilitySlot | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -127,6 +130,7 @@ export function ProfessionalAvailability() {
       setError(err instanceof Error ? err.message : 'Error al eliminar el horario')
     } finally {
       setActionPending(false)
+      setConfirmDelete(null)
     }
   }
 
@@ -166,14 +170,11 @@ export function ProfessionalAvailability() {
           </p>
         </div>
 
-        {error && (
-          <div className="mb-6 p-3 rounded-[12px] bg-error/10 text-error text-sm">{error}</div>
-        )}
+        {error && <Alert variant="error" className="mb-6 p-3 rounded-sm">{error}</Alert>}
         {success && (
-          <div className="mb-6 p-3 rounded-[12px] bg-success/10 text-success text-sm flex items-center gap-2">
-            <Check size={16} />
+          <Alert variant="success" className="mb-6" autoDismiss={5000} onDismiss={() => setSuccess('')}>
             {success}
-          </div>
+          </Alert>
         )}
 
         <div className="grid lg:grid-cols-2 gap-6 items-start">
@@ -219,14 +220,17 @@ export function ProfessionalAvailability() {
                     <button
                       key={key}
                       disabled={isPast}
+                      aria-pressed={isSelected}
+                      aria-label={`${date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })}${count > 0 ? `, ${count} horario(s)` : ''}${isToday ? ', hoy' : ''}`}
+                      aria-current={isToday ? 'date' : undefined}
                       onClick={() => {
                         setSelectedKey(key)
                         setError('')
                         setSuccess('')
                       }}
-                      className={`relative aspect-square rounded-[10px] text-sm font-medium transition-colors flex flex-col items-center justify-center ${
+                      className={`relative aspect-square rounded-sm text-sm font-medium transition-colors flex flex-col items-center justify-center ${
                         isSelected
-                          ? 'bg-primary text-white'
+                          ? 'bg-primary-dark text-white'
                           : isPast
                             ? 'text-text-light/40 cursor-not-allowed'
                             : count > 0
@@ -275,7 +279,7 @@ export function ProfessionalAvailability() {
                       {selectedSlots.map((slot) => (
                         <div
                           key={slot.id}
-                          className="flex items-center gap-3 p-3 bg-bg-alt rounded-[12px]"
+                          className="flex items-center gap-3 p-3 bg-bg-alt rounded-sm"
                         >
                           <Clock size={16} className="text-primary shrink-0" />
                           <span className="text-text font-medium flex-1">
@@ -284,10 +288,10 @@ export function ProfessionalAvailability() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-error"
+                            className="text-error-dark"
                             disabled={actionPending}
-                            onClick={() => handleDeleteSlot(slot)}
-                            aria-label="Eliminar horario"
+                            onClick={() => setConfirmDelete(slot)}
+                            aria-label={`Eliminar horario de ${formatTime(slot.slot_start)}`}
                           >
                             <Trash2 size={16} />
                           </Button>
@@ -301,7 +305,7 @@ export function ProfessionalAvailability() {
                       type="time"
                       value={newTime}
                       onChange={(e) => setNewTime(e.target.value)}
-                      className="flex-1 min-w-0 px-3 py-2 rounded-[12px] border border-border bg-surface text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      className="flex-1 min-w-0 px-3 py-2 rounded-sm border border-border bg-surface text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                     <Button
                       size="sm"
@@ -319,6 +323,21 @@ export function ProfessionalAvailability() {
           </Card>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        title="Eliminar horario"
+        destructive
+        loading={actionPending}
+        message={
+          confirmDelete
+            ? `¿Eliminar el horario del ${new Date(confirmDelete.slot_start).toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })} de ${formatTime(confirmDelete.slot_start)} a ${formatTime(confirmDelete.slot_end)}? Si ya hay una cita agendada en ese horario, no se verá afectada.`
+            : ''
+        }
+        confirmLabel="Sí, eliminar"
+        onConfirm={() => confirmDelete && handleDeleteSlot(confirmDelete)}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   )
 }

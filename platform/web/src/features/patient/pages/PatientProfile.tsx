@@ -8,12 +8,13 @@ import {
 } from '@/features/profiles/profilesService'
 import { AvatarUploader } from '@/features/profiles/AvatarUploader'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
-import { User, Mail, Phone, Calendar, Heart, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import { User, Mail, Phone, Calendar, Heart, AlertCircle, Loader2 } from 'lucide-react'
 
 const GENDER_OPTIONS = [
   { value: '', label: 'Selecciona una opción' },
@@ -117,10 +118,10 @@ export function PatientProfile() {
     return (
       <div className="section-calma">
         <div className="container-calma max-w-3xl space-y-6">
-          <div className="h-10 w-64 rounded-[12px] bg-border/50 animate-pulse" />
-          <div className="h-40 rounded-[16px] bg-border/50 animate-pulse" />
-          <div className="h-64 rounded-[16px] bg-border/50 animate-pulse" />
-          <div className="h-48 rounded-[16px] bg-border/50 animate-pulse" />
+          <div className="h-10 w-64 rounded-sm bg-border/50 animate-pulse" />
+          <div className="h-40 rounded-md bg-border/50 animate-pulse" />
+          <div className="h-64 rounded-md bg-border/50 animate-pulse" />
+          <div className="h-48 rounded-md bg-border/50 animate-pulse" />
         </div>
       </div>
     )
@@ -131,7 +132,7 @@ export function PatientProfile() {
       <div className="section-calma">
         <div className="container-calma max-w-3xl">
           <Card>
-            <CardContent className="p-6 flex items-center gap-3 text-error">
+            <CardContent className="p-6 flex items-center gap-3 text-error-dark">
               <AlertCircle size={20} />
               <p>{loadError}</p>
             </CardContent>
@@ -176,7 +177,7 @@ export function PatientProfile() {
               </div>
               <div>
                 <Label>Correo electrónico</Label>
-                <div className="flex items-center gap-2 px-4 py-3 rounded-[12px] border border-border bg-bg-alt text-text">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-sm border border-border bg-bg-alt text-text">
                   <Mail size={18} className="text-muted" />
                   {email}
                 </div>
@@ -274,14 +275,9 @@ export function PatientProfile() {
         </Card>
 
         {saveMessage && (
-          <div
-            className={`mb-4 flex items-center gap-2 rounded-[12px] px-4 py-3 text-sm ${
-              saveStatus === 'success' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
-            }`}
-          >
-            {saveStatus === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+          <Alert variant={saveStatus === 'success' ? 'success' : 'error'} className="mb-4">
             {saveMessage}
-          </div>
+          </Alert>
         )}
 
         <div className="flex justify-end gap-4">

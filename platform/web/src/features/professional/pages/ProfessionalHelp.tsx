@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { LinkButton } from '@/components/ui/LinkButton'
 import { Mail, MessageCircle, Phone } from 'lucide-react'
+import { siteConfig } from '@/lib/siteConfig'
 
 const faqs = [
   { q: '¿Cómo configuro mi disponibilidad?', a: 'Ve a "Disponibilidad" y selecciona los horarios por día.' },
@@ -38,18 +39,23 @@ export function ProfessionalHelp() {
           </CardHeader>
           <CardContent>
             <div className="grid sm:grid-cols-3 gap-4">
-              <Button variant="outline" className="gap-2">
+              <LinkButton variant="outline" href={`mailto:${siteConfig.contact.support}`}>
                 <Mail size={18} />
                 Correo
-              </Button>
-              <Button variant="outline" className="gap-2">
+              </LinkButton>
+              <LinkButton variant="outline" href={`tel:+52${siteConfig.legal.phone.replace(/\s/g, '')}`}>
                 <Phone size={18} />
                 Teléfono
-              </Button>
-              <Button variant="outline" className="gap-2">
+              </LinkButton>
+              <LinkButton
+                variant="outline"
+                href={`https://wa.me/${siteConfig.contact.whatsapp.number}?text=${encodeURIComponent(siteConfig.contact.whatsapp.message)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <MessageCircle size={18} />
                 WhatsApp
-              </Button>
+              </LinkButton>
             </div>
           </CardContent>
         </Card>

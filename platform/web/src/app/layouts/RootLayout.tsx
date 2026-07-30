@@ -1,13 +1,16 @@
-import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { Button } from '@/components/ui/Button'
 import { QuickExitButton } from '@/components/QuickExitButton'
+import { Logo } from '@/components/ui/Logo'
 import { siteConfig } from '@/lib/siteConfig'
 import { Menu, X, User } from 'lucide-react'
 import { useState } from 'react'
 
 export function RootLayout() {
   const { user, logout } = useAuth()
+  const { pathname } = useLocation()
+  const isAuthPage = pathname === '/login' || pathname === '/register'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navLinks = [
@@ -22,10 +25,8 @@ export function RootLayout() {
       <header className="sticky top-0 z-50 bg-bg/80 backdrop-blur-md border-b border-border">
         <div className="container-calma">
           <nav className="flex items-center justify-between h-20">
-            <a href="/tanatologia/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
-                SC
-              </div>
+            <a href={siteConfig.urls.legacy} className="flex items-center gap-3">
+              <Logo size="md" />
               <span className="text-xl font-semibold text-text">SOMOS-CALMA</span>
             </a>
 
@@ -35,7 +36,7 @@ export function RootLayout() {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className="text-text-light hover:text-primary font-medium transition-colors"
+                  className="text-text-light hover:text-primary-dark font-medium transition-colors"
                 >
                   {link.label}
                 </Link>
@@ -69,7 +70,8 @@ export function RootLayout() {
             <button
               className="md:hidden p-2 text-text"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
+              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -113,7 +115,7 @@ export function RootLayout() {
         <Outlet />
       </main>
 
-      <QuickExitButton />
+      {!isAuthPage && <QuickExitButton />}
 
       <footer className="bg-primary-dark text-white py-12">
         <div className="container-calma">
@@ -127,7 +129,7 @@ export function RootLayout() {
             <div>
               <h4 className="font-semibold mb-4">Enlaces</h4>
               <ul className="space-y-2 text-sm text-white/80">
-                <li><a href="/tanatologia/" className="hover:text-white">Inicio</a></li>
+                <li><a href={siteConfig.urls.legacy} className="hover:text-white">Inicio</a></li>
                 <li><Link to="/cotizacion" className="hover:text-white">Cotización</Link></li>
                 <li><Link to="/login" className="hover:text-white">Iniciar sesión</Link></li>
               </ul>

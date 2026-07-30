@@ -46,14 +46,14 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 
 ## Convenciones
 - Path alias `@/` apunta a `platform/web/src/`.
-- Componentes UI en `src/components/ui/`.
-- Cada portal tiene su layout en `src/app/layouts/` y páginas en `src/features/{rol}/pages/`.
-- Roles: `patient`, `professional`, `admin`.
+- Componentes UI en `src/components/ui/`: Button, LinkButton, Card, Input, Select, Textarea, Badge, Stepper, ProgressBar, **Modal, ConfirmDialog, Alert, EmptyState, Skeleton, DataTable, Logo** (creados en la revisión UX 2026-07-29; usarlos en vez de improvisar banners, modales, tablas o estados vacíos).
+- Los 3 portales usan el layout unificado `src/app/layouts/PortalLayout.tsx` (los layouts por rol solo definen `menuItems`; badge "Pronto" para secciones ComingSoon; `matchPaths` para subrutas como `/sala`). `QuickExitButton` solo en el portal paciente.
+- Páginas en `src/features/{rol}/pages/`. Roles: `patient`, `professional`, `admin`.
+- Paleta con variantes `-dark`/`-darker` (contraste WCAG AA): texto blanco solo sobre `*-dark`. Radios como tokens (`rounded-xs/sm/md/DEFAULT/lg/xl`), sin valores arbitrarios.
+- Prohibidos `alert()`/`window.confirm`/`window.prompt`: usar `ConfirmDialog`/`Modal`. Errores siempre visibles con `Alert` (nunca solo `console.error`).
 
 ## Cuentas demo
-- paciente@demo.com / demo123
-- profesional@demo.com / demo123
-- admin@demo.com / demo123
+- (Eliminadas 2026-07-29: la plataforma ya opera con usuarios reales. El script `scripts/seed-demo.mjs` se conserva solo como referencia.)
 
 ## Pendientes críticos
 1. ✅ Autenticación conectada a Supabase Auth; `MOCK_USERS` eliminado.
@@ -65,8 +65,9 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 7. ✅ Migraciones 005 y 006 aplicadas en Supabase Cloud (tablas `professional_documents`, `notifications`, `legal_acceptances`, `platform_settings`, buckets `avatars` y `professional-documents`).
 7b. ✅ Migración 007 aplicada en Cloud (política UPDATE de `patient_profiles`, `is_assigned_patient()` SECURITY DEFINER, validación estricta de docs en `submit_for_review`). **Ninguna migración pendiente.**
 7c. ✅ Dashboards admin/profesional/paciente con datos reales (sin mocks); historial del paciente, lista de pacientes y notas clínicas (`clinical_notes`) conectados a Supabase. Campana de notificaciones arriba a la derecha en los 3 portales.
-7d. ⏳ Migración 008 (`008_date_specific_availability.sql`) creada, **pendiente de ejecutar en Cloud**: reemplaza `availability` (rangos recurrentes por día de semana) por `availability_slots` (fecha/hora específica, con constraint EXCLUDE anti-traslape, requiere extensión `btree_gist`). Hasta aplicarla, disponibilidad y agendado no funcionan.
-8. ⏳ Agregar secrets `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en GitHub (Settings > Secrets > Actions) para el workflow de deploy.
+7d. ✅ Migración 008 (`008_date_specific_availability.sql`) aplicada en Cloud (verificado 2026-07-29 vía API: `availability_slots` activa con EXCLUDE anti-traslape, tabla `availability` eliminada, RPC `get_booked_slots(p_professional_profile_id, p_start, p_end)` operativa). **Ninguna migración pendiente.**
+7e. ✅ Flujos probados end-to-end contra Cloud (2026-07-29): cancelación de cita (slot se libera en `get_booked_slots` + trigger `notify_appointment_events` crea notificación al paciente), notas clínicas (profesional escribe en su cita; trigger `validate_clinical_note` rechaza citas ajenas; paciente no las ve por RLS), notificaciones in-app y registro inmediato (Confirm email desactivado).
+8. ✅ Secrets `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` configurados en GitHub Actions; deploy automático verificado (build de `/app` con la URL de Supabase embebida).
 9. Implementar pagos (Openpay recomendado para marketplace MX; ver `docs/investigacion-plataforma-2026-07-27.md`) cuando haya tracción.
 
 ## Modelo de disponibilidad (2026-07-29)

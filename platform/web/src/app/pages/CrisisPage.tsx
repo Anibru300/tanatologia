@@ -1,5 +1,6 @@
 import { siteConfig } from '@/lib/siteConfig'
 import { Card, CardContent } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Phone, AlertTriangle } from 'lucide-react'
 
 export function CrisisPage() {
@@ -10,15 +11,15 @@ export function CrisisPage() {
       <div className="container-calma max-w-3xl mx-auto">
         <div className="text-center mb-10">
           <div className="w-16 h-16 mx-auto rounded-full bg-error/10 flex items-center justify-center mb-4">
-            <AlertTriangle className="text-error" size={32} />
+            <AlertTriangle className="text-error-dark" size={32} />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-text mb-3">Líneas de emergencia</h1>
           <p className="text-text-light">{crisis.description}</p>
         </div>
 
-        <div className="p-4 rounded-[12px] bg-error/10 text-error text-sm mb-6 text-center">
+        <Alert variant="error" className="mb-6 justify-center text-center">
           Si tú o alguien cercano está en riesgo inminente, llama al <strong>911</strong> de inmediato.
-        </div>
+        </Alert>
 
         <div className="grid gap-4 mb-10">
           {crisis.lines.map((line) => (
@@ -30,7 +31,7 @@ export function CrisisPage() {
                 </div>
                 <a
                   href={`tel:${line.number.replace(/\s/g, '')}`}
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark transition"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary-dark px-4 py-2 text-sm font-semibold text-white hover:bg-primary-darker transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-dark/60 focus-visible:ring-offset-2"
                 >
                   <Phone size={16} />
                   {line.number}

@@ -78,7 +78,7 @@ export function AvatarUploader({ avatarUrl, fullName, onUpload }: AvatarUploader
           onChange={handleFileChange}
         />
       </div>
-      {error && <p className="text-sm text-error text-center">{error}</p>}
+      {error && <p className="text-sm text-error-dark text-center">{error}</p>}
     </div>
   )
 }

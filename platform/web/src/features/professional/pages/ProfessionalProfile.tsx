@@ -10,12 +10,13 @@ import {
 import { AvatarUploader } from '@/features/profiles/AvatarUploader'
 import { ChipMultiSelect } from '@/features/profiles/ChipMultiSelect'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
-import { CheckCircle2, AlertCircle, Loader2, ShieldCheck } from 'lucide-react'
+import { AlertCircle, Loader2, ShieldCheck } from 'lucide-react'
 
 const TITLE_OPTIONS = [
   { value: '', label: 'Selecciona una opción' },
@@ -186,9 +187,9 @@ export function ProfessionalProfile() {
     return (
       <div className="section-calma">
         <div className="container-calma max-w-3xl space-y-6">
-          <div className="h-10 w-64 rounded-[12px] bg-border/50 animate-pulse" />
-          <div className="h-40 rounded-[16px] bg-border/50 animate-pulse" />
-          <div className="h-96 rounded-[16px] bg-border/50 animate-pulse" />
+          <div className="h-10 w-64 rounded-sm bg-border/50 animate-pulse" />
+          <div className="h-40 rounded-md bg-border/50 animate-pulse" />
+          <div className="h-96 rounded-md bg-border/50 animate-pulse" />
         </div>
       </div>
     )
@@ -199,7 +200,7 @@ export function ProfessionalProfile() {
       <div className="section-calma">
         <div className="container-calma max-w-3xl">
           <Card>
-            <CardContent className="p-6 flex items-center gap-3 text-error">
+            <CardContent className="p-6 flex items-center gap-3 text-error-dark">
               <AlertCircle size={20} />
               <p>{loadError}</p>
             </CardContent>
@@ -352,14 +353,9 @@ export function ProfessionalProfile() {
         </Card>
 
         {saveMessage && (
-          <div
-            className={`mb-4 flex items-center gap-2 rounded-[12px] px-4 py-3 text-sm ${
-              saveStatus === 'success' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
-            }`}
-          >
-            {saveStatus === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+          <Alert variant={saveStatus === 'success' ? 'success' : 'error'} className="mb-4">
             {saveMessage}
-          </div>
+          </Alert>
         )}
 
         <div className="flex justify-end">

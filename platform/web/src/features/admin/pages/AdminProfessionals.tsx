@@ -1,11 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
-import { Search, CheckCircle, XCircle, FileText } from 'lucide-react'
-import { getAdminProfessionals, updateProfessionalVerification, type AdminProfessional } from '@/features/admin/adminService'
+import { DataTable } from '@/components/ui/DataTable'
+import { Search, FileText } from 'lucide-react'
+import { getAdminProfessionals, type AdminProfessional } from '@/features/admin/adminService'
+
+const statusLabels: Record<string, string> = {
+  pending: 'Pendiente',
+  in_review: 'En revisión',
+  verified: 'Verificado',
+  rejected: 'Rechazado',
+}
+
+const statusVariants: Record<string, 'default' | 'success' | 'warning' | 'error'> = {
+  pending: 'default',
+  in_review: 'warning',
+  verified: 'success',
+  rejected: 'error',
+}
 
 export function AdminProfessionals() {
   const [professionals, setProfessionals] = useState<AdminProfessional[]>([])
@@ -29,15 +45,6 @@ export function AdminProfessionals() {
     }
   }
 
-  async function verify(professional: AdminProfessional, status: 'verified' | 'rejected') {
-    try {
-      await updateProfessionalVerification(professional.id, status, status === 'verified')
-      await load()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al actualizar')
-    }
-  }
-
   const filtered = professionals.filter((p) =>
     p.full_name.toLowerCase().includes(search.toLowerCase()) ||
     p.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -52,18 +59,18 @@ export function AdminProfessionals() {
             <h1 className="text-3xl font-bold text-text mb-2">Profesionales</h1>
             <p className="text-text-light">Gestión y verificación de especialistas.</p>
           </div>
-          <div className="relative w-64 mt-4 md:mt-0">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <div className="w-64 mt-4 md:mt-0">
             <Input
               placeholder="Buscar profesional..."
+              icon={<Search size={18} />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
+              aria-label="Buscar profesionales"
             />
           </div>
         </div>
 
-        {error && <div className="mb-4 p-3 rounded-[12px] bg-error/10 text-error text-sm">{error}</div>}
+        {error && <Alert variant="error" className="mb-4">{error}</Alert>}
 
         <Card>
           <CardHeader>
@@ -71,76 +78,52 @@ export function AdminProfessionals() {
             <CardDescription>{filtered.length} registrados</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <p className="text-text-light">Cargando...</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Nombre</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Especialidad</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Estado</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Visible</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((p) => (
-                      <tr key={p.id} className="border-b border-border last:border-0">
-                        <td className="py-4 px-4">
-                          <div>
-                            <p className="font-medium text-text">{p.full_name}</p>
-                            <p className="text-sm text-text-light">{p.email}</p>
-                            {p.license_number && <p className="text-xs text-muted">Cédula: {p.license_number}</p>}
-                          </div>
-                        </td>
-                        <td className="py-4 px-4 text-text">{p.specialties.join(', ') || '—'}</td>
-                        <td className="py-4 px-4">
-                          <Badge
-                            variant={
-                              p.verification_status === 'verified'
-                                ? 'success'
-                                : p.verification_status === 'in_review'
-                                  ? 'warning'
-                                  : p.verification_status === 'rejected'
-                                    ? 'error'
-                                    : 'default'
-                            }
-                          >
-                            {p.verification_status === 'verified'
-                              ? 'Verificado'
-                              : p.verification_status === 'in_review'
-                                ? 'En revisión'
-                                : p.verification_status === 'rejected'
-                                  ? 'Rechazado'
-                                  : 'Pendiente'}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-4 text-text-light">{p.is_visible ? 'Sí' : 'No'}</td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2">
-                            <Link to="/admin/verificacion">
-                              <Button size="sm" variant="ghost" title="Revisar expediente"><FileText size={16} /></Button>
-                            </Link>
-                            {p.verification_status !== 'verified' && (
-                              <Button size="sm" variant="ghost" className="text-success" onClick={() => verify(p, 'verified')}>
-                                <CheckCircle size={16} />
-                              </Button>
-                            )}
-                            {p.verification_status !== 'rejected' && (
-                              <Button size="sm" variant="ghost" className="text-error" onClick={() => verify(p, 'rejected')}>
-                                <XCircle size={16} />
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <DataTable
+              loading={loading}
+              rows={filtered}
+              keyOf={(p) => p.id}
+              emptyMessage={search ? 'Sin resultados para tu búsqueda.' : 'Aún no hay profesionales registrados.'}
+              caption="Listado de profesionales"
+              columns={[
+                {
+                  header: 'Nombre',
+                  render: (p) => (
+                    <div>
+                      <p className="font-medium text-text">{p.full_name}</p>
+                      <p className="text-sm text-text-light">{p.email}</p>
+                      {p.license_number && <p className="text-xs text-muted">Cédula: {p.license_number}</p>}
+                    </div>
+                  ),
+                },
+                {
+                  header: 'Especialidad',
+                  render: (p) => <span className="text-text">{p.specialties.join(', ') || '—'}</span>,
+                },
+                {
+                  header: 'Estado',
+                  render: (p) => (
+                    <Badge variant={statusVariants[p.verification_status] || 'default'}>
+                      {statusLabels[p.verification_status] || p.verification_status}
+                    </Badge>
+                  ),
+                },
+                {
+                  header: 'Visible',
+                  render: (p) => <span className="text-text-light">{p.is_visible ? 'Sí' : 'No'}</span>,
+                },
+                {
+                  header: 'Acciones',
+                  render: () => (
+                    <Link to="/admin/verificacion">
+                      <Button size="sm" variant="outline" className="gap-2">
+                        <FileText size={16} />
+                        Revisar expediente
+                      </Button>
+                    </Link>
+                  ),
+                },
+              ]}
+            />
           </CardContent>
         </Card>
       </div>

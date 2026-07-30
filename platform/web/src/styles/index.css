@@ -90,6 +90,18 @@ body::after {
   }
 }
 
+/* Accesibilidad: sin animación de fondo para quien prefiere movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    animation: none;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 @layer utilities {
   .container-calma {
     width: min(92%, 1120px);

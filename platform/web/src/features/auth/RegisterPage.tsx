@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth, type UserRole } from '@/features/auth/AuthProvider'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
+import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
@@ -71,7 +72,7 @@ export function RegisterPage() {
           <Card className="text-center">
             <CardContent className="p-12">
               <div className="w-20 h-20 mx-auto rounded-full bg-success/10 flex items-center justify-center mb-6">
-                <CheckCircle size={40} className="text-success" />
+                <CheckCircle size={40} className="text-success-dark" />
               </div>
               <h2 className="text-2xl font-bold text-text mb-2">
                 {needsConfirmation ? 'Revisa tu correo' : '¡Cuenta creada!'}
@@ -108,7 +109,7 @@ export function RegisterPage() {
                     key={r.value}
                     type="button"
                     onClick={() => setRole(r.value)}
-                    className={`w-full flex items-center gap-4 p-4 rounded-[16px] border-2 text-left transition-all ${
+                    className={`w-full flex items-center gap-4 p-4 rounded-md border-2 text-left transition-all ${
                       isActive
                         ? 'border-primary bg-primary/5'
                         : 'border-border bg-surface hover:border-primary/50'
@@ -116,7 +117,7 @@ export function RegisterPage() {
                   >
                     <div
                       className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
-                        isActive ? 'bg-primary text-white' : 'bg-bg-alt text-text-light'
+                        isActive ? 'bg-primary-dark text-white' : 'bg-bg-alt text-text-light'
                       }`}
                     >
                       <Icon size={24} />
@@ -164,11 +165,7 @@ export function RegisterPage() {
                   minLength={8}
                 />
               </div>
-              {error && (
-                <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">
-                  {error}
-                </div>
-              )}
+              {error && <Alert variant="error" className="p-3 rounded-sm">{error}</Alert>}
               <label className="flex items-start gap-3 text-sm text-text-light cursor-pointer">
                 <input
                   type="checkbox"

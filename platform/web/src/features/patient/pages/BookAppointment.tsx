@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Stepper } from '@/components/ui/Stepper'
 import { Calendar, Clock, Video, Check, User, ArrowLeft, ArrowRight, Star, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { siteConfig } from '@/lib/siteConfig'
 import {
   getProfessionalProfiles,
   getPatientProfileId,
@@ -184,6 +186,29 @@ export function BookAppointment() {
     return `$${(cents / 100).toLocaleString('es-MX')}`
   }
 
+  // '2026-08-03' -> 'lunes, 3 de agosto de 2026'
+  const formatDateLong = (isoDate: string) => {
+    const [y, m, d] = isoDate.split('-').map(Number)
+    return new Date(y, m - 1, d).toLocaleDateString('es-MX', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
+
+  // Precio de referencia (siteConfig, en pesos) cuando aún no hay terapeuta elegido
+  const referencePrice = () => {
+    const { pricing } = siteConfig
+    const pesos =
+      selectedService === 'single'
+        ? pricing.session.single
+        : selectedService === 'program_4'
+          ? pricing.program4.price
+          : pricing.program6.price
+    return `$${pesos.toLocaleString('es-MX')}`
+  }
+
   const canContinue = () => {
     if (step === 0) return true
     if (step === 1) return selectedTherapist !== null
@@ -244,8 +269,8 @@ export function BookAppointment() {
             <h1>Hola ${user.fullName},</h1>
             <p>Tu cita con <strong>${selectedTherapistData.full_name}</strong> ha sido confirmada.</p>
             <p><strong>Servicio:</strong> ${selectedServiceData.name}</p>
-            <p><strong>Fecha:</strong> ${selectedDate}</p>
-            <p><strong>Hora:</strong> ${selectedTime}</p>
+            <p><strong>Fecha:</strong> ${formatDateLong(selectedDate)}</p>
+            <p><strong>Hora:</strong> ${selectedTime} hrs (horario local)</p>
             <p><strong>Link de videollamada:</strong> <a href="https://anibru300.github.io/tanatologia/app/#/paciente/sala/${appointment.id}">Entrar a la sala</a></p>
           `,
           type: 'appointment_confirmation',
@@ -269,21 +294,37 @@ export function BookAppointment() {
           <Card className="text-center">
             <CardContent className="p-12">
               <div className="w-20 h-20 mx-auto rounded-full bg-success/10 flex items-center justify-center mb-6">
-                <Check size={40} className="text-success" />
+                <Check size={40} className="text-success-dark" />
               </div>
               <h2 className="text-2xl font-bold text-text mb-2">¡Cita confirmada!</h2>
               <p className="text-text-light mb-6">
                 Te enviamos un correo con los detalles. Recuerda que puedes ingresar a tu portal para verla.
               </p>
-              <div className="bg-bg-alt rounded-[16px] p-6 text-left space-y-3 max-w-md mx-auto mb-6">
+              <div className="bg-bg-alt rounded-md p-6 text-left space-y-3 max-w-md mx-auto mb-6">
                 <p className="text-text"><strong>Servicio:</strong> {selectedServiceData.name}</p>
                 <p className="text-text"><strong>Terapeuta:</strong> {selectedTherapistData?.full_name}</p>
-                <p className="text-text"><strong>Fecha:</strong> {selectedDate}</p>
-                <p className="text-text"><strong>Hora:</strong> {selectedTime}</p>
+                <p className="text-text"><strong>Fecha:</strong> {formatDateLong(selectedDate)}</p>
+                <p className="text-text"><strong>Hora:</strong> {selectedTime} hrs</p>
               </div>
-              <Button onClick={() => navigate('/paciente/citas')}>
-                Ver mis citas
-              </Button>
+              <div className="flex flex-col sm:flex-row justify-center gap-3">
+                <Button onClick={() => navigate('/paciente/citas')}>
+                  Ver mis citas
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setConfirmed(false)
+                    setSelectedDate('')
+                    setSelectedTime('')
+                    setStep(preselectedTherapistId ? 2 : 0)
+                  }}
+                >
+                  Agendar otra cita
+                </Button>
+              </div>
+              <p className="text-xs text-text-light mt-6">
+                Puedes cancelar sin costo con al menos 24 horas de anticipación desde "Mis citas".
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -314,7 +355,7 @@ export function BookAppointment() {
                 <button
                   key={service.id}
                   onClick={() => setSelectedService(service.id)}
-                  className={`w-full text-left p-5 rounded-[16px] border-2 transition-all ${
+                  className={`w-full text-left p-5 rounded-md border-2 transition-all ${
                     selectedService === service.id
                       ? 'border-primary bg-primary/5'
                       : 'border-border bg-surface hover:border-primary/50'
@@ -329,8 +370,13 @@ export function BookAppointment() {
                         {service.duration}
                       </p>
                     </div>
-                    <span className="text-xl font-bold text-primary-dark whitespace-nowrap">
-                      {selectedTherapistData ? formatPrice(getPrice(selectedTherapistData)) : '—'}
+                    <span className="text-right whitespace-nowrap">
+                      <span className="block text-xl font-bold text-primary-dark">
+                        {selectedTherapistData ? formatPrice(getPrice(selectedTherapistData)) : referencePrice()}
+                      </span>
+                      {!selectedTherapistData && (
+                        <span className="text-xs text-text-light">precio de referencia</span>
+                      )}
                     </span>
                   </div>
                 </button>
@@ -349,16 +395,12 @@ export function BookAppointment() {
               {loadingTherapists && (
                 <p className="text-text-light text-center py-8">Cargando terapeutas...</p>
               )}
-              {therapistsError && (
-                <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">
-                  {therapistsError}
-                </div>
-              )}
+              {therapistsError && <Alert variant="error">{therapistsError}</Alert>}
               {!loadingTherapists && therapists.map((therapist) => (
                 <button
                   key={therapist.id}
                   onClick={() => setSelectedTherapist(therapist.id)}
-                  className={`w-full text-left p-4 rounded-[16px] border-2 transition-all flex items-center gap-4 ${
+                  className={`w-full text-left p-4 rounded-md border-2 transition-all flex items-center gap-4 ${
                     selectedTherapist === therapist.id
                       ? 'border-primary bg-primary/5'
                       : 'border-border bg-surface hover:border-primary/50'
@@ -396,12 +438,10 @@ export function BookAppointment() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {slotsError && (
-                <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">{slotsError}</div>
-              )}
+              {slotsError && <Alert variant="error">{slotsError}</Alert>}
               {loadingSlots && <p className="text-sm text-text-light">Cargando disponibilidad...</p>}
               {!loadingSlots && !slotsError && freeSlots !== null && freeSlots.length === 0 && (
-                <div className="p-4 rounded-[12px] bg-bg-alt text-text-light text-sm">
+                <div className="p-4 rounded-sm bg-bg-alt text-text-light text-sm">
                   Este profesional no tiene horarios disponibles en los próximos {BOOKING_WINDOW_DAYS} días.
                 </div>
               )}
@@ -457,13 +497,15 @@ export function BookAppointment() {
                           <button
                             key={key}
                             disabled={!hasSlots}
+                            aria-disabled={!hasSlots}
+                            aria-label={hasSlots ? `Elegir ${date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })}` : undefined}
                             onClick={() => {
                               setSelectedDate(key)
                               setSelectedTime('')
                             }}
-                            className={`aspect-square rounded-[10px] text-sm font-medium transition-colors ${
+                            className={`aspect-square rounded-sm text-sm font-medium transition-colors ${
                               isSelected
-                                ? 'bg-primary text-white'
+                                ? 'bg-primary-dark text-white'
                                 : hasSlots
                                   ? 'bg-primary/10 text-primary-dark hover:bg-primary/20'
                                   : 'text-text-light/40 cursor-not-allowed'
@@ -490,9 +532,9 @@ export function BookAppointment() {
                             <button
                               key={slot.id}
                               onClick={() => setSelectedTime(time)}
-                              className={`px-4 py-3 rounded-[12px] border text-sm font-medium transition-colors ${
+                              className={`px-4 py-3 rounded-sm border text-sm font-medium transition-colors ${
                                 selectedTime === time
-                                  ? 'bg-primary text-white border-primary'
+                                  ? 'bg-primary-dark text-white border-primary'
                                   : 'border-border text-text hover:border-primary bg-surface'
                               }`}
                             >
@@ -504,10 +546,14 @@ export function BookAppointment() {
                     )}
                   </div>
 
+                  <p className="text-xs text-text-light">
+                    Todos los horarios se muestran en tu hora local ({Intl.DateTimeFormat().resolvedOptions().timeZone}).
+                  </p>
+
                   {preselectedTherapistId && (
                     <button
                       onClick={() => setStep(1)}
-                      className="text-sm text-primary hover:underline"
+                      className="text-sm text-primary-dark hover:underline"
                     >
                       ¿Prefieres otro terapeuta? Cambiar selección
                     </button>
@@ -525,24 +571,20 @@ export function BookAppointment() {
               <CardDescription>Revisa los detalles antes de agendar.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-bg-alt rounded-[16px] p-6 space-y-4">
+              <div className="bg-bg-alt rounded-md p-6 space-y-4">
                 <SummaryRow icon={Check} label="Servicio" value={selectedServiceData.name} />
                 <SummaryRow icon={User} label="Terapeuta" value={selectedTherapistData?.full_name || ''} />
-                <SummaryRow icon={Calendar} label="Fecha" value={selectedDate} />
-                <SummaryRow icon={Clock} label="Hora" value={selectedTime} />
+                <SummaryRow icon={Calendar} label="Fecha" value={selectedDate ? formatDateLong(selectedDate) : ''} />
+                <SummaryRow icon={Clock} label="Hora" value={selectedTime ? `${selectedTime} hrs` : ''} />
                 <SummaryRow icon={Video} label="Modalidad" value="Videollamada privada" />
               </div>
-              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-[12px]">
+              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-sm">
                 <span className="text-text">Total a pagar</span>
                 <span className="text-xl font-bold text-primary-dark">
                   {selectedTherapistData ? formatPrice(getPrice(selectedTherapistData)) : '—'}
                 </span>
               </div>
-              {submitError && (
-                <div className="p-3 rounded-[12px] bg-error/10 text-error text-sm">
-                  {submitError}
-                </div>
-              )}
+              {submitError && <Alert variant="error">{submitError}</Alert>}
             </CardContent>
           </Card>
         )}
@@ -559,14 +601,21 @@ export function BookAppointment() {
           </Button>
 
           {step < steps.length - 1 ? (
-            <Button
-              onClick={goNext}
-              disabled={!canContinue()}
-              className="gap-2"
-            >
-              Continuar
-              <ArrowRight size={18} />
-            </Button>
+            <div className="text-right">
+              <Button
+                onClick={goNext}
+                disabled={!canContinue()}
+                className="gap-2"
+              >
+                Continuar
+                <ArrowRight size={18} />
+              </Button>
+              {!canContinue() && (
+                <p className="text-xs text-text-light mt-2">
+                  {step === 1 ? 'Elige un terapeuta para continuar.' : 'Selecciona fecha y horario para continuar.'}
+                </p>
+              )}
+            </div>
           ) : (
             <Button onClick={handleConfirm} disabled={submitting} className="gap-2">
               <Check size={18} />
@@ -581,10 +630,10 @@ export function BookAppointment() {
 
 function LabelWithIcon({ icon: Icon, text }: { icon: typeof Calendar; text: string }) {
   return (
-    <label className="flex items-center gap-2 text-sm font-medium text-text mb-2 capitalize">
-      <Icon size={16} className="text-primary" />
+    <p className="flex items-center gap-2 text-sm font-medium text-text mb-2 capitalize">
+      <Icon size={16} className="text-primary-dark" aria-hidden />
       {text}
-    </label>
+    </p>
   )
 }
 
