@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-bzQ4Vb5N.js";import{t}from"./ComingSoon-wt3iBUsN.js";var n=e();function r(){return(0,n.jsx)(t,{title:`Contenidos`,description:`La edición de textos e imágenes de la landing estará disponible en una próxima versión.`,actionLabel:`Volver al panel`,actionTo:`/admin`})}export{r as AdminCMS};
