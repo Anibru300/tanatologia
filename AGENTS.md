@@ -86,6 +86,10 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - El workflow `.github/workflows/deploy-app.yml` compila `platform/web` y copia el build a `/app/` automáticamente en cada push a `main` que toque `platform/web/**` (requiere los secrets de Supabase configurados).
 - En Supabase Dashboard (Authentication > URL Configuration) deben estar `https://somos-calma.com/app/` como Site URL y redirect URL.
 
+## Analytics
+- **Google Analytics 4** (`G-CJ0QQ9JY27`) integrado 2026-07-31: sitio estático vía `assets/js/components.js` (cargado en las 16 páginas) y app React vía `platform/web/index.html` con `page_view` en cada `hashchange` del HashRouter.
+- Search Console: propiedad de dominio verificada (2026-07-31).
+
 ## Registro de nuevos usuarios
 - Al registrarse, el trigger `handle_new_user()` crea automáticamente el perfil en `profiles` y, según el rol, un registro en `patient_profiles` o `professional_profiles`.
 - Si deseas que el registro sea inmediato (sin confirmar correo), desactiva **Confirm email** en:

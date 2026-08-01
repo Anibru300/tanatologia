@@ -9,6 +9,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="SOMOS-CALMA: tu espacio seguro para sanar y encontrar alivio. Tanatólogos y psicólogos certificados en México." />
     <title>SOMOS-CALMA | Plataforma</title>
+    <!-- Google Analytics 4 (G-CJ0QQ9JY27) con tracking de rutas del HashRouter -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CJ0QQ9JY27"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { window.dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-CJ0QQ9JY27');
+      window.addEventListener('hashchange', function () {
+        gtag('event', 'page_view', {
+          page_path: window.location.pathname + window.location.hash,
+          page_location: window.location.href,
+        });
+      });
+    </script>
     <script>
       // HashRouter recovery helper: Supabase envía recovery como query params
       // (p. ej. /app/?token=...&type=recovery). Movemos esos params

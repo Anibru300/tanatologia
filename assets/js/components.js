@@ -147,3 +147,16 @@
     atencionBotScript.src = `${root}assets/js/atencion-bot.js`;
     document.head.appendChild(atencionBotScript);
 })();
+
+/* === GOOGLE ANALYTICS 4 (G-CJ0QQ9JY27) === */
+(function () {
+    if (window.gtag) return; // evitar doble carga
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=G-CJ0QQ9JY27';
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', 'G-CJ0QQ9JY27');
+})();
