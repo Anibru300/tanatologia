@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
@@ -16,16 +16,30 @@ export function UpdatePasswordPage() {
   const [success, setSuccess] = useState(false)
   const [checking, setChecking] = useState(true)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
-    // Supabase extrae automáticamente el token de recuperación de la URL.
+    // Flujo token_hash (template de email personalizado): el enlace llega como
+    // #/actualizar-contrasena?token_hash=...&type=recovery
+    const tokenHash = searchParams.get('token_hash')
+    const type = searchParams.get('type')
+    if (tokenHash && type === 'recovery') {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' }).then(({ error }) => {
+        if (error) {
+          setError('El enlace de recuperación no es válido o ha expirado. Solicita uno nuevo.')
+        }
+        setChecking(false)
+      })
+      return
+    }
+    // Fallback: Supabase extrae automáticamente el token de recuperación de la URL.
     supabase.auth.getSession().then(({ data, error }) => {
       if (error || !data.session) {
         setError('El enlace de recuperación no es válido o ha expirado. Solicita uno nuevo.')
       }
       setChecking(false)
     })
-  }, [])
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
