@@ -9,8 +9,8 @@
     <title>SOMOS-CALMA</title>
     <script>
       // GitHub Pages SPA redirect para HashRouter.
-      // Ejemplo: /tanatologia/app/login -> /tanatologia/app/#/login
-      var segment = 'tanatologia/app';
+      // Ejemplo: /app/login -> /app/#/login
+      var segment = 'app';
       var l = window.location;
       var path = l.pathname.replace(new RegExp('^/' + segment + '/?'), '');
       l.replace('/' + segment + '/#' + (path ? '/' + path : '') + l.search + l.hash);
