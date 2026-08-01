@@ -419,6 +419,14 @@
         </section>
     </main>
 
+    <audio id="bg-music" loop preload="auto">
+        <source src="assets/audio/musica-fondo.mp3" type="audio/mpeg">
+    </audio>
+    <button id="music-toggle" class="music-toggle music-toggle--off" type="button" aria-label="Reproducir música de fondo" aria-pressed="false" title="Música de fondo">
+        <span class="music-toggle__icon">🎵</span>
+    </button>
+    <p class="music-credit">Música: «Gymnopedie No. 1» — Kevin MacLeod (<a href="https://incompetech.com" target="_blank" rel="noopener">incompetech.com</a>), licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</p>
+
     <div id="video-modal" class="video-modal" hidden>
         <div class="video-modal__backdrop" data-video-close></div>
         <div class="video-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="video-modal-title">
@@ -488,6 +496,7 @@
                 title.textContent = name;
                 modal.hidden = false;
                 document.body.style.overflow = 'hidden';
+                window.dispatchEvent(new Event('somoscalma:video-open'));
                 player.play().catch(() => {});
             }
 
@@ -497,6 +506,7 @@
                 player.load();
                 modal.hidden = true;
                 document.body.style.overflow = '';
+                window.dispatchEvent(new Event('somoscalma:video-close'));
             }
 
             document.querySelectorAll('[data-video-src]').forEach(btn => {
@@ -511,6 +521,65 @@
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && !modal.hidden) closeModal();
+            });
+        })();
+
+        // Música de fondo (solo index): arranca con la primera interacción del usuario
+        // (los navegadores no permiten audio automático con sonido).
+        (function () {
+            const music = document.getElementById('bg-music');
+            const toggle = document.getElementById('music-toggle');
+            if (!music || !toggle) return;
+            music.volume = 0.65;
+            let started = false;
+            let wasPlayingBeforeVideo = false;
+
+            function updateBtn() {
+                const playing = !music.paused;
+                toggle.setAttribute('aria-pressed', String(playing));
+                toggle.classList.toggle('music-toggle--off', !playing);
+                toggle.setAttribute('aria-label', playing ? 'Pausar música de fondo' : 'Reproducir música de fondo');
+            }
+
+            function onFirstInteraction(e) {
+                if (started) return;
+                if (e.target && toggle.contains(e.target)) return; // el botón maneja su propio clic
+                started = true;
+                detach();
+                music.play().then(updateBtn).catch(() => { started = false; attach(); });
+            }
+
+            const events = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+            function attach() { events.forEach(evt => window.addEventListener(evt, onFirstInteraction, { passive: true })); }
+            function detach() { events.forEach(evt => window.removeEventListener(evt, onFirstInteraction)); }
+            attach();
+
+            toggle.addEventListener('click', () => {
+                started = true;
+                detach();
+                if (music.paused) {
+                    music.play().then(updateBtn).catch(() => {});
+                } else {
+                    music.pause();
+                    updateBtn();
+                }
+            });
+
+            // Coordinación con videos: la música cede cuando suena un video y regresa al cerrarlo
+            window.addEventListener('somoscalma:video-open', () => {
+                wasPlayingBeforeVideo = !music.paused;
+                music.pause();
+                updateBtn();
+            });
+            window.addEventListener('somoscalma:video-close', () => {
+                if (wasPlayingBeforeVideo) {
+                    music.play().then(updateBtn).catch(() => {});
+                }
+            });
+            document.querySelectorAll('.video-unmute-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!music.paused) { music.pause(); updateBtn(); }
+                });
             });
         })();
 

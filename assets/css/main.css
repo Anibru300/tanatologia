@@ -1979,6 +1979,51 @@ body.page-with-bg::after {
     background: #ffffff;
 }
 
+/* Botón de música de fondo (solo index) */
+.music-toggle {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 200;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--color-primary-dark);
+    color: #ffffff;
+    font-size: 1.15rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.music-toggle:hover {
+    transform: translateY(-2px);
+}
+
+.music-toggle--off {
+    opacity: 0.65;
+}
+
+.music-toggle--off .music-toggle__icon {
+    filter: grayscale(1);
+}
+
+.music-credit {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--color-text-light);
+    margin: 2rem 0 0.5rem;
+    padding: 0 1rem;
+}
+
+.music-credit a {
+    color: inherit;
+}
+
 @media (max-width: 768px) {
     .founders-grid {
         grid-template-columns: 1fr;
