@@ -76,12 +76,14 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - Salas de video (`PatientVideoRoom`, `ProfessionalVideoRoom`) renderizan Jitsi en **overlay a viewport completo** (`fixed inset-0 z-[60]`); el menú "Videollamada" del profesional lista sus próximas citas para entrar con un clic.
 
 ## Despliegue
+- Dominio propio: **https://somos-calma.com** (comprado en Hostinger 2026-07-31). El archivo `CNAME` en la raíz lo vincula a GitHub Pages.
 - GitHub Pages publica la rama `main` (sitio estático original en raíz).
 - La plataforma React compilada se encuentra en `/app/`.
-- Base URL configurada en `platform/web/vite.config.ts` como `/tanatologia/app/`.
+- Base URL configurada en `platform/web/vite.config.ts` como `/app/`.
 - Se usa `HashRouter` para evitar errores 404 en rutas de SPA en GitHub Pages.
 - El archivo `/app/404.html` redirige cualquier ruta desconocida al hash correspondiente (`/#/ruta`).
 - El workflow `.github/workflows/deploy-app.yml` compila `platform/web` y copia el build a `/app/` automáticamente en cada push a `main` que toque `platform/web/**` (requiere los secrets de Supabase configurados).
+- En Supabase Dashboard (Authentication > URL Configuration) deben estar `https://somos-calma.com/app/` como Site URL y redirect URL.
 
 ## Registro de nuevos usuarios
 - Al registrarse, el trigger `handle_new_user()` crea automáticamente el perfil en `profiles` y, según el rol, un registro en `patient_profiles` o `professional_profiles`.

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://anibru300.github.io/tanatologia/sitemap.xml
+Sitemap: https://somos-calma.com/sitemap.xml

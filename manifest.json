@@ -2,18 +2,18 @@
   "name": "SOMOS-CALMA",
   "short_name": "SOMOS-CALMA",
   "description": "Tu espacio seguro para sanar y encontrar alivio. Plataforma de tanatología y salud mental en México.",
-  "start_url": "/tanatologia/",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#F7F5F2",
   "theme_color": "#7A8B6E",
   "icons": [
     {
-      "src": "/tanatologia/assets/images/logo.jpeg",
+      "src": "/assets/images/logo.jpeg",
       "sizes": "192x192",
       "type": "image/jpeg"
     },
     {
-      "src": "/tanatologia/assets/images/logo.jpeg",
+      "src": "/assets/images/logo.jpeg",
       "sizes": "512x512",
       "type": "image/jpeg"
     }

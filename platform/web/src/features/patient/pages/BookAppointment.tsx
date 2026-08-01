@@ -271,7 +271,7 @@ export function BookAppointment() {
             <p><strong>Servicio:</strong> ${selectedServiceData.name}</p>
             <p><strong>Fecha:</strong> ${formatDateLong(selectedDate)}</p>
             <p><strong>Hora:</strong> ${selectedTime} hrs (horario local)</p>
-            <p><strong>Link de videollamada:</strong> <a href="https://anibru300.github.io/tanatologia/app/#/paciente/sala/${appointment.id}">Entrar a la sala</a></p>
+            <p><strong>Link de videollamada:</strong> <a href="https://somos-calma.com/app/#/paciente/sala/${appointment.id}">Entrar a la sala</a></p>
           `,
           type: 'appointment_confirmation',
         })

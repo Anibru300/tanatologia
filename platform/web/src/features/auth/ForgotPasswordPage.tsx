@@ -22,7 +22,7 @@ export function ForgotPasswordPage() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         // El index.html mueve los query params de recovery al hash del HashRouter.
-        redirectTo: `${window.location.origin}/tanatologia/app/`,
+        redirectTo: `${window.location.origin}/app/`,
       })
       if (error) throw error
       setSent(true)

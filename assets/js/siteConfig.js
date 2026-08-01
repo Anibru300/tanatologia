@@ -46,12 +46,12 @@
     },
 
     urls: {
-      app: '/tanatologia/app/',
-      crisis: '/tanatologia/pages/crisis.html',
-      privacy: '/tanatologia/pages/aviso-privacidad.html',
-      terms: '/tanatologia/pages/terminos.html',
-      cancellation: '/tanatologia/pages/cancelacion.html',
-      canonical: 'https://anibru300.github.io/tanatologia/',
+      app: '/app/',
+      crisis: '/pages/crisis.html',
+      privacy: '/pages/aviso-privacidad.html',
+      terms: '/pages/terminos.html',
+      cancellation: '/pages/cancelacion.html',
+      canonical: 'https://somos-calma.com/',
     },
 
     crisis: {

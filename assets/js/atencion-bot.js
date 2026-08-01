@@ -17,7 +17,7 @@
     const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
 
     // Rutas absolutas para evitar problemas en subcarpetas anidadas (p. ej. pages/profesionales/)
-    const BASE = '/tanatologia/';
+    const BASE = '/';
     const PATHS = {
         matching: urls.app ? `${urls.app}#/cotizacion` : `${BASE}pages/matching.html`,
         profesionales: `${BASE}pages/profesionales.html`,

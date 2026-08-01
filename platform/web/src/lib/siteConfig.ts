@@ -74,12 +74,11 @@ export const siteConfig = {
 
   // URLs
   urls: {
-    // Base del sitio estático legacy (GitHub Pages)
-    legacy: '/tanatologia/',
+    // Base del sitio estático legacy (mismo dominio, raíz)
+    legacy: '/',
     // Base de la app React
-    app: '/tanatologia/app/',
-    // PENDIENTE: Dominio propio cuando se compre
-    canonical: 'https://anibru300.github.io/tanatologia/',
+    app: '/app/',
+    canonical: 'https://somos-calma.com/',
   },
 
   // Líneas de emergencia en México

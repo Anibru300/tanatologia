@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="/tanatologia/assets/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/assets/images/favicon.ico">
     <title>Página no encontrada | SOMOS-CALMA</title>
     <meta name="description" content="Lo sentimos, la página que buscas no existe. Regresa al inicio de SOMOS-CALMA.">
     <meta name="keywords" content="tanatología, salud mental, psicólogo online, duelo, México">
@@ -11,8 +11,8 @@
 
     <meta property="og:title" content="Página no encontrada | SOMOS-CALMA">
     <meta property="og:description" content="Lo sentimos, la página que buscas no existe. Regresa al inicio de SOMOS-CALMA.">
-    <meta property="og:image" content="https://anibru300.github.io/tanatologia/assets/images/logo.jpeg">
-    <meta property="og:url" content="https://anibru300.github.io/tanatologia/404.html">
+    <meta property="og:image" content="https://somos-calma.com/assets/images/logo.jpeg">
+    <meta property="og:url" content="https://somos-calma.com/404.html">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="es_MX">
     <meta property="og:site_name" content="SOMOS-CALMA">
@@ -20,22 +20,22 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Página no encontrada | SOMOS-CALMA">
     <meta name="twitter:description" content="Lo sentimos, la página que buscas no existe. Regresa al inicio de SOMOS-CALMA.">
-    <meta name="twitter:image" content="https://anibru300.github.io/tanatologia/assets/images/logo.jpeg">
+    <meta name="twitter:image" content="https://somos-calma.com/assets/images/logo.jpeg">
 
-    <link rel="canonical" href="https://anibru300.github.io/tanatologia/404.html">
+    <link rel="canonical" href="https://somos-calma.com/404.html">
 
     <script>
         (function () {
             var path = location.pathname;
-            var isAppRoute = path.indexOf('/tanatologia/app/') === 0 ||
-                             path === '/tanatologia/app' ||
-                             path === '/tanatologia/app/';
+            var isAppRoute = path.indexOf('/app/') === 0 ||
+                             path === '/app' ||
+                             path === '/app/';
             if (isAppRoute) {
                 // Redirigir al HashRouter de la app React sin depender de hashes de build.
-                var appPath = path.replace('/tanatologia/app', '').replace(/^\/+/, '') || '';
+                var appPath = path.replace('/app', '').replace(/^\/+/, '') || '';
                 var search = location.search || '';
                 var hash = appPath ? '#/' + appPath : '';
-                location.replace('/tanatologia/app/' + search + hash);
+                location.replace('/app/' + search + hash);
             }
         })();
     </script>
@@ -43,8 +43,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/tanatologia/assets/css/main.css">
-    <link rel="stylesheet" href="/tanatologia/assets/css/pages.css">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/pages.css">
 </head>
 <body class="page-with-bg">
     <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
@@ -57,7 +57,7 @@
                 <span class="section__eyebrow">Error 404</span>
                 <h1>Página no encontrada</h1>
                 <p>El enlace que buscas no existe o fue movido. No te preocupes, podemos ayudarte a regresar.</p>
-                <a href="/tanatologia/" class="btn btn--primary" style="margin-top: 1.5rem;">Volver al inicio</a>
+                <a href="/" class="btn btn--primary" style="margin-top: 1.5rem;">Volver al inicio</a>
             </div>
         </section>
 
@@ -68,21 +68,21 @@
                     Te compartimos los enlaces más visitados para que encuentres lo que necesitas.
                 </p>
                 <div class="grid grid--3" style="max-width: 900px; margin: 0 auto;">
-                    <a href="/tanatologia/pages/pacientes.html" class="resource-card" role="listitem">
+                    <a href="/pages/pacientes.html" class="resource-card" role="listitem">
                         <div class="resource-card__icon" aria-hidden="true">🌿</div>
                         <div class="resource-card__content">
                             <h3>Para pacientes</h3>
                             <p>Consultas y programas de acompañamiento emocional.</p>
                         </div>
                     </a>
-                    <a href="/tanatologia/pages/profesionales.html" class="resource-card" role="listitem">
+                    <a href="/pages/profesionales.html" class="resource-card" role="listitem">
                         <div class="resource-card__icon" aria-hidden="true">🎓</div>
                         <div class="resource-card__content">
                             <h3>Para profesionales</h3>
                             <p>Únete al directorio y accede a formación.</p>
                         </div>
                     </a>
-                    <a href="/tanatologia/pages/recursos.html" class="resource-card" role="listitem">
+                    <a href="/pages/recursos.html" class="resource-card" role="listitem">
                         <div class="resource-card__icon" aria-hidden="true">📖</div>
                         <div class="resource-card__content">
                             <h3>Recursos</h3>
@@ -96,8 +96,8 @@
 
     <div id="footer-component"></div>
 
-    <script>window.SOMOS_CALMA_ROOT = '/tanatologia/';</script>
-    <script src="/tanatologia/assets/js/components.js"></script>
-    <script src="/tanatologia/assets/js/main.js"></script>
+    <script>window.SOMOS_CALMA_ROOT = '/';</script>
+    <script src="/assets/js/components.js"></script>
+    <script src="/assets/js/main.js"></script>
 </body>
 </html>
