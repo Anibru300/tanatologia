@@ -61,6 +61,7 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 3. ✅ Integrar Jitsi Meet en `ProfessionalVideoRoom` y sala de paciente (usando `meet.jit.si`).
 4. ✅ Citas conectadas a Supabase (agendar, listar, videollamada real).
 5. ✅ Edge Function `send-email` preparada para Resend (pendiente API key para activar).
+5b. ✅ (2026-07-31) SMTP de autenticación migrado a **Resend** (`smtp.resend.com`, remitente `hola@somos-calma.com`); plantilla de *Reset Password* personalizada con flujo `token_hash` → `#/actualizar-contrasena` (compatible con HashRouter; `UpdatePasswordPage` usa `verifyOtp`). Dominio verificado en Resend con DKIM/SPF/DMARC en DNS de Hostinger.
 6. ✅ Fase 1 (2026-07-27): perfiles editables con avatar (Supabase Storage), verificación documental de profesionistas + panel admin `/admin/verificacion`, disponibilidad real conectada al booking (RPC `get_booked_slots`), notificaciones in-app con Realtime, CI/CD con GitHub Actions.
 7. ✅ Migraciones 005 y 006 aplicadas en Supabase Cloud (tablas `professional_documents`, `notifications`, `legal_acceptances`, `platform_settings`, buckets `avatars` y `professional-documents`).
 7b. ✅ Migración 007 aplicada en Cloud (política UPDATE de `patient_profiles`, `is_assigned_patient()` SECURITY DEFINER, validación estricta de docs en `submit_for_review`). **Ninguna migración pendiente.**
