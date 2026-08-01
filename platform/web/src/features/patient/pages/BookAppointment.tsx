@@ -20,6 +20,7 @@ import {
   type AvailabilitySlot,
 } from '@/features/availability/availabilityService'
 import { sendEmail } from '@/lib/email'
+import { brandedEmail, emailDetailRow, emailDetailsTable } from '@/lib/emailTemplate'
 
 const BOOKING_WINDOW_DAYS = 60
 
@@ -265,14 +266,26 @@ export function BookAppointment() {
         await sendEmail({
           to: user.email,
           subject: 'Tu cita en SOMOS-CALMA ha sido confirmada',
-          html: `
-            <h1>Hola ${user.fullName},</h1>
-            <p>Tu cita con <strong>${selectedTherapistData.full_name}</strong> ha sido confirmada.</p>
-            <p><strong>Servicio:</strong> ${selectedServiceData.name}</p>
-            <p><strong>Fecha:</strong> ${formatDateLong(selectedDate)}</p>
-            <p><strong>Hora:</strong> ${selectedTime} hrs (horario local)</p>
-            <p><strong>Link de videollamada:</strong> <a href="https://somos-calma.com/app/#/paciente/sala/${appointment.id}">Entrar a la sala</a></p>
-          `,
+          html: brandedEmail({
+            title: 'Cita confirmada',
+            greeting: `Hola ${user.fullName},`,
+            bodyHtml: `
+              <p style="margin:0;color:#555;font-size:15px;line-height:1.6;">
+                Tu cita con <strong>${selectedTherapistData.full_name}</strong> ha sido confirmada. Estos son los detalles:
+              </p>
+              ${emailDetailsTable([
+                emailDetailRow('Servicio', selectedServiceData.name),
+                emailDetailRow('Fecha', formatDateLong(selectedDate)),
+                emailDetailRow('Hora', `${selectedTime} hrs (horario local)`),
+              ])}
+              <p style="margin:0;color:#555;font-size:14px;line-height:1.6;">
+                El día de tu cita, entra a la sala de videollamada desde el siguiente botón:
+              </p>
+            `,
+            ctaText: 'Entrar a la sala de videollamada',
+            ctaUrl: `https://somos-calma.com/app/#/paciente/sala/${appointment.id}`,
+            note: 'Te recomendamos conectarte 5 minutos antes, en un lugar tranquilo y privado.',
+          }),
           type: 'appointment_confirmation',
         })
       } catch (emailErr) {

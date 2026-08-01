@@ -13,7 +13,16 @@ export async function sendEmail(payload: EmailPayload) {
   })
 
   if (error) {
-    throw new Error(error.message || 'Error enviando correo')
+    // Intentar leer el cuerpo de la respuesta para diagnóstico real
+    let detail = ''
+    try {
+      const ctx = (error as { context?: { json?: () => Promise<unknown> } }).context
+      if (ctx?.json) detail = JSON.stringify(await ctx.json())
+    } catch {
+      /* sin cuerpo disponible */
+    }
+    console.error('[sendEmail] Error de la Edge Function:', error.message, detail)
+    throw new Error(detail || error.message || 'Error enviando correo')
   }
 
   return data as { success: boolean; id: string; type: string }

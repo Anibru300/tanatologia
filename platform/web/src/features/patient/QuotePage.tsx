@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom'
 import { LinkButton } from '@/components/ui/LinkButton'
 import { supabase } from '@/lib/supabase'
 import { sendEmail } from '@/lib/email'
+import { brandedEmail, emailDetailRow, emailDetailsTable } from '@/lib/emailTemplate'
 import { siteConfig } from '@/lib/siteConfig'
 import { useAuth } from '@/features/auth/AuthProvider'
 
@@ -61,13 +62,24 @@ export function QuotePage() {
         await sendEmail({
           to: formData.email,
           subject: 'Hemos recibido tu cotización — SOMOS-CALMA',
-          html: `
-            <h1>Hola ${formData.name},</h1>
-            <p>Recibimos tu solicitud de cotización para <strong>${formData.serviceType}</strong>.</p>
-            <p>Sesiones: ${sessions}</p>
-            <p>Total estimado: ${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(total)}</p>
-            <p>Te contactaremos en menos de 24 horas.</p>
-          `,
+          html: brandedEmail({
+            title: 'Cotización recibida',
+            greeting: `Hola ${formData.name},`,
+            bodyHtml: `
+              <p style="margin:0;color:#555;font-size:15px;line-height:1.6;">
+                Recibimos tu solicitud de cotización. Este es el resumen:
+              </p>
+              ${emailDetailsTable([
+                emailDetailRow('Servicio', formData.serviceType),
+                emailDetailRow('Sesiones', String(sessions)),
+                emailDetailRow('Total estimado', new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(total)),
+              ])}
+              <p style="margin:0;color:#555;font-size:14px;line-height:1.6;">
+                Te contactaremos en menos de 24 horas para confirmar tu programa.
+              </p>
+            `,
+            note: 'Si tienes dudas, responde a este correo y con gusto te ayudamos.',
+          }),
           type: 'quote_confirmation',
         })
       }
