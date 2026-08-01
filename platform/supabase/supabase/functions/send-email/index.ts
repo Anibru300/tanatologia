@@ -6,15 +6,29 @@ const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "SOMOS-CALMA <hol
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+function json(body: unknown, status = 200) {
+  return Response.json(body, { status, headers: corsHeaders });
+}
+
 Deno.serve(async (req) => {
+  // Preflight CORS del navegador
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
   // verify_jwt está desactivado en el gateway; la autenticación se hace aquí.
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
-    return Response.json({ error: "No autenticado" }, { status: 401 });
+    return json({ error: "No autenticado" }, 401);
   }
 
   const supabase = createClient(
@@ -25,7 +39,7 @@ Deno.serve(async (req) => {
 
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) {
-    return Response.json({ error: "No autenticado" }, { status: 401 });
+    return json({ error: "No autenticado" }, 401);
   }
 
   // Verificar rol desde la tabla profiles (no confiar en user_metadata).
@@ -36,32 +50,32 @@ Deno.serve(async (req) => {
     .single();
 
   if (profileError || !profile) {
-    return Response.json({ error: "No se pudo verificar permisos" }, { status: 403 });
+    return json({ error: "No se pudo verificar permisos" }, 403);
   }
 
   const { to, subject, html, type } = await req.json();
 
   if (!to || !subject || !html) {
-    return Response.json({ error: "Faltan campos obligatorios" }, { status: 400 });
+    return json({ error: "Faltan campos obligatorios" }, 400);
   }
 
   const recipients = Array.isArray(to) ? to : [to];
   if (recipients.length === 0 || recipients.some((r: unknown) => typeof r !== "string" || !EMAIL_REGEX.test(r))) {
-    return Response.json({ error: "Destinatario(s) inválido(s)" }, { status: 400 });
+    return json({ error: "Destinatario(s) inválido(s)" }, 400);
   }
 
   // Pacientes solo pueden enviarse correos a sí mismos.
   // Admin/professional/support pueden notificar a terceros dentro de la plataforma.
   if (profile.role === "patient") {
     if (recipients.length > 1 || recipients[0] !== user.email) {
-      return Response.json({ error: "Solo puedes enviarte correos a tu propia dirección" }, { status: 403 });
+      return json({ error: "Solo puedes enviarte correos a tu propia dirección" }, 403);
     }
   } else if (!["admin", "professional", "support"].includes(profile.role)) {
-    return Response.json({ error: "No autorizado" }, { status: 403 });
+    return json({ error: "No autorizado" }, 403);
   }
 
   if (!RESEND_API_KEY) {
-    return Response.json({ error: "RESEND_API_KEY no está configurada" }, { status: 500 });
+    return json({ error: "RESEND_API_KEY no está configurada" }, 500);
   }
 
   const res = await fetch("https://api.resend.com/emails", {
@@ -81,8 +95,8 @@ Deno.serve(async (req) => {
   const data = await res.json();
 
   if (!res.ok) {
-    return Response.json({ error: data }, { status: res.status });
+    return json({ error: data }, res.status);
   }
 
-  return Response.json({ success: true, id: data.id, type });
+  return json({ success: true, id: data.id, type });
 });
