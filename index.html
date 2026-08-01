@@ -62,48 +62,6 @@
     <div id="header-component"></div>
 
     <main id="main-content">
-        <section class="section section--video">
-            <div class="container">
-                <div class="video-welcome__caption video-welcome__caption--top">
-                    <span class="section__eyebrow">Bienvenido</span>
-                    <h2>Tu espacio seguro para sanar</h2>
-                    <p>Conoce Somos Calma de la voz de nuestras fundadoras.</p>
-                </div>
-                <div class="video-welcome-grid">
-                    <figure class="video-welcome-item">
-                        <div class="video-welcome">
-                            <video id="welcome-video" class="video-welcome__player" controls autoplay muted loop playsinline poster="assets/images/ventana-atardecer.png">
-                                <source src="assets/images/bienvenida.mp4" type="video/mp4">
-                                Tu navegador no soporta la reproducción de video.
-                            </video>
-                            <button id="unmute-btn" class="video-unmute-btn" type="button" aria-label="Activar sonido del video de la Dra. Lupita">
-                                <span>🔇</span> Activar sonido
-                            </button>
-                        </div>
-                        <figcaption class="video-founder">
-                            <strong>Dra. Lupita Muñoz Campuzano</strong>
-                            <span>Fundadora</span>
-                        </figcaption>
-                    </figure>
-                    <figure class="video-welcome-item">
-                        <div class="video-welcome">
-                            <video id="edith-video" class="video-welcome__player" controls autoplay muted loop playsinline poster="assets/images/ventana-atardecer.png">
-                                <source src="assets/images/fundadora-edith.mp4" type="video/mp4">
-                                Tu navegador no soporta la reproducción de video.
-                            </video>
-                            <button id="unmute-btn-edith" class="video-unmute-btn" type="button" aria-label="Activar sonido del video de la Dra. Edith">
-                                <span>🔇</span> Activar sonido
-                            </button>
-                        </div>
-                        <figcaption class="video-founder">
-                            <strong>Dra. Edith González Huerta</strong>
-                            <span>Fundadora</span>
-                        </figcaption>
-                    </figure>
-                </div>
-            </div>
-        </section>
-
         <section class="hero">
             <div class="container">
                 <div class="hero__grid grid grid--2">
@@ -136,6 +94,57 @@
                         <strong data-count="300">$300</strong>
                         <span>Membresía trimestral profesional</span>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section--video">
+            <div class="container">
+                <div class="video-welcome__caption video-welcome__caption--top">
+                    <span class="section__eyebrow">Bienvenido</span>
+                    <h2>Tu espacio seguro para sanar</h2>
+                    <p>Conoce Somos Calma en un minuto.</p>
+                </div>
+                <div class="video-welcome">
+                    <video id="welcome-video" class="video-welcome__player" controls autoplay muted loop playsinline poster="assets/images/fundadora-lupita.jpg">
+                        <source src="assets/images/bienvenida.mp4" type="video/mp4">
+                        Tu navegador no soporta la reproducción de video.
+                    </video>
+                    <button id="unmute-btn" class="video-unmute-btn" type="button" aria-label="Activar sonido del video de bienvenida">
+                        <span>🔇</span> Activar sonido
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section--founders">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Nuestras fundadoras</span>
+                    <h2 class="section__title">Las mujeres detrás de Somos Calma</h2>
+                    <p class="section__subtitle">
+                        Dos profesionales de la salud mental unidas por una misión: que nadie atraviese su proceso en soledad.
+                    </p>
+                </div>
+                <div class="founders-grid">
+                    <article class="founder-card">
+                        <img src="assets/images/fundadora-lupita.jpg" alt="Dra. Lupita Muñoz Campuzano, fundadora de Somos Calma" class="founder-card__photo" loading="lazy">
+                        <h3>Dra. Lupita Muñoz Campuzano</h3>
+                        <span class="founder-card__role">Fundadora · Tanatóloga</span>
+                        <p>Impulsa un acompañamiento humano y profesional para atravesar la pérdida y recuperar la calma.</p>
+                        <button type="button" class="btn btn--outline founder-card__btn" data-video-src="assets/images/bienvenida.mp4" data-video-title="Dra. Lupita Muñoz Campuzano · Fundadora">
+                            ▶ Ver su mensaje
+                        </button>
+                    </article>
+                    <article class="founder-card">
+                        <img src="assets/images/fundadora-edith.jpg" alt="Dra. Edith González Huerta, fundadora de Somos Calma" class="founder-card__photo" loading="lazy">
+                        <h3>Dra. Edith González Huerta</h3>
+                        <span class="founder-card__role">Fundadora</span>
+                        <p>Dedicada a hacer accesible la salud mental y el acompañamiento emocional para todas las personas.</p>
+                        <button type="button" class="btn btn--outline founder-card__btn" data-video-src="assets/images/fundadora-edith.mp4" data-video-title="Dra. Edith González Huerta · Fundadora">
+                            ▶ Ver su mensaje
+                        </button>
+                    </article>
                 </div>
             </div>
         </section>
@@ -410,6 +419,15 @@
         </section>
     </main>
 
+    <div id="video-modal" class="video-modal" hidden>
+        <div class="video-modal__backdrop" data-video-close></div>
+        <div class="video-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="video-modal-title">
+            <button type="button" class="video-modal__close" data-video-close aria-label="Cerrar video">✕</button>
+            <video id="video-modal-player" class="video-modal__player" controls playsinline></video>
+            <p id="video-modal-title" class="video-modal__title"></p>
+        </div>
+    </div>
+
     <div id="footer-component"></div>
 
     <script>
@@ -455,6 +473,44 @@
                         btn.style.display = 'none';
                     }
                 });
+            });
+        })();
+
+        // Modal de video para las fundadoras (carga el video solo al hacer clic)
+        (function () {
+            const modal = document.getElementById('video-modal');
+            const player = document.getElementById('video-modal-player');
+            const title = document.getElementById('video-modal-title');
+            if (!modal || !player || !title) return;
+
+            function openModal(src, name) {
+                player.src = src;
+                title.textContent = name;
+                modal.hidden = false;
+                document.body.style.overflow = 'hidden';
+                player.play().catch(() => {});
+            }
+
+            function closeModal() {
+                player.pause();
+                player.removeAttribute('src');
+                player.load();
+                modal.hidden = true;
+                document.body.style.overflow = '';
+            }
+
+            document.querySelectorAll('[data-video-src]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openModal(btn.getAttribute('data-video-src'), btn.getAttribute('data-video-title') || '');
+                });
+            });
+
+            modal.querySelectorAll('[data-video-close]').forEach(el => {
+                el.addEventListener('click', closeModal);
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !modal.hidden) closeModal();
             });
         })();
 
