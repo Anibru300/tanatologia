@@ -1853,6 +1853,48 @@ body.page-with-bg::after {
     margin: 0;
 }
 
+/* Grid de videos de fundadoras */
+.video-welcome-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+    align-items: start;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.video-welcome-item {
+    margin: 0;
+}
+
+.video-welcome__caption--top {
+    margin-top: 0;
+    margin-bottom: 2rem;
+}
+
+.video-founder {
+    text-align: center;
+    margin-top: 0.85rem;
+}
+
+.video-founder strong {
+    display: block;
+    color: var(--color-text);
+    font-size: 1.05rem;
+}
+
+.video-founder span {
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .video-welcome-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+    }
+}
+
 /* === CÓMO FUNCIONA - IMAGEN === */
 .how-it-works__visual {
     border-radius: var(--radius-xl);

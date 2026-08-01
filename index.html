@@ -64,19 +64,42 @@
     <main id="main-content">
         <section class="section section--video">
             <div class="container">
-                <div class="video-welcome">
-                    <video id="welcome-video" class="video-welcome__player" controls autoplay loop playsinline poster="assets/images/ventana-atardecer.png">
-                        <source src="assets/images/bienvenida.mp4" type="video/mp4">
-                        Tu navegador no soporta la reproducción de video.
-                    </video>
-                    <button id="unmute-btn" class="video-unmute-btn" type="button" aria-label="Activar sonido del video">
-                        <span>🔇</span> Activar sonido
-                    </button>
-                </div>
-                <div class="video-welcome__caption">
+                <div class="video-welcome__caption video-welcome__caption--top">
                     <span class="section__eyebrow">Bienvenido</span>
                     <h2>Tu espacio seguro para sanar</h2>
-                    <p>Conoce Somos Calma en un minuto.</p>
+                    <p>Conoce Somos Calma de la voz de nuestras fundadoras.</p>
+                </div>
+                <div class="video-welcome-grid">
+                    <figure class="video-welcome-item">
+                        <div class="video-welcome">
+                            <video id="welcome-video" class="video-welcome__player" controls autoplay muted loop playsinline poster="assets/images/ventana-atardecer.png">
+                                <source src="assets/images/bienvenida.mp4" type="video/mp4">
+                                Tu navegador no soporta la reproducción de video.
+                            </video>
+                            <button id="unmute-btn" class="video-unmute-btn" type="button" aria-label="Activar sonido del video de la Dra. Lupita">
+                                <span>🔇</span> Activar sonido
+                            </button>
+                        </div>
+                        <figcaption class="video-founder">
+                            <strong>Dra. Lupita Muñoz Campuzano</strong>
+                            <span>Fundadora</span>
+                        </figcaption>
+                    </figure>
+                    <figure class="video-welcome-item">
+                        <div class="video-welcome">
+                            <video id="edith-video" class="video-welcome__player" controls autoplay muted loop playsinline poster="assets/images/ventana-atardecer.png">
+                                <source src="assets/images/fundadora-edith.mp4" type="video/mp4">
+                                Tu navegador no soporta la reproducción de video.
+                            </video>
+                            <button id="unmute-btn-edith" class="video-unmute-btn" type="button" aria-label="Activar sonido del video de la Dra. Edith">
+                                <span>🔇</span> Activar sonido
+                            </button>
+                        </div>
+                        <figcaption class="video-founder">
+                            <strong>Dra. Edith González Huerta</strong>
+                            <span>Fundadora</span>
+                        </figcaption>
+                    </figure>
                 </div>
             </div>
         </section>
@@ -391,38 +414,47 @@
 
     <script>
         (function () {
-            const video = document.getElementById('welcome-video');
-            const unmuteBtn = document.getElementById('unmute-btn');
-            if (!video || !unmuteBtn) return;
+            const players = [
+                { video: document.getElementById('welcome-video'), btn: document.getElementById('unmute-btn') },
+                { video: document.getElementById('edith-video'), btn: document.getElementById('unmute-btn-edith') },
+            ].filter(p => p.video && p.btn);
+            if (!players.length) return;
 
-            video.volume = 1.0;
+            players.forEach(({ video, btn }) => {
+                video.volume = 1.0;
 
-            function tryUnmute() {
-                video.muted = false;
-                const playPromise = video.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        unmuteBtn.style.display = 'none';
-                    }).catch(() => {
-                        video.muted = true;
-                        video.play();
-                        unmuteBtn.style.display = 'inline-flex';
+                function activateSound() {
+                    // Silenciar los demás videos para que no se encimen los audios
+                    players.forEach(other => {
+                        if (other.video !== video) {
+                            other.video.muted = true;
+                            other.btn.style.display = 'inline-flex';
+                        }
                     });
+                    video.muted = false;
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            btn.style.display = 'none';
+                        }).catch(() => {
+                            video.muted = true;
+                            video.play();
+                            btn.style.display = 'inline-flex';
+                        });
+                    }
                 }
-            }
 
-            unmuteBtn.addEventListener('click', () => {
-                tryUnmute();
-            });
+                btn.addEventListener('click', activateSound);
+                // Los videos arrancan en silencio (requisito de los navegadores para autoplay);
+                // mostramos el botón desde el inicio.
+                btn.style.display = 'inline-flex';
 
-            // Intentar reproducir con sonido al cargar
-            tryUnmute();
-
-            // Ocultar botón si el usuario activa sonido desde los controles nativos
-            video.addEventListener('volumechange', () => {
-                if (!video.muted && video.volume > 0) {
-                    unmuteBtn.style.display = 'none';
-                }
+                // Ocultar botón si el usuario activa sonido desde los controles nativos
+                video.addEventListener('volumechange', () => {
+                    if (!video.muted && video.volume > 0) {
+                        btn.style.display = 'none';
+                    }
+                });
             });
         })();
 
