@@ -98,25 +98,6 @@
             </div>
         </section>
 
-        <section class="section section--video">
-            <div class="container">
-                <div class="video-welcome__caption video-welcome__caption--top">
-                    <span class="section__eyebrow">Bienvenido</span>
-                    <h2>Tu espacio seguro para sanar</h2>
-                    <p>Conoce Somos Calma en un minuto.</p>
-                </div>
-                <div class="video-welcome">
-                    <video id="welcome-video" class="video-welcome__player" controls autoplay muted loop playsinline poster="assets/images/fundadora-lupita.jpg">
-                        <source src="assets/images/bienvenida.mp4" type="video/mp4">
-                        Tu navegador no soporta la reproducción de video.
-                    </video>
-                    <button id="unmute-btn" class="video-unmute-btn" type="button" aria-label="Activar sonido del video de bienvenida">
-                        <span>🔇</span> Activar sonido
-                    </button>
-                </div>
-            </div>
-        </section>
-
         <section class="section section--founders">
             <div class="container">
                 <div class="section__header">
@@ -124,27 +105,53 @@
                     <h2 class="section__title">Las mujeres detrás de Somos Calma</h2>
                     <p class="section__subtitle">
                         Dos profesionales de la salud mental unidas por una misión: que nadie atraviese su proceso en soledad.
+                        Haz clic en su foto para ver su mensaje.
                     </p>
                 </div>
                 <div class="founders-grid">
                     <article class="founder-card">
-                        <img src="assets/images/fundadora-lupita.jpg" alt="Dra. Lupita Muñoz Campuzano, fundadora de Somos Calma" class="founder-card__photo" loading="lazy">
+                        <button type="button" class="founder-card__photo-btn" data-video-src="assets/images/bienvenida.mp4" data-video-title="Dra. Lupita Muñoz Campuzano · Fundadora" aria-label="Reproducir video de Dra. Lupita Muñoz Campuzano">
+                            <img src="assets/images/fundadora-lupita.jpg" alt="Dra. Lupita Muñoz Campuzano, fundadora de Somos Calma" class="founder-card__photo">
+                            <span class="founder-card__play" aria-hidden="true">▶</span>
+                        </button>
                         <h3>Dra. Lupita Muñoz Campuzano</h3>
-                        <span class="founder-card__role">Fundadora · Tanatóloga</span>
-                        <p>Impulsa un acompañamiento humano y profesional para atravesar la pérdida y recuperar la calma.</p>
+                        <span class="founder-card__role">Fundadora · Psicóloga</span>
+                        <p>Dedicada a hacer accesible la salud mental y el acompañamiento emocional para todas las personas.</p>
                         <button type="button" class="btn btn--outline founder-card__btn" data-video-src="assets/images/bienvenida.mp4" data-video-title="Dra. Lupita Muñoz Campuzano · Fundadora">
                             ▶ Ver su mensaje
                         </button>
                     </article>
                     <article class="founder-card">
-                        <img src="assets/images/fundadora-edith.jpg" alt="Dra. Edith González Huerta, fundadora de Somos Calma" class="founder-card__photo" loading="lazy">
+                        <button type="button" class="founder-card__photo-btn" data-video-src="assets/images/fundadora-edith.mp4" data-video-title="Dra. Edith González Huerta · Fundadora" aria-label="Reproducir video de Dra. Edith González Huerta">
+                            <img src="assets/images/fundadora-edith.jpg" alt="Dra. Edith González Huerta, fundadora de Somos Calma" class="founder-card__photo">
+                            <span class="founder-card__play" aria-hidden="true">▶</span>
+                        </button>
                         <h3>Dra. Edith González Huerta</h3>
-                        <span class="founder-card__role">Fundadora</span>
-                        <p>Dedicada a hacer accesible la salud mental y el acompañamiento emocional para todas las personas.</p>
+                        <span class="founder-card__role">Fundadora · Tanatóloga</span>
+                        <p>Impulsa un acompañamiento humano y profesional para atravesar la pérdida y recuperar la calma.</p>
                         <button type="button" class="btn btn--outline founder-card__btn" data-video-src="assets/images/fundadora-edith.mp4" data-video-title="Dra. Edith González Huerta · Fundadora">
                             ▶ Ver su mensaje
                         </button>
                     </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section--alt">
+            <div class="container">
+                <div class="feature">
+                    <div class="feature__content">
+                        <span class="section__eyebrow">Terapia en línea</span>
+                        <h2>El espacio seguro que necesitas, estés donde estés</h2>
+                        <p>
+                            Te acompañamos a cuidar tu salud mental y a transitar tus duelos con guía profesional.
+                            Terapia psicológica y tanatológica por videollamada. Tu proceso empieza en casa.
+                        </p>
+                        <a href="/app/#/register?role=patient" class="btn btn--primary">Comenzar mi proceso</a>
+                    </div>
+                    <div class="illustration-box">
+                        <img src="assets/images/meditacion.jpg" alt="Persona meditando en la calma de su hogar: tu proceso empieza en casa">
+                    </div>
                 </div>
             </div>
         </section>
@@ -200,7 +207,7 @@
                         <a href="/app/#/register?role=patient" class="btn btn--primary">Ver opciones y precios</a>
                     </div>
                     <div class="illustration-box">
-                        <img src="assets/images/profesional-jardin.png" alt="Profesional de Somos Calma acompañando en un espacio tranquilo">
+                        <img src="assets/images/ventana-ciudad.png" alt="Vista tranquila desde una ventana: tu espacio seguro, estés donde estés">
                     </div>
                 </div>
             </div>
@@ -210,7 +217,7 @@
             <div class="container">
                 <div class="feature">
                     <div class="illustration-box">
-                        <img src="assets/images/profesional-trabajando.png" alt="Profesional de Somos Calma trabajando en su espacio">
+                        <img src="assets/images/equipo-comunidad.jpg" alt="Círculo de personas en comunidad, la red profesional de Somos Calma">
                     </div>
                     <div class="feature__content">
                         <span class="section__eyebrow">Para profesionales</span>
@@ -239,7 +246,7 @@
                     <p class="section__subtitle">Desde una sola sesión hasta un programa guiado. Todo accesible, todo por internet.</p>
                 </div>
                 <div class="section__visual section__visual--rounded">
-                    <img src="assets/images/meditacion.jpg" alt="Mujer en un momento de calma y meditación">
+                    <img src="assets/images/ventana-atardecer.png" alt="Un espacio de calma al atardecer para elegir lo que tu momento necesita">
                 </div>
                 <div class="pricing">
                     <article class="pricing__card">
@@ -297,7 +304,7 @@
                     </div>
                     <div class="team-highlight__content">
                         <h3>Dra. Lupita Muñoz Campuzano</h3>
-                        <p class="team-highlight__role">Fundadora · Tanatóloga</p>
+                        <p class="team-highlight__role">Fundadora · Psicóloga</p>
                         <p>
                             Acompaño procesos de duelo, pérdida y crisis vitales desde una mirada cálida y profesional.
                             En Somos Calma construimos un espacio donde pedir ayuda sea natural, seguro y humano.
@@ -439,51 +446,6 @@
     <div id="footer-component"></div>
 
     <script>
-        (function () {
-            const players = [
-                { video: document.getElementById('welcome-video'), btn: document.getElementById('unmute-btn') },
-                { video: document.getElementById('edith-video'), btn: document.getElementById('unmute-btn-edith') },
-            ].filter(p => p.video && p.btn);
-            if (!players.length) return;
-
-            players.forEach(({ video, btn }) => {
-                video.volume = 1.0;
-
-                function activateSound() {
-                    // Silenciar los demás videos para que no se encimen los audios
-                    players.forEach(other => {
-                        if (other.video !== video) {
-                            other.video.muted = true;
-                            other.btn.style.display = 'inline-flex';
-                        }
-                    });
-                    video.muted = false;
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.then(() => {
-                            btn.style.display = 'none';
-                        }).catch(() => {
-                            video.muted = true;
-                            video.play();
-                            btn.style.display = 'inline-flex';
-                        });
-                    }
-                }
-
-                btn.addEventListener('click', activateSound);
-                // Los videos arrancan en silencio (requisito de los navegadores para autoplay);
-                // mostramos el botón desde el inicio.
-                btn.style.display = 'inline-flex';
-
-                // Ocultar botón si el usuario activa sonido desde los controles nativos
-                video.addEventListener('volumechange', () => {
-                    if (!video.muted && video.volume > 0) {
-                        btn.style.display = 'none';
-                    }
-                });
-            });
-        })();
-
         // Modal de video para las fundadoras (carga el video solo al hacer clic)
         (function () {
             const modal = document.getElementById('video-modal');
@@ -575,11 +537,6 @@
                 if (wasPlayingBeforeVideo) {
                     music.play().then(updateBtn).catch(() => {});
                 }
-            });
-            document.querySelectorAll('.video-unmute-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (!music.paused) { music.pause(); updateBtn(); }
-                });
             });
         })();
 

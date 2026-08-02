@@ -1887,6 +1887,56 @@ body.page-with-bg::after {
     margin-bottom: 1.25rem;
 }
 
+/* Foto de fundadora clicable: abre el modal con su video */
+.founder-card__photo-btn {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 260px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+}
+
+.founder-card__photo-btn .founder-card__photo {
+    display: block;
+    margin-bottom: 0;
+    transition: transform 0.3s ease;
+}
+
+.founder-card__photo-btn:hover .founder-card__photo,
+.founder-card__photo-btn:focus-visible .founder-card__photo {
+    transform: scale(1.03);
+}
+
+.founder-card__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 3.5rem;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--color-primary-dark);
+    font-size: 1.25rem;
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.founder-card__photo-btn:hover .founder-card__play,
+.founder-card__photo-btn:focus-visible .founder-card__play {
+    transform: translate(-50%, -50%) scale(1.1);
+    background: #ffffff;
+}
+
 .founder-card h3 {
     margin: 0 0 0.25rem;
     font-size: 1.25rem;
