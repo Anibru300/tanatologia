@@ -135,15 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 specialties: ['duelo-muerte', 'perdida', 'enfermedad', 'duelo']
             },
             {
-                initials: 'JL',
-                name: 'Lic. Javier López',
-                title: 'Psicólogo Clínico',
-                experience: '8 años de experiencia',
-                bio: `Acompaña ansiedad, estrés, depresión y crisis vitales. Ideal para tu ${serviceNote.toLowerCase()}.`,
-                tags: ['Ansiedad', 'Estrés', 'Depresión'],
-                specialties: ['ansiedad-estres', 'depresion', 'otra', 'bienestar']
-            },
-            {
                 initials: 'SC',
                 name: 'Dra. Sofía Castro',
                 title: 'Tanatóloga · Psicooncóloga',
