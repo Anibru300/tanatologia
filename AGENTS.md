@@ -77,6 +77,8 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 8b. Supabase CLI vinculada al proyecto cloud (`supabase link --project-ref qjwebikgrqtotqfipeqt`); permite desplegar funciones y ejecutar SQL remoto (`supabase db query --linked -f <migracion>.sql`).
 9. Implementar pagos cuando haya tracción. **Requisito del cliente (2026-08-02):** el sistema debe ofrecer varias opciones — **tarjeta de débito/crédito (Visa/Mastercard), PayPal y transferencia bancaria (SPEI)**. Openpay cubre tarjeta + SPEI (ver `docs/investigacion-plataforma-2026-07-27.md`); PayPal requiere integración aparte (cuenta Business; opción rápida: link PayPal.Me). Mientras tanto, el sitio lo anuncia como "próximamente".
 
+10. 🔴 **URGENTE — Buzón de hola@somos-calma.com no existe (2026-08-02):** el dominio NO tiene registros MX; Resend solo ENVÍA. Los correos del formulario de contacto (`contact-form`) rebotan porque no hay dónde entregarlos. **Acción del cliente en Hostinger (hPanel → Emails):** crear reenvío de `hola@somos-calma.com` → `lupitamcampuzano@outlook.com` (o buzón real). Plan B si el plan no incluye reenvío: cambiar el secret `CONTACT_INBOX` de la Edge Function al correo personal. Verificar después con `nslookup -type=MX somos-calma.com` y re-probar el formulario.
+
 ## Modelo de disponibilidad (2026-07-29)
 - El profesional publica **slots de fecha/hora específicos** desde un calendario (`/profesional/disponibilidad`); cada slot = sesión de 50 min (`availability_slots`, constraint EXCLUDE anti-traslape).
 - El paciente agenda sobre slots libres (mini-calendario en `BookAppointment`); si viene del directorio, el terapeuta ya va preseleccionado (state de navegación `therapistId`).
