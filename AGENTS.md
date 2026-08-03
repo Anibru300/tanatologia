@@ -7,6 +7,8 @@ Plataforma de acompañamiento emocional y tanatología en México. Actualmente e
 - Nuevo stack React: `platform/web/`
 - Migraciones Supabase: `platform/supabase/migrations/`
 - Sitio estático legacy: raíz del repo (`index.html`, `assets/`, `pages/`)
+- Fotos y videos de las fundadoras: `assets/images/fundadoras/` (lupita.jpg, edith.jpg, bienvenida.mp4, edith.mp4)
+- Material original fuera del sitio (no publicado): `recursos/` (`fotos-pagina/`, `fundadoras/`, `videos/`)
 
 ## Stack
 - React 19 + Vite 8 + TypeScript 6
@@ -69,7 +71,7 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 7d. ✅ Migración 008 (`008_date_specific_availability.sql`) aplicada en Cloud (verificado 2026-07-29 vía API: `availability_slots` activa con EXCLUDE anti-traslape, tabla `availability` eliminada, RPC `get_booked_slots(p_professional_profile_id, p_start, p_end)` operativa). **Ninguna migración pendiente.**
 7e. ✅ Flujos probados end-to-end contra Cloud (2026-07-29): cancelación de cita (slot se libera en `get_booked_slots` + trigger `notify_appointment_events` crea notificación al paciente), notas clínicas (profesional escribe en su cita; trigger `validate_clinical_note` rechaza citas ajenas; paciente no las ve por RLS), notificaciones in-app y registro inmediato (Confirm email desactivado).
 8. ✅ Secrets `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` configurados en GitHub Actions; deploy automático verificado (build de `/app` con la URL de Supabase embebida).
-9. Implementar pagos (Openpay recomendado para marketplace MX; ver `docs/investigacion-plataforma-2026-07-27.md`) cuando haya tracción.
+9. Implementar pagos cuando haya tracción. **Requisito del cliente (2026-08-02):** el sistema debe ofrecer varias opciones — **tarjeta de débito/crédito (Visa/Mastercard), PayPal y transferencia bancaria (SPEI)**. Openpay cubre tarjeta + SPEI (ver `docs/investigacion-plataforma-2026-07-27.md`); PayPal requiere integración aparte (cuenta Business; opción rápida: link PayPal.Me). Mientras tanto, el sitio lo anuncia como "próximamente".
 
 ## Modelo de disponibilidad (2026-07-29)
 - El profesional publica **slots de fecha/hora específicos** desde un calendario (`/profesional/disponibilidad`); cada slot = sesión de 50 min (`availability_slots`, constraint EXCLUDE anti-traslape).
