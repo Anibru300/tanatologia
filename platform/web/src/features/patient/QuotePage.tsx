@@ -19,7 +19,7 @@ export function QuotePage() {
   const { user } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    email: user?.email ?? '',
     phone: '',
     serviceType: 'aislada',
     sessions: '1',
@@ -28,6 +28,7 @@ export function QuotePage() {
   const [submitted, setSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [emailWarning, setEmailWarning] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,10 +59,12 @@ export function QuotePage() {
 
       // Solo usuarios autenticados pueden enviar correos desde el frontend.
       // Los visitantes anónimos reciben confirmación en pantalla.
+      // El correo es best-effort: si falla, la cotización ya quedó guardada.
       if (user) {
-        await sendEmail({
-          to: formData.email,
-          subject: 'Hemos recibido tu cotización — SOMOS-CALMA',
+        try {
+          await sendEmail({
+            to: formData.email,
+            subject: 'Hemos recibido tu cotización — SOMOS-CALMA',
           html: brandedEmail({
             title: 'Cotización recibida',
             greeting: `Hola ${formData.name},`,
@@ -80,8 +83,11 @@ export function QuotePage() {
             `,
             note: 'Si tienes dudas, responde a este correo y con gusto te ayudamos.',
           }),
-          type: 'quote_confirmation',
-        })
+            type: 'quote_confirmation',
+          })
+        } catch {
+          setEmailWarning(true)
+        }
       }
 
       setSubmitted(true)
@@ -120,6 +126,11 @@ export function QuotePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {emailWarning && (
+                <Alert variant="warning" className="mb-4 text-left">
+                  Tu cotización quedó guardada, pero no pudimos enviar el correo de confirmación.
+                </Alert>
+              )}
               <p className="text-text-light text-sm mb-4">
                 Mientras tanto, puedes crear una cuenta y explorar nuestros profesionales.
               </p>

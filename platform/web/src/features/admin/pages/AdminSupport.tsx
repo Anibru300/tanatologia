@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
 import { Headphones } from 'lucide-react'
 
 export function AdminSupport() {
@@ -9,6 +10,10 @@ export function AdminSupport() {
           <h1 className="text-3xl font-bold text-text mb-2">Soporte</h1>
           <p className="text-text-light">Tickets y solicitudes de ayuda.</p>
         </div>
+
+        <Alert variant="info" className="mb-6">
+          El sistema de tickets estará disponible próximamente.
+        </Alert>
 
         <Card>
           <CardHeader>

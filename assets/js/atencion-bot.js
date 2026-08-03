@@ -21,13 +21,11 @@
     const PATHS = {
         matching: urls.app ? `${urls.app}#/cotizacion` : `${BASE}pages/matching.html`,
         profesionales: `${BASE}pages/profesionales.html`,
-        profesionalDashboard: `${BASE}pages/profesionales/dashboard.html`,
+        profesionalDashboard: '/app/#/login',
         crisis: `${BASE}pages/crisis.html`,
     };
 
     const singlePrice = pricing.session && pricing.session.single ? `$${pricing.session.single} MXN` : '$400 MXN';
-    const program4Price = pricing.program4 && pricing.program4.price ? `$${pricing.program4.price} MXN` : '$1,600 MXN';
-    const program6Price = pricing.program6 && pricing.program6.price ? `$${pricing.program6.price} MXN` : '$2,200 MXN';
 
     const typingMessages = [
         'Déjame buscar la mejor respuesta para ti...',
@@ -50,7 +48,7 @@
             ]
         },
         precios: {
-            message: `Tenemos opciones accesibles:\n\n• Consulta aislada: ${singlePrice} (una sesión de 50 minutos).\n• Programa de Salud Mental: 4 sesiones por ${program4Price}.\n• Programa de acompañamiento por duelo, muerte o pérdida: 6 sesiones por ${program6Price}.`,
+            message: `Tenemos opciones accesibles:\n\n• Consulta aislada: ${singlePrice} (una sesión de 50 minutos).\n• Programas (Salud Mental, 4 sesiones; y Acompañamiento por duelo, muerte o pérdida, 6 sesiones): el precio se confirma al agendar; nuestro equipo te lo comparte antes de tu primera sesión.`,
             options: [
                 { id: 'como_pagar', label: '¿Cómo puedo pagar?' },
                 { id: 'descuento', label: '¿Hay descuentos?' },
@@ -99,7 +97,7 @@
             message: 'Qué gusto que quieras ser parte. La membresía para profesionales incluye:\n\n• Perfil en nuestro directorio.\n• Acceso a conferencias magistrales grabadas.\n• Biblioteca con recursos profesionales.\n• Flexibilidad de horarios y flujo de pacientes.',
             options: [
                 { id: 'requisitos', label: '¿Cuáles son los requisitos?' },
-                { id: 'portal', label: 'Ver demo del portal' },
+                { id: 'portal', label: 'Ir a la plataforma' },
                 { id: 'aplicar', label: 'Aplicar como profesional', primary: true },
                 { id: 'volver', label: 'Ver otras opciones' }
             ]

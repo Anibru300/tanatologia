@@ -5,7 +5,7 @@ import { siteConfig } from '@/lib/siteConfig'
 
 const faqs = [
   { q: '¿Cómo configuro mi disponibilidad?', a: 'Ve a "Disponibilidad" y selecciona los horarios por día.' },
-  { q: '¿Cuándo recibo mis pagos?', a: 'Los pagos se liberan cada semana a tu cuenta registrada.' },
+  { q: '¿Cuándo recibo mis pagos?', a: 'Estamos integrando pagos en línea (tarjeta, PayPal y transferencia SPEI). Te avisaremos cuando estén disponibles.' },
   { q: '¿Cómo subo mis credenciales?', a: 'En "Mi perfil" puedes actualizar tu cédula y especialidades.' },
 ]
 

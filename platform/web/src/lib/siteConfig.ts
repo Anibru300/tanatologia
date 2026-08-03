@@ -13,10 +13,10 @@ export const siteConfig = {
 
   // Datos legales / fiscales
   legal: {
-    // PENDIENTE: Confirmar razón social constituida
-    companyName: 'SOMOS-CALMA, S.A.P.I. de C.V.',
-    // PENDIENTE: Domicilio fiscal completo
-    address: '[DOMICILIO FISCAL PENDIENTE — Ciudad de México, México]',
+    // La empresa aún no está constituida: operamos como persona física
+    companyName: 'SOMOS-CALMA (operada por la Dra. Lupita Muñoz Campuzano, persona física)',
+    // Sin domicilio fiscal por ahora
+    address: 'Ciudad de México, México',
     // Teléfono oficial de la Dra. Lupita Muñoz Campuzano
     phone: '477 254 1540',
     country: 'México',
@@ -24,12 +24,12 @@ export const siteConfig = {
 
   // Contacto corporativo
   contact: {
-    // Correo oficial de la Dra. Lupita Muñoz Campuzano
-    hello: 'lupitamcampuzano@outlook.com',
-    privacy: 'lupitamcampuzano@outlook.com',
-    legal: 'lupitamcampuzano@outlook.com',
-    support: 'lupitamcampuzano@outlook.com',
-    crisis: 'lupitamcampuzano@outlook.com',
+    // Correo oficial único de SOMOS-CALMA
+    hello: 'hola@somos-calma.com',
+    privacy: 'hola@somos-calma.com',
+    legal: 'hola@somos-calma.com',
+    support: 'hola@somos-calma.com',
+    crisis: 'hola@somos-calma.com',
     whatsapp: {
       number: '5214772541540',
       label: 'WhatsApp',
@@ -113,7 +113,7 @@ export const siteConfig = {
 
   // Textos legales — extractos clave
   legalNotice: {
-    responsible: 'SOMOS-CALMA, S.A.P.I. de C.V.',
+    responsible: 'SOMOS-CALMA (operada por la Dra. Lupita Muñoz Campuzano, persona física)',
     purpose:
       'Prestación de servicios de acompañamiento emocional, tanatología, psicología y formación profesional.',
   },

@@ -28,7 +28,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/admin/configuracion', icon: Settings, label: 'Configuración', soon: true },
   { to: '/admin/cms', icon: FileText, label: 'Contenidos', soon: true },
   { to: '/admin/auditoria', icon: Shield, label: 'Auditoría' },
-  { to: '/admin/soporte', icon: Headphones, label: 'Soporte' },
+  { to: '/admin/soporte', icon: Headphones, label: 'Soporte', soon: true },
 ]
 
 export function AdminLayout() {

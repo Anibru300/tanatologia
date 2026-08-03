@@ -145,10 +145,12 @@ export function TherapistDirectory() {
                       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary-dark font-bold text-xl">
                         {getInitials(t.full_name)}
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Star size={16} className="text-warning fill-warning" />
-                        <span className="font-semibold text-text">{Number(t.rating || 0).toFixed(1)}</span>
-                      </div>
+                      {Number(t.rating || 0) > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Star size={16} className="text-warning fill-warning" />
+                          <span className="font-semibold text-text">{Number(t.rating).toFixed(1)}</span>
+                        </div>
+                      )}
                     </div>
                     <CardTitle className="text-lg flex items-center gap-2">
                       {t.full_name}
@@ -215,10 +217,12 @@ export function TherapistDirectory() {
                       <CheckCircle size={16} /> Verificado
                     </span>
                   )}
-                  <span className="flex items-center gap-1">
-                    <Star size={16} className="text-warning fill-warning" />
-                    <span className="font-semibold text-text">{Number(selected.rating || 0).toFixed(1)}</span>
-                  </span>
+                  {Number(selected.rating || 0) > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Star size={16} className="text-warning fill-warning" />
+                      <span className="font-semibold text-text">{Number(selected.rating).toFixed(1)}</span>
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

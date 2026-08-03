@@ -110,10 +110,6 @@ export function LoginPage() {
                 Regístrate
               </Link>
             </div>
-
-            <div className="mt-4 p-3 rounded-sm bg-bg-alt text-xs text-text-light">
-              <strong>Nota:</strong> Las cuentas ahora viven en la base de datos real. Si aún no tienes una, regístrate primero.
-            </div>
           </CardContent>
         </Card>
       </div>

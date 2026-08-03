@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="3;url=/app/#/login">
     <link rel="icon" type="image/x-icon" href="../../assets/images/favicon.ico">
     <meta name="description" content="Gestión de agenda del portal de profesionales de Somos Calma.">
     <title>Mi Agenda | Portal del Profesional</title>
@@ -13,158 +14,12 @@
     <link rel="stylesheet" href="../../assets/css/pages.css">
 </head>
 <body class="page-with-bg">
-    <a href="#main-content" class="skip-link">Saltar al contenido principal</a><div id="portal-header-component"></div>
-
-    <div class="portal-layout">
-        <div id="portal-sidebar-component"></div>
-
-        <main class="portal-main">
-            <div class="portal-main__header">
-                <h1>Mi Agenda</h1>
-                <p>Marca tus horarios disponibles y revisa tus consultas programadas.</p>
-            </div>
-
-            <div class="portal-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                <article class="portal-card">
-                    <h3>Horarios disponibles</h3>
-                    <p class="portal-card__meta">Selecciona los turnos que puedes cubrir</p>
-                    <form class="form" style="max-width: 100%;">
-                        <div class="form__group">
-                            <label for="dia">Día de la semana</label>
-                            <select id="dia" name="dia">
-                                <option>Lunes</option>
-                                <option>Martes</option>
-                                <option>Miércoles</option>
-                                <option>Jueves</option>
-                                <option>Viernes</option>
-                                <option>Sábado</option>
-                                <option>Domingo</option>
-                            </select>
-                        </div>
-                        <div class="form__group">
-                            <label for="inicio">Hora de inicio</label>
-                            <select id="inicio" name="inicio">
-                                <option>07:00</option>
-                                <option>08:00</option>
-                                <option>09:00</option>
-                                <option>10:00</option>
-                                <option>11:00</option>
-                                <option>12:00</option>
-                                <option>13:00</option>
-                                <option>14:00</option>
-                                <option>15:00</option>
-                                <option>16:00</option>
-                                <option>17:00</option>
-                                <option>18:00</option>
-                                <option>19:00</option>
-                                <option>20:00</option>
-                                <option>21:00</option>
-                            </select>
-                        </div>
-                        <div class="form__group">
-                            <label for="fin">Hora de fin</label>
-                            <select id="fin" name="fin">
-                                <option>08:00</option>
-                                <option>09:00</option>
-                                <option>10:00</option>
-                                <option>11:00</option>
-                                <option>12:00</option>
-                                <option>13:00</option>
-                                <option>14:00</option>
-                                <option>15:00</option>
-                                <option>16:00</option>
-                                <option>17:00</option>
-                                <option>18:00</option>
-                                <option>19:00</option>
-                                <option>20:00</option>
-                                <option>21:00</option>
-                                <option>22:00</option>
-                                <option>23:00</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn--primary" style="width: 100%;">Guardar disponibilidad</button>
-                    </form>
-                </article>
-
-                <article class="portal-card">
-                    <h3>Tus turnos registrados</h3>
-                    <p class="portal-card__meta">Esta semana</p>
-                    <ul class="portal-list">
-                        <li>
-                            <div>
-                                <div class="portal-list__title">Lunes</div>
-                                <div class="portal-list__meta">9:00 a.m. – 12:00 p.m.</div>
-                            </div>
-                            <button type="button" class="btn btn--ghost btn--sm">Editar</button>
-                        </li>
-                        <li>
-                            <div>
-                                <div class="portal-list__title">Miércoles</div>
-                                <div class="portal-list__meta">6:00 p.m. – 9:00 p.m.</div>
-                            </div>
-                            <button type="button" class="btn btn--ghost btn--sm">Editar</button>
-                        </li>
-                        <li>
-                            <div>
-                                <div class="portal-list__title">Sábado</div>
-                                <div class="portal-list__meta">10:00 a.m. – 2:00 p.m.</div>
-                            </div>
-                            <button type="button" class="btn btn--ghost btn--sm">Editar</button>
-                        </li>
-                    </ul>
-                </article>
-            </div>
-
-            <section style="margin-top: 2.5rem;">
-                <h2 style="margin-bottom: 1rem;">Junio 2026</h2>
-                <div class="portal-card">
-                    <div class="portal-calendar">
-                        <div class="portal-calendar__day">L</div>
-                        <div class="portal-calendar__day">M</div>
-                        <div class="portal-calendar__day">M</div>
-                        <div class="portal-calendar__day">J</div>
-                        <div class="portal-calendar__day">V</div>
-                        <div class="portal-calendar__day">S</div>
-                        <div class="portal-calendar__day">D</div>
-                        <div class="portal-calendar__day">1</div>
-                        <div class="portal-calendar__day">2</div>
-                        <div class="portal-calendar__day">3</div>
-                        <div class="portal-calendar__day">4</div>
-                        <div class="portal-calendar__day has-session">5</div>
-                        <div class="portal-calendar__day">6</div>
-                        <div class="portal-calendar__day">7</div>
-                        <div class="portal-calendar__day">8</div>
-                        <div class="portal-calendar__day has-session">9</div>
-                        <div class="portal-calendar__day">10</div>
-                        <div class="portal-calendar__day">11</div>
-                        <div class="portal-calendar__day has-session">12</div>
-                        <div class="portal-calendar__day">13</div>
-                        <div class="portal-calendar__day">14</div>
-                        <div class="portal-calendar__day">15</div>
-                        <div class="portal-calendar__day">16</div>
-                        <div class="portal-calendar__day">17</div>
-                        <div class="portal-calendar__day has-session">18</div>
-                        <div class="portal-calendar__day">19</div>
-                        <div class="portal-calendar__day">20</div>
-                        <div class="portal-calendar__day">21</div>
-                        <div class="portal-calendar__day">22</div>
-                        <div class="portal-calendar__day">23</div>
-                        <div class="portal-calendar__day has-session">24</div>
-                        <div class="portal-calendar__day">25</div>
-                        <div class="portal-calendar__day">26</div>
-                        <div class="portal-calendar__day">27</div>
-                        <div class="portal-calendar__day">28</div>
-                        <div class="portal-calendar__day">29</div>
-                        <div class="portal-calendar__day">30</div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <div id="portal-footer-component"></div>
-
-    <script src="../../assets/js/portal-components.js"></script>
-    <script src="../../assets/js/main.js"></script>
+    <main id="main-content" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+        <div>
+            <h1 style="margin-bottom: 1rem;">El portal de profesionales ahora está en la plataforma</h1>
+            <p style="margin-bottom: 2rem;">Serás redirigido automáticamente en unos segundos.</p>
+            <a href="/app/#/login" class="btn btn--primary">Ir a la plataforma</a>
+        </div>
+    </main>
 </body>
 </html>

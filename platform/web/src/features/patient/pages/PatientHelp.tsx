@@ -5,7 +5,7 @@ import { siteConfig } from '@/lib/siteConfig'
 
 const faqs = [
   { q: '¿Cómo agendo una cita?', a: 'Ve a "Agendar cita", elige el tipo de servicio, fecha y hora.' },
-  { q: '¿Puedo cancelar una sesión?', a: 'Sí, con al menos 24 horas de anticipación para reembolso completo.' },
+  { q: '¿Puedo cancelar una sesión?', a: 'Puedes cancelar o reprogramar tu cita desde tu portal. Consulta la política de cancelación en somos-calma.com/pages/cancelacion.html.' },
   { q: '¿Las sesiones son confidenciales?', a: 'Sí, todas las sesiones son privadas y cumplen con la normativa de protección de datos.' },
 ]
 

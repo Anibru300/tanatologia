@@ -67,7 +67,7 @@
                     <h4 class="footer__title">Profesionales</h4>
                     <ul class="footer__links">
                         <li><a href="${root}pages/profesionales.html">Únete al directorio</a></li>
-                        <li><a href="${root}pages/profesionales.html#formacion">Formación</a></li>
+                        <li><a href="${root}pages/profesionales.html#portal">Formación</a></li>
                         <li><a href="/app/#/login">Iniciar sesión</a></li>
                     </ul>
                 </div>

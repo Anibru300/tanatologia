@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Stepper } from '@/components/ui/Stepper'
-import { Calendar, Clock, Video, Check, User, ArrowLeft, ArrowRight, Star, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, Video, Check, User, ArrowLeft, ArrowRight, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { siteConfig } from '@/lib/siteConfig'
 import {
@@ -425,9 +425,9 @@ export function BookAppointment() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-text">{therapist.full_name}</h3>
                     <p className="text-sm text-text-light">{therapist.specialties.slice(0, 2).join(', ')}</p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star size={14} className="text-warning fill-warning" />
-                      <span className="text-sm text-text font-medium">{therapist.rating}</span>
+                    <div className="flex items-center gap-1 mt-1 text-success-dark">
+                      <CheckCircle size={14} />
+                      <span className="text-sm font-medium">Perfil verificado</span>
                     </div>
                   </div>
                   <div className="text-right">
