@@ -46,7 +46,7 @@
                     <a href="${root}index.html" class="logo logo--footer">
                         <span class="logo__wrap"><img src="${root}assets/images/logo.jpeg" alt="Somos Calma" class="logo__img"></span>
                     </a>
-                    <p>Tu espacio seguro para sanar y encontrar alivio. Formación para profesionales, acompañamiento para quienes duelen.</p>
+                    <p>Terapia en línea para México, Estados Unidos y Latinoamérica. Tu espacio seguro para sanar y encontrar alivio. Formación para profesionales, acompañamiento para quienes duelen.</p>
                 </div>
                 <div>
                     <h4 class="footer__title">SOMOS-CALMA</h4>
