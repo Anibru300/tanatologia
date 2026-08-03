@@ -95,8 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (resultList) {
             resultList.innerHTML = matchedTherapists.map(t => `
-                <article class="therapist-card">
-                    <div class="therapist-card__avatar">${t.initials}</div>
+                <a href="/app/#/register?role=patient" class="therapist-card therapist-card--link" title="Crear cuenta gratis y agendar con ${t.name}">
+                    <img src="${t.photo}" alt="Foto de ${t.name}" class="therapist-card__photo">
                     <div class="therapist-card__info">
                         <h4>${t.name}</h4>
                         <p class="therapist-card__meta">${t.title} · ${t.experience}</p>
@@ -104,8 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="therapist-card__tags">
                             ${t.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                         </div>
+                        <span class="therapist-card__cta">Elegir y crear mi cuenta gratis →</span>
                     </div>
-                </article>
+                </a>
             `).join('');
         }
 
@@ -126,22 +127,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const therapists = [
             {
-                initials: 'MR',
-                name: 'Dra. María Rodríguez',
-                title: 'Psicóloga · Tanatóloga',
-                experience: '12 años acompañando procesos de duelo',
-                bio: `Especialista en duelo por muerte y pérdida de pareja. Puede acompañarte en tu ${serviceNote.toLowerCase()}.`,
-                tags: ['Duelo', 'Pérdida', 'Adultos mayores'],
-                specialties: ['duelo-muerte', 'perdida', 'enfermedad', 'duelo']
+                name: 'Dra. Lupita Muñoz Campuzano',
+                title: 'Fundadora · Psicóloga',
+                experience: 'Salud mental y acompañamiento emocional',
+                photo: '../assets/images/fundadoras/lupita.jpg',
+                bio: `Dedicada a hacer accesible la salud mental para todas las personas. Puede acompañarte en tu ${serviceNote.toLowerCase()}.`,
+                tags: ['Ansiedad', 'Depresión', 'Bienestar'],
+                specialties: ['ansiedad-estres', 'depresion', 'otra', 'bienestar']
             },
             {
-                initials: 'SC',
-                name: 'Dra. Sofía Castro',
-                title: 'Tanatóloga · Psicooncóloga',
-                experience: '10 años de experiencia',
-                bio: `Especialista en duelo anticipado, diagnósticos difíciles y pérdidas complejas. Puede guiar tu ${serviceNote.toLowerCase()}.`,
-                tags: ['Duelo anticipado', 'Diagnóstico', 'Familias'],
-                specialties: ['duelo-muerte', 'enfermedad', 'duelo']
+                name: 'Dra. Edith González Huerta',
+                title: 'Fundadora · Tanatóloga',
+                experience: 'Acompañamiento en duelo, muerte y pérdida',
+                photo: '../assets/images/fundadoras/edith.jpg',
+                bio: `Impulsa un acompañamiento humano y profesional para atravesar la pérdida. Puede guiar tu ${serviceNote.toLowerCase()}.`,
+                tags: ['Duelo', 'Pérdida', 'Duelo anticipado'],
+                specialties: ['duelo-muerte', 'perdida', 'enfermedad', 'duelo']
             }
         ];
 
