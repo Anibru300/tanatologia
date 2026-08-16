@@ -12,11 +12,12 @@ Plataforma de acompañamiento emocional y tanatología en México. Actualmente e
 
 ## Stack
 - React 19 + Vite 8 + TypeScript 6
+- Vitest para pruebas unitarias (`npm run test` → se ejecuta vía `npx vitest@^3`, sin dependencia instalada; para fijarlo en el lockfile, corre `npm i -D vitest` en tu disco local una sola vez)
 - Tailwind CSS 3
 - React Router DOM 7
 - Lucide React (iconos)
 - Supabase Auth + PostgreSQL + Edge Functions (conectado a proyecto cloud)
-- Jitsi Meet (pendiente de integración)
+- Jitsi Meet vía `VITE_JITSI_DOMAIN` (por defecto meet.jit.si; preparado para migrar a JaaS/8x8.vc)
 - Resend (pendiente de API key)
 
 ## Cómo ejecutar
@@ -78,6 +79,10 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 9. Implementar pagos cuando haya tracción. **Requisito del cliente (2026-08-02):** el sistema debe ofrecer varias opciones — **tarjeta de débito/crédito (Visa/Mastercard), PayPal y transferencia bancaria (SPEI)**. Openpay cubre tarjeta + SPEI (ver `docs/investigacion-plataforma-2026-07-27.md`); PayPal requiere integración aparte (cuenta Business; opción rápida: link PayPal.Me). Mientras tanto, el sitio lo anuncia como "próximamente".
 
 10. 🔴 **URGENTE — Buzón de hola@somos-calma.com no existe (2026-08-02):** el dominio NO tiene registros MX; Resend solo ENVÍA. Los correos del formulario de contacto (`contact-form`) rebotan porque no hay dónde entregarlos. **Acción del cliente en Hostinger (hPanel → Emails):** crear reenvío de `hola@somos-calma.com` → `lupitamcampuzano@outlook.com` (o buzón real). Plan B si el plan no incluye reenvío: cambiar el secret `CONTACT_INBOX` de la Edge Function al correo personal. Verificar después con `nslookup -type=MX somos-calma.com` y re-probar el formulario.
+
+11. ✅ (2026-08-16) Calidad de código: Vitest configurado (vía npx, sin tocar el lockfile) con tests de la lógica crítica de videollamadas (`src/lib/videoSession.ts`, `video.ts`, `utils.ts`); el CI propuesto corre **lint + tests + build** en cada push y en cada PR (ver `docs/deploy-app.propuesto.yml`; copiar sobre `.github/workflows/deploy-app.yml` para activarlo — el token de automatización no tiene permiso `workflow`). Dependabot activo (npm + GitHub Actions, semanal).
+12. ✅ (2026-08-16) Videollamadas pulidas: chequeo previo de cámara/micrófono con instrucciones en español (`DeviceCheck`), ventana de acceso por cita (paciente entra 15 min antes y hasta 15 min después de que termina; fuera de ventana ve conteo regresivo o aviso de sesión terminada), experiencia compartida `VideoCallExperience`, Jitsi en español con `disableDeepLinking` (evita el salto a la app en móvil) y pantalla de error con opción de abrir la sala en pestaña nueva si el iframe es bloqueado.
+13. ⏳ Migración de videollamadas a **JaaS (8x8.vc)** cuando haya volumen: meet.jit.si exige que quien crea la sala inicie sesión (Google/GitHub); por eso el profesional (anfitrión) debe entrar primero. JaaS elimina ese login, permite marca propia y JWT por usuario. El código ya es compatible: basta definir `VITE_JITSI_DOMAIN=8x8.vc` y agregar firma de JWT en una Edge Function.
 
 ## Modelo de disponibilidad (2026-07-29)
 - El profesional publica **slots de fecha/hora específicos** desde un calendario (`/profesional/disponibilidad`); cada slot = sesión de 50 min (`availability_slots`, constraint EXCLUDE anti-traslape).
