@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "npx --yes vitest@^3 run"
   },
   "dependencies": {
     "@jitsi/react-sdk": "^1.4.4",
