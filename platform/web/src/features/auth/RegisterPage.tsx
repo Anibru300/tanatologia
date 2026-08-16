@@ -178,13 +178,23 @@ export function RegisterPage() {
                 />
                 <span>
                   He leído y acepto el{' '}
-                  <Link to="/aviso-de-privacidad" target="_blank" className="text-primary hover:underline">
+                  <a
+                    href="/pages/aviso-privacidad.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
                     Aviso de Privacidad
-                  </Link>{' '}
+                  </a>{' '}
                   y los{' '}
-                  <Link to="/terminos" target="_blank" className="text-primary hover:underline">
+                  <a
+                    href="/pages/terminos.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
                     Términos y Condiciones
-                  </Link>
+                  </a>
                   .
                 </span>
               </label>
