@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 item.classList.toggle('is-open', !isOpen);
             });
-        }
+        });
     });
 
     // Botón volver arriba
@@ -126,6 +126,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Validación y envío de formularios
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
+        // Formularios con manejador propio (contacto, matching, etc.) se saltan
+        // este listener genérico para no pintar campos en rojo tras un envío
+        // exitoso ni competir con su lógica de validación.
+        if (form.id === 'contact-form' || form.hasAttribute('data-external-handler') || form.hasAttribute('onsubmit')) {
+            return;
+        }
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
 
@@ -176,9 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     showFormMessage(form, 'Hubo un problema de conexión. Intenta de nuevo en unos momentos.');
                 }
             } else {
-                // Modo demostración si no hay servicio configurado
-                showFormMessage(form, 'Gracias por confiar en nosotros. Hemos recibido tu mensaje (modo demostración).');
-                form.reset();
+                // Sin servicio configurado: mensaje honesto, nunca simular un envío
+                showFormMessage(form, 'Este formulario aún no está disponible. Escríbenos directamente a hola@somos-calma.com y te responderemos con calma.', 'error');
             }
 
             if (submitButton) {
