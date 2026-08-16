@@ -137,10 +137,10 @@ export function RootLayout() {
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-white/80">
-                <li><Link to="/aviso-de-privacidad" className="hover:text-white">Aviso de privacidad</Link></li>
-                <li><Link to="/terminos" className="hover:text-white">Términos y condiciones</Link></li>
-                <li><Link to="/cancelacion" className="hover:text-white">Cancelación y reembolsos</Link></li>
-                <li><Link to="/crisis" className="hover:text-white">Líneas de emergencia</Link></li>
+                <li><a href="/pages/aviso-privacidad.html" className="hover:text-white">Aviso de privacidad</a></li>
+                <li><a href="/pages/terminos.html" className="hover:text-white">Términos y condiciones</a></li>
+                <li><a href="/pages/cancelacion.html" className="hover:text-white">Cancelación y reembolsos</a></li>
+                <li><a href="/pages/crisis.html" className="hover:text-white">Líneas de emergencia</a></li>
               </ul>
             </div>
             <div>
