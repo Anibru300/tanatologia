@@ -80,6 +80,7 @@ export function BookAppointment() {
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
   const [confirmed, setConfirmed] = useState(false)
+  const [emailWarning, setEmailWarning] = useState(false)
 
   const [therapists, setTherapists] = useState<ProfessionalProfile[]>([])
   const [loadingTherapists, setLoadingTherapists] = useState(true)
@@ -289,7 +290,10 @@ export function BookAppointment() {
           type: 'appointment_confirmation',
         })
       } catch (emailErr) {
+        // La cita ya quedó agendada; el correo es secundario, pero el paciente
+        // debe saber si no se envió (no solo en consola).
         console.error('Error enviando correo de confirmación:', emailErr)
+        setEmailWarning(true)
       }
 
       setConfirmed(true)
@@ -313,6 +317,12 @@ export function BookAppointment() {
               <p className="text-text-light mb-6">
                 Te enviamos un correo con los detalles. Recuerda que puedes ingresar a tu portal para verla.
               </p>
+              {emailWarning && (
+                <Alert variant="warning" className="p-3 rounded-sm mb-6 text-left max-w-md mx-auto">
+                  Tu cita quedó agendada, pero no pudimos enviarte el correo de confirmación. Todos los
+                  detalles están disponibles en "Mis citas".
+                </Alert>
+              )}
               <div className="bg-bg-alt rounded-md p-6 text-left space-y-3 max-w-md mx-auto mb-6">
                 <p className="text-text"><strong>Servicio:</strong> {selectedServiceData.name}</p>
                 <p className="text-text"><strong>Terapeuta:</strong> {selectedTherapistData?.full_name}</p>
