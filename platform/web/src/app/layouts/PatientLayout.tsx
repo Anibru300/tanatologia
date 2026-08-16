@@ -24,7 +24,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/paciente/historial', icon: FileText, label: 'Historial' },
   { to: '/paciente/pagos', icon: CreditCard, label: 'Pagos', soon: true },
   { to: '/paciente/mensajes', icon: MessageSquare, label: 'Mensajes', soon: true },
-  { to: '/paciente/recursos', icon: BookOpen, label: 'Recursos', soon: true },
+  { to: '/paciente/recursos', icon: BookOpen, label: 'Recursos' },
   { to: '/paciente/cotizacion', icon: FileQuestion, label: 'Cotización' },
   { to: '/paciente/ayuda', icon: HelpCircle, label: 'Ayuda' },
 ]

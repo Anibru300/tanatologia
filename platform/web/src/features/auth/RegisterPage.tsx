@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth, type UserRole } from '@/features/auth/AuthProvider'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
@@ -10,10 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { User, Stethoscope, CheckCircle } from 'lucide-react'
 
 export function RegisterPage() {
+  const [searchParams] = useSearchParams()
+  const initialRole: UserRole = searchParams.get('role') === 'professional' ? 'professional' : 'patient'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [role, setRole] = useState<UserRole>('patient')
+  const [role, setRole] = useState<UserRole>(initialRole)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
