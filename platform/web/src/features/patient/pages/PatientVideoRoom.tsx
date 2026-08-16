@@ -1,12 +1,13 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
-import { PhoneOff } from 'lucide-react'
-const JitsiMeetingRoom = lazy(() =>
-  import('@/components/video/JitsiMeetingRoom').then((m) => ({ default: m.JitsiMeetingRoom }))
+import { CalendarClock } from 'lucide-react'
+const VideoCallExperience = lazy(() =>
+  import('@/components/video/VideoCallExperience').then((m) => ({ default: m.VideoCallExperience }))
 )
 import { getAppointmentById, type Appointment } from '@/features/appointments/appointmentsService'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { EARLY_JOIN_MINUTES, formatTimeUntilStart, getJoinWindowState } from '@/lib/videoSession'
 
 export function PatientVideoRoom() {
   const { appointmentId } = useParams<{ appointmentId?: string }>()
@@ -72,29 +73,73 @@ export function PatientVideoRoom() {
     )
   }
 
-  // La sala ocupa todo el viewport (overlay sobre el layout del portal).
-  return (
-    <div className="fixed inset-0 z-[60] bg-bg flex flex-col">
-      <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-3 border-b border-border bg-surface shrink-0">
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold text-text truncate">Tu sesión</h1>
-          <p className="text-text-light text-xs sm:text-sm truncate">
-            {appointment.professionalName} · {new Date(appointment.scheduled_at).toLocaleString('es-MX')}
+  const now = new Date()
+  const window = getJoinWindowState(appointment, now)
+
+  // La sesión terminó, fue cancelada o no se presentó.
+  if (window === 'ended') {
+    return (
+      <div className="section-calma">
+        <div className="container-calma">
+          <h1 className="text-2xl font-bold text-text mb-2">Esta sesión ya no está disponible</h1>
+          <p className="text-text-light mb-6">
+            {appointment.status === 'cancelled'
+              ? 'La cita fue cancelada. Si necesitas reagendar, puedes hacerlo desde tu panel.'
+              : 'El horario de esta sesión ya pasó. Si tuviste algún problema, contáctanos.'}
           </p>
+          <Button variant="outline" onClick={() => navigate('/paciente/citas')}>
+            Volver a mis citas
+          </Button>
         </div>
-        <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={() => navigate('/paciente/citas')}>
-          <PhoneOff size={16} /> Colgar
-        </Button>
       </div>
-      <div className="flex-1 min-h-0">
-        <Suspense fallback={<p className="text-text-light p-6">Cargando videollamada...</p>}>
-          <JitsiMeetingRoom
-            roomName={appointment.video_link}
-            displayName={user?.fullName || 'Paciente'}
-            onReadyToClose={() => navigate('/paciente/citas')}
-          />
-        </Suspense>
+    )
+  }
+
+  // Aún no es tiempo: la sala abre EARLY_JOIN_MINUTES antes de la cita.
+  if (window === 'too_early') {
+    return (
+      <div className="section-calma">
+        <div className="container-calma max-w-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <CalendarClock size={28} className="text-primary-dark shrink-0" />
+            <h1 className="text-2xl font-bold text-text">Tu sesión aún no comienza</h1>
+          </div>
+          <p className="text-text-light mb-2">
+            Tu cita con {appointment.professionalName} es el{' '}
+            <strong className="text-text">
+              {new Date(appointment.scheduled_at).toLocaleString('es-MX')}
+            </strong>{' '}
+            ({formatTimeUntilStart(appointment, now)}).
+          </p>
+          <p className="text-text-light mb-6">
+            La sala se abre {EARLY_JOIN_MINUTES} minutos antes. Vuelve entonces y aquí
+            encontrarás el acceso.
+          </p>
+          <Button variant="outline" onClick={() => navigate('/paciente/citas')}>
+            Volver a mis citas
+          </Button>
+        </div>
       </div>
-    </div>
+    )
+  }
+
+  // Ventana activa: chequeo de dispositivos y sala a viewport completo.
+  return (
+    <Suspense
+      fallback={
+        <div className="fixed inset-0 z-[60] bg-bg flex items-center justify-center">
+          <p className="text-text-light">Cargando videollamada...</p>
+        </div>
+      }
+    >
+      <VideoCallExperience
+        roomName={appointment.video_link}
+        displayName={user?.fullName || 'Paciente'}
+        title="Tu sesión"
+        subtitle={`${appointment.professionalName} · ${new Date(appointment.scheduled_at).toLocaleString('es-MX')}`}
+        preJoinTip="Busca un lugar tranquilo y privado. Tu profesional de la salud ya puede estar dentro de la sala."
+        onExit={() => navigate('/paciente/citas')}
+      />
+    </Suspense>
   )
 }

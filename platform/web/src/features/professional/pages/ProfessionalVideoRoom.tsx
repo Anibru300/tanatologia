@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
-import { Video, PhoneOff, ChevronDown, ChevronUp } from 'lucide-react'
-const JitsiMeetingRoom = lazy(() =>
-  import('@/components/video/JitsiMeetingRoom').then((m) => ({ default: m.JitsiMeetingRoom }))
+import { Video, ChevronDown, ChevronUp } from 'lucide-react'
+const VideoCallExperience = lazy(() =>
+  import('@/components/video/VideoCallExperience').then((m) => ({ default: m.VideoCallExperience }))
 )
 import {
   getAppointmentById,
@@ -14,6 +14,7 @@ import {
   type Appointment,
 } from '@/features/appointments/appointmentsService'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { filterUpcomingSessions } from '@/lib/videoSession'
 
 export function ProfessionalVideoRoom() {
   const { appointmentId } = useParams<{ appointmentId?: string }>()
@@ -77,15 +78,7 @@ export function ProfessionalVideoRoom() {
         const professionalProfileId = await getProfessionalProfileId(user!.id)
         if (!professionalProfileId) return
         const appointments = await getAppointmentsForProfessional(professionalProfileId)
-        const now = new Date()
-        const next = appointments
-          .filter(
-            (a) =>
-              (a.status === 'pending' || a.status === 'confirmed') &&
-              new Date(a.scheduled_at).getTime() > now.getTime() - 30 * 60 * 1000
-          )
-          .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at))
-          .slice(0, 5)
+        const next = filterUpcomingSessions(appointments, new Date(), 5)
         if (!cancelled) setUpcoming(next)
       } catch (err) {
         if (!cancelled) {
@@ -113,35 +106,29 @@ export function ProfessionalVideoRoom() {
 
   const roomName = activeRoom || appointment?.video_link
 
-  // Sala activa: ocupa todo el viewport (overlay sobre el layout del portal).
+  // Sala activa: el profesional actúa como anfitrión; entra primero para abrirla.
   if (roomName) {
     return (
-      <div className="fixed inset-0 z-[60] bg-bg flex flex-col">
-        <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-3 border-b border-border bg-surface shrink-0">
-          <div className="min-w-0">
-            <h1 className="text-lg font-bold text-text truncate">Sesión en curso</h1>
-            {appointment ? (
-              <p className="text-text-light text-xs sm:text-sm truncate">
-                {appointment.patientName} · {new Date(appointment.scheduled_at).toLocaleString('es-MX')}
-              </p>
-            ) : (
-              <p className="text-text-light text-xs sm:text-sm truncate">Sala manual</p>
-            )}
+      <Suspense
+        fallback={
+          <div className="fixed inset-0 z-[60] bg-bg flex items-center justify-center">
+            <p className="text-text-light">Cargando videollamada...</p>
           </div>
-          <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={() => navigate('/profesional/citas')}>
-            <PhoneOff size={16} /> Colgar
-          </Button>
-        </div>
-        <div className="flex-1 min-h-0">
-          <Suspense fallback={<p className="text-text-light p-6">Cargando videollamada...</p>}>
-            <JitsiMeetingRoom
-              roomName={roomName}
-              displayName={user?.fullName || 'Profesional'}
-              onReadyToClose={() => navigate('/profesional/citas')}
-            />
-          </Suspense>
-        </div>
-      </div>
+        }
+      >
+        <VideoCallExperience
+          roomName={roomName}
+          displayName={user?.fullName || 'Profesional'}
+          title="Sesión en curso"
+          subtitle={
+            appointment
+              ? `${appointment.patientName} · ${new Date(appointment.scheduled_at).toLocaleString('es-MX')}`
+              : 'Sala manual'
+          }
+          preJoinTip="Entra 1-2 minutos antes de la hora agendada: como anfitrión, tú abres la sala para tu paciente."
+          onExit={() => navigate('/profesional/citas')}
+        />
+      </Suspense>
     )
   }
 

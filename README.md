@@ -1,92 +1,78 @@
 # SOMOS-CALMA
 
-Tu espacio seguro para sanar y encontrar alivio. Plataforma de tanatología y salud mental en México que conecta a personas en proceso de duelo con tanatólogos y psicólogos certificados, mientras forma a profesionales con un modelo de membresía.
+Plataforma mexicana de acompañamiento emocional y tanatología. Conecta a personas en proceso de duelo con tanatólogos y psicólogos verificados, con videollamadas integradas, y ofrece a los profesionales un portal con agenda, pacientes, notas clínicas y verificación documental.
+
+🌐 **Sitio en producción:** https://somos-calma.com (app: https://somos-calma.com/app/)
 
 ## Estructura del proyecto
 
 ```
-SOMOS-CALMA/
-├── assets/                 # Recursos estáticos
-│   ├── css/                # Hojas de estilo
-│   │   ├── main.css        # Estilos base, componentes y utilidades
-│   │   └── pages.css       # Estilos específicos de páginas internas
-│   ├── js/                 # Scripts
-│   │   ├── components.js   # Header, footer y botón de salida rápida
-│   │   ├── main.js         # Menú móvil, validación, smooth scroll
-│   │   └── matching.js     # Cuestionario de matching empático
-│   ├── images/             # Imágenes del sitio
-│   └── fonts/              # Tipografías personalizadas
-├── docs/                   # Documentación del proyecto
-│   ├── brief-cliente.md    # Resumen del brief recibido
-│   ├── arquitectura-mvp.md # Arquitectura tecnológica propuesta
-│   ├── paleta-colores.md   # Paleta de color y justificación
-│   └── roadmap.md          # Roadmap de lanzamiento
-├── pages/                  # Páginas internas
-│   ├── pacientes.html      # Landing para pacientes
-│   ├── profesionales.html  # Landing para profesionales
-│   ├── membresias.html     # Comparativa de planes
-│   ├── matching.html       # Cuestionario de matching empático
-│   └── login.html          # Pantalla de inicio de sesión
-├── index.html              # Página principal
-├── .gitignore              # Archivos ignorados por Git
-└── README.md               # Este archivo
+tanatologia/
+├── index.html, pages/, assets/   # Sitio estático público (16 páginas, GitHub Pages)
+│   ├── pages/                    # pacientes, profesionales, membresías, matching,
+│   │                             # legales (aviso de privacidad, términos), crisis…
+│   └── assets/                   # CSS, JS, imágenes (incluye fotos/videos de fundadoras)
+├── app/                          # Build compilado de la plataforma React (generado por CI)
+├── platform/
+│   ├── web/                      # Plataforma React 19 + Vite + TypeScript + Tailwind
+│   │                             # (portales de paciente, profesional y admin)
+│   └── supabase/                 # Migraciones SQL y Edge Functions (PostgreSQL + RLS)
+├── docs/                         # Brief, arquitectura, roadmap, auditorías y bitácoras
+├── recursos/                     # Material original fuera del sitio (no publicado)
+└── .github/workflows/            # CI/CD: lint + tests + build + deploy a /app
 ```
 
-## Paleta de color
+> El repositorio se llama `tanatologia`, pero la marca es **SOMOS-CALMA**.
 
-La paleta sigue la directriz del cliente: evitar azules clínicos y colores hiper-estimulantes. Se usa una gama terrosa y neutra que transmite calidez, estabilidad y cobijo:
+## Stack
 
-- **Blanco roto (`#F7F5F2`):** fondo general, reduce fatiga visual.
-- **Beige suave (`#EDE8E1`):** secciones alternas, calidez.
-- **Gris arena (`#E8E4DE`):** fondos de contención.
-- **Verde salvia (`#7A8B6E`):** botones principales, crecimiento y calma.
-- **Azul sereno (`#7A9AA8`):** acentos secundarios, reduce ansiedad.
-- **Terracota suave (`#C9A28E`):** CTAs cálidos, acogida humana.
+- **Frontend:** React 19, Vite 8, TypeScript, Tailwind CSS, React Router (HashRouter), Lucide.
+- **Backend:** Supabase (Auth, PostgreSQL con RLS y triggers ACID, Edge Functions, Storage).
+- **Videollamadas:** Jitsi Meet (`meet.jit.si`) con chequeo previo de cámara/micrófono,
+  ventana de acceso por cita y dominio configurable (`VITE_JITSI_DOMAIN`) para migrar a JaaS.
+- **Correo:** Resend vía Edge Functions (confirmaciones, cotizaciones, formulario de contacto).
+- **Analytics:** Google Analytics 4 + Search Console verificado.
 
-Más detalles en [`docs/paleta-colores.md`](docs/paleta-colores.md).
+## Desarrollo local
 
-## 🌐 Sitio publicado
+```bash
+cd platform/web
+cp .env.example .env   # completa las claves de Supabase
+npm install
+npm run dev            # servidor local
+npm run test           # pruebas con Vitest
+npm run lint           # oxlint
+npm run build          # build de producción (tsc + vite)
+```
 
-El sitio ya está publicado en GitHub Pages:
+La base de datos se inicializa ejecutando las migraciones de `platform/supabase/migrations/`
+en orden (001 → 009) desde el SQL Editor de Supabase o con `supabase db query --linked`.
 
-**https://somos-calma.com/app/**
+## Calidad y CI/CD
 
-*Nota: el repositorio se llama `tanatologia`, pero la marca es SOMOS-CALMA. Cuando compres el dominio propio, solo hay que actualizar la URL.*
+- Cada push/PR a `platform/web/**` corre **lint + tests + build** en GitHub Actions
+  (versión propuesta del workflow en `docs/deploy-app.propuesto.yml`; ver PR #1).
+- En `main`, el build se publica automáticamente en `/app` (servido en somos-calma.com/app/).
+- Dependabot abre PRs semanales de actualización de dependencias.
 
-## Cómo usar en local
+## Documentación
 
-1. Abre `index.html` en tu navegador para ver la landing principal.
-2. Navega entre las páginas internas en la carpeta `pages/`.
-3. Edita estilos en `assets/css/`.
-4. Agrega interactividad en `assets/js/`.
-5. Reemplaza las imágenes de placeholder en `assets/images/`.
+| Documento | Contenido |
+|---|---|
+| [`AGENTS.md`](AGENTS.md) | Convenciones, pendientes críticos y guía operativa |
+| [`docs/brief-cliente.md`](docs/brief-cliente.md) | Resumen del brief |
+| [`docs/arquitectura-mvp.md`](docs/arquitectura-mvp.md) | Arquitectura tecnológica |
+| [`docs/roadmap.md`](docs/roadmap.md) | Roadmap de lanzamiento |
+| [`docs/paleta-colores.md`](docs/paleta-colores.md) | Paleta terrosa y justificación |
+| [`docs/investigacion-plataforma-2026-07-27.md`](docs/investigacion-plataforma-2026-07-27.md) | Benchmark, pagos, legal |
 
 ## Modelo de negocio
 
 - **B2C (pacientes):** membresías mensuales con 2 o 4 sesiones.
-- **B2B (profesionales):** membresía mensual/anual con acceso a formación, directorio y herramientas.
+- **B2B (profesionales):** membresía con formación, directorio y herramientas.
 - **Comisión:** la plataforma retiene ~20% por sesión atendida.
+- **Pagos:** próximamente tarjeta (Visa/Mastercard), PayPal y SPEI (vía Openpay + PayPal).
 
-## Arquitectura recomendada para el MVP
+## Licencia
 
-Ver [`docs/arquitectura-mvp.md`](docs/arquitectura-mvp.md).
-
-## Roadmap
-
-Ver [`docs/roadmap.md`](docs/roadmap.md).
-
-## Estado
-
-Proyecto en construcción. Avances definidos:
-
-- ✅ Marca: SOMOS-CALMA
-- ✅ País de operación: México
-- ✅ Paleta terrosa y tipografía redondeada (Poppins)
-- ✅ Flujo de matching empático con una pregunta por pantalla
-- ✅ Botón de salida rápida
-- ⏳ Dominio propio por configurar
-- ⏳ Logo e imágenes reales
-- ⏳ Precios finales en MXN
-- ⏳ Textos legales (aviso de privacidad, términos)
-- ⏳ Perfiles reales de profesionales y testimonios
-- ⏳ Stack tecnológico final (No-Code vs. a la medida)
+Código propietario. Todos los derechos reservados — ver [LICENSE](LICENSE).
