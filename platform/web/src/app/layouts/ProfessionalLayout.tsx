@@ -31,7 +31,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/profesional/membresia', icon: Crown, label: 'Membresía', soon: true },
   { to: '/profesional/mensajes', icon: MessageSquare, label: 'Mensajes', soon: true },
   { to: '/profesional/recursos', icon: BookOpen, label: 'Recursos', soon: true },
-  { to: '/profesional/configuracion', icon: Settings, label: 'Configuración', soon: true },
+  { to: '/profesional/configuracion', icon: Settings, label: 'Configuración' },
   { to: '/profesional/ayuda', icon: HelpCircle, label: 'Ayuda' },
 ]
 
