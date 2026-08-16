@@ -1,0 +1,1 @@
+import{r as e}from"./createLucideIcon-BIqDv_wN.js";import{t}from"./ComingSoon-CyXAr9dm.js";var n=e();function r(){return(0,n.jsx)(t,{title:`Recursos`,description:`Pronto encontrarás aquí meditaciones, ejercicios y lecturas para acompañar tu proceso.`,actionLabel:`Ir al inicio`,actionTo:`/paciente`})}export{r as PatientResources};
