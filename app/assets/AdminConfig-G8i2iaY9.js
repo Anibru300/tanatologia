@@ -1,1 +1,0 @@
-import{r as e}from"./createLucideIcon-BIqDv_wN.js";import{t}from"./ComingSoon-D4yh3qfu.js";var n=e();function r(){return(0,n.jsx)(t,{title:`Configuración`,description:`Los ajustes globales de la plataforma (comisiones, correos, recordatorios) estarán disponibles en una próxima versión.`,actionLabel:`Volver al panel`,actionTo:`/admin`})}export{r as AdminConfig};
