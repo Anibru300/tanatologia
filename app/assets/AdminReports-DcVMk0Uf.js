@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-DMD5Dqzj.js";import{t}from"./ComingSoon-I92bTdKP.js";var n=e();function r(){return(0,n.jsx)(t,{title:`Reportes`,description:`Pronto podrás generar reportes de actividad, ingresos y satisfacción.`,actionLabel:`Ver profesionales`,actionTo:`/admin/profesionales`})}export{r as AdminReports};
