@@ -29,7 +29,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/profesional/notas', icon: FileText, label: 'Notas clínicas' },
   { to: '/profesional/ingresos', icon: DollarSign, label: 'Ingresos', soon: true },
   { to: '/profesional/membresia', icon: Crown, label: 'Membresía', soon: true },
-  { to: '/profesional/mensajes', icon: MessageSquare, label: 'Mensajes', soon: true },
+  { to: '/profesional/mensajes', icon: MessageSquare, label: 'Mensajes' },
   { to: '/profesional/recursos', icon: BookOpen, label: 'Recursos', soon: true },
   { to: '/profesional/configuracion', icon: Settings, label: 'Configuración' },
   { to: '/profesional/ayuda', icon: HelpCircle, label: 'Ayuda' },

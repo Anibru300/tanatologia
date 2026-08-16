@@ -37,9 +37,23 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [loadError, setLoadError] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const userId = user?.id ?? null
+
+  const loadNotifications = () => {
+    setLoadError(false)
+    return Promise.all([getNotifications(), getUnreadCount()])
+      .then(([items, count]) => {
+        setNotifications(items)
+        setUnreadCount(count)
+      })
+      .catch((err) => {
+        console.error('Error cargando notificaciones:', err)
+        setLoadError(true)
+      })
+  }
 
   useEffect(() => {
     if (!userId) return
@@ -52,7 +66,10 @@ export function NotificationBell() {
         setNotifications(items)
         setUnreadCount(count)
       })
-      .catch((err) => console.error('Error cargando notificaciones:', err))
+      .catch((err) => {
+        console.error('Error cargando notificaciones:', err)
+        if (mounted) setLoadError(true)
+      })
 
     const unsubscribe = subscribeToNotifications(userId, (notification) => {
       setNotifications((prev) => [notification, ...prev].slice(0, 20))
@@ -154,7 +171,20 @@ export function NotificationBell() {
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {notifications.length === 0 ? (
+            {loadError ? (
+              <div className="px-4 py-6 text-center space-y-3">
+                <p className="text-sm text-text-light">
+                  No pudimos cargar tus notificaciones.
+                </p>
+                <button
+                  type="button"
+                  onClick={loadNotifications}
+                  className="text-sm font-medium text-primary-dark hover:underline"
+                >
+                  Reintentar
+                </button>
+              </div>
+            ) : notifications.length === 0 ? (
               <p className="px-4 py-6 text-sm text-text-light text-center">
                 No tienes notificaciones
               </p>

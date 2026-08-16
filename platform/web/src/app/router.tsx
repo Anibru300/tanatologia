@@ -7,10 +7,7 @@ import { RegisterPage } from '@/features/auth/RegisterPage'
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
 import { UpdatePasswordPage } from '@/features/auth/UpdatePasswordPage'
 import { QuotePage } from '@/features/patient/QuotePage'
-import { PrivacyPage } from '@/app/pages/PrivacyPage'
-import { TermsPage } from '@/app/pages/TermsPage'
-import { CancellationPage } from '@/app/pages/CancellationPage'
-import { CrisisPage } from '@/app/pages/CrisisPage'
+import { StaticPageRedirect } from '@/app/pages/StaticPageRedirect'
 
 // Lazy-load portals to reduce initial bundle size
 const PatientLayout = lazy(() =>
@@ -197,10 +194,23 @@ export function AppRouter() {
         <Route path="recuperar-contrasena" element={<ForgotPasswordPage />} />
         <Route path="actualizar-contrasena" element={<UpdatePasswordPage />} />
         <Route path="cotizacion" element={<QuotePage />} />
-        <Route path="aviso-de-privacidad" element={<PrivacyPage />} />
-        <Route path="terminos" element={<TermsPage />} />
-        <Route path="cancelacion" element={<CancellationPage />} />
-        <Route path="crisis" element={<CrisisPage />} />
+        {/* Legales: una sola fuente de verdad en el sitio estático */}
+        <Route
+          path="aviso-de-privacidad"
+          element={<StaticPageRedirect to="/pages/aviso-privacidad.html" label="el Aviso de Privacidad" />}
+        />
+        <Route
+          path="terminos"
+          element={<StaticPageRedirect to="/pages/terminos.html" label="los Términos y Condiciones" />}
+        />
+        <Route
+          path="cancelacion"
+          element={<StaticPageRedirect to="/pages/cancelacion.html" label="la política de cancelación" />}
+        />
+        <Route
+          path="crisis"
+          element={<StaticPageRedirect to="/pages/crisis.html" label="las líneas de emergencia" />}
+        />
       </Route>
 
       <Route
