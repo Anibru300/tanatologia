@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Alert } from '@/components/ui/Alert'
 
 export type UserRole = 'patient' | 'professional' | 'admin'
 
@@ -50,6 +51,9 @@ async function fetchProfile(userId: string): Promise<User> {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  // Error visible cuando hay sesión válida pero el perfil no se pudo cargar;
+  // sin esto el usuario era redirigido al login sin explicación alguna.
+  const [profileError, setProfileError] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -62,9 +66,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const profile = await fetchProfile(session.user.id)
           setUser(profile)
+          setProfileError(null)
         } catch (err) {
           console.error('Error cargando perfil:', err)
           setUser(null)
+          setProfileError(
+            'Tu sesión sigue activa, pero no pudimos cargar tu perfil. Revisa tu conexión e inténtalo de nuevo.'
+          )
         }
       }
 
@@ -87,9 +95,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const profile = await fetchProfile(session.user.id)
           setUser(profile)
+          setProfileError(null)
         } catch (err) {
           console.error('Error cargando perfil tras cambio de auth:', err)
           setUser(null)
+          setProfileError(
+            'Tu sesión sigue activa, pero no pudimos cargar tu perfil. Revisa tu conexión e inténtalo de nuevo.'
+          )
         }
       }
 
@@ -158,6 +170,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+      {profileError && (
+        <div className="fixed top-0 inset-x-0 z-[70] px-4 pt-4">
+          <Alert variant="error" className="max-w-2xl mx-auto p-4 rounded-sm shadow-lg">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="flex-1 min-w-[200px]">{profileError}</span>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="font-semibold underline underline-offset-2"
+              >
+                Reintentar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileError(null)
+                  supabase.auth.signOut()
+                }}
+                className="font-semibold underline underline-offset-2"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          </Alert>
+        </div>
+      )}
       {children}
     </AuthContext.Provider>
   )
