@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-DMD5Dqzj.js";var t=e();function n({value:e,className:n}){return(0,t.jsx)(`div`,{className:`w-full h-3 bg-bg-alt rounded-full overflow-hidden ${n||``}`,children:(0,t.jsx)(`div`,{className:`h-full bg-primary rounded-full transition-all duration-500`,style:{width:`${Math.min(Math.max(e,0),100)}%`}})})}export{n as t};
