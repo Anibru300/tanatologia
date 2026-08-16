@@ -1,10 +1,20 @@
-# Build automático de la app React (platform/web) y publicación en /app
+# Build y calidad de la app React (platform/web) y publicación en /app
 # GitHub Pages publica la raíz de main; este workflow mantiene /app sincronizado.
+# En pull requests solo valida (lint + tests + build), sin tocar /app.
+#
+# ⚠️ ESTE ARCHIVO ES LA VERSIÓN PROPUESTA. Para activarlo, copia su contenido
+# completo sobre .github/workflows/deploy-app.yml (editando ese archivo desde
+# la web de GitHub o con git local). El token de automatización no tiene
+# permiso 'workflow' para modificar workflows directamente.
 name: Build app React → /app
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'platform/web/**'
+      - '.github/workflows/deploy-app.yml'
+  pull_request:
     paths:
       - 'platform/web/**'
       - '.github/workflows/deploy-app.yml'
@@ -29,19 +39,31 @@ jobs:
         working-directory: platform/web
         run: npm ci
 
+      - name: Lint (oxlint)
+        working-directory: platform/web
+        run: npm run lint
+
+      - name: Tests (Vitest)
+        working-directory: platform/web
+        run: npm run test
+
       - name: Build (tsc + vite)
         working-directory: platform/web
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_JITSI_DOMAIN: ${{ vars.VITE_JITSI_DOMAIN || 'meet.jit.si' }}
 
+      # Publicar el build en /app solo cuando el push es directo a main.
       - name: Copiar build a /app
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           rm -rf app
           cp -r platform/web/dist app
 
       - name: Commit y push del build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'chore: build automático de /app'
