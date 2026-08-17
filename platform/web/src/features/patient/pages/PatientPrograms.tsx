@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { Heart, Target, Sparkles, Leaf } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 import {
   getPatientProfileId,
   getAppointmentsForPatient,

@@ -12,6 +12,7 @@ import {
   BookOpen,
   FileQuestion,
   HelpCircle,
+  Settings,
 } from 'lucide-react'
 
 const menuItems: PortalMenuItem[] = [
@@ -27,6 +28,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/paciente/recursos', icon: BookOpen, label: 'Recursos' },
   { to: '/paciente/cotizacion', icon: FileQuestion, label: 'Cotización' },
   { to: '/paciente/ayuda', icon: HelpCircle, label: 'Ayuda' },
+  { to: '/paciente/configuracion', icon: Settings, label: 'Configuración' },
 ]
 
 export function PatientLayout() {

@@ -135,15 +135,18 @@
 
     // Cargar configuración centralizada
     const configScript = document.createElement('script');
+    configScript.async = false;
     configScript.src = `${root}assets/js/siteConfig.js`;
     document.head.appendChild(configScript);
 
     // Cargar botón flotante de WhatsApp y bot de atención al cliente
     const whatsappScript = document.createElement('script');
+    whatsappScript.async = false;
     whatsappScript.src = `${root}assets/js/chatbot.js`;
     document.head.appendChild(whatsappScript);
 
     const atencionBotScript = document.createElement('script');
+    atencionBotScript.async = false;
     atencionBotScript.src = `${root}assets/js/atencion-bot.js`;
     document.head.appendChild(atencionBotScript);
 })();

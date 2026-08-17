@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Video, CalendarDays, CheckCircle, XCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 import {
   getProfessionalProfileId,
   getAppointmentsForProfessional,

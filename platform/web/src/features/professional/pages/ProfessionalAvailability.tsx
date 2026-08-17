@@ -4,7 +4,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Clock, Plus, Trash2, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 import {
   getMyAvailability,
   addSlot,

@@ -13,7 +13,7 @@ import {
   getProfessionalProfileId,
   type Appointment,
 } from '@/features/appointments/appointmentsService'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 import { filterUpcomingSessions } from '@/lib/videoSession'
 
 export function ProfessionalVideoRoom() {

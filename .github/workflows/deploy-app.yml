@@ -1,11 +1,6 @@
 # Build y calidad de la app React (platform/web) y publicación en /app
 # GitHub Pages publica la raíz de main; este workflow mantiene /app sincronizado.
 # En pull requests solo valida (lint + tests + build), sin tocar /app.
-#
-# ⚠️ ESTE ARCHIVO ES LA VERSIÓN PROPUESTA. Para activarlo, copia su contenido
-# completo sobre .github/workflows/deploy-app.yml (editando ese archivo desde
-# la web de GitHub o con git local). El token de automatización no tiene
-# permiso 'workflow' para modificar workflows directamente.
 name: Build app React → /app
 
 on:
@@ -20,12 +15,11 @@ on:
       - '.github/workflows/deploy-app.yml'
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -55,15 +49,35 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_JITSI_DOMAIN: ${{ vars.VITE_JITSI_DOMAIN || 'meet.jit.si' }}
 
-      # Publicar el build en /app solo cuando el push es directo a main.
-      - name: Copiar build a /app
+      - name: Subir build como artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-build
+          path: platform/web/dist
+          retention-days: 1
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Descargar build
+        uses: actions/download-artifact@v4
+        with:
+          name: app-build
+          path: platform/web/dist
+
+      - name: Copiar build a /app
         run: |
           rm -rf app
           cp -r platform/web/dist app
 
       - name: Commit y push del build
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'chore: build automático de /app'

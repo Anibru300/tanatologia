@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 import { Button } from '@/components/ui/Button'
 import { QuickExitButton } from '@/components/QuickExitButton'
 import { Logo } from '@/components/ui/Logo'

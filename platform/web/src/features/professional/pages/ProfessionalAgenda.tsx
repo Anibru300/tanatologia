@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ChevronLeft, ChevronRight, Video } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 import {
   getProfessionalProfileId,
   getAppointmentsForProfessional,

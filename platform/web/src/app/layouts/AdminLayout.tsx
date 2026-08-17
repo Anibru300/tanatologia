@@ -25,7 +25,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/admin/finanzas', icon: DollarSign, label: 'Finanzas', soon: true },
   { to: '/admin/pagos', icon: CreditCard, label: 'Pagos a profesionales', soon: true },
   { to: '/admin/reportes', icon: BarChart3, label: 'Reportes', soon: true },
-  { to: '/admin/configuracion', icon: Settings, label: 'Configuración', soon: true },
+  { to: '/admin/configuracion', icon: Settings, label: 'Configuración' },
   { to: '/admin/cms', icon: FileText, label: 'Contenidos', soon: true },
   { to: '/admin/auditoria', icon: Shield, label: 'Auditoría' },
   { to: '/admin/soporte', icon: Headphones, label: 'Soporte', soon: true },

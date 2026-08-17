@@ -6,7 +6,7 @@ const VideoCallExperience = lazy(() =>
   import('@/components/video/VideoCallExperience').then((m) => ({ default: m.VideoCallExperience }))
 )
 import { getAppointmentById, type Appointment } from '@/features/appointments/appointmentsService'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 import { EARLY_JOIN_MINUTES, formatTimeUntilStart, getJoinWindowState } from '@/lib/videoSession'
 
 export function PatientVideoRoom() {
