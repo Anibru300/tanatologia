@@ -11,7 +11,7 @@ import { supabase } from '@/lib/supabase'
 import { sendEmail } from '@/lib/email'
 import { brandedEmail, emailDetailRow, emailDetailsTable } from '@/lib/emailTemplate'
 import { siteConfig } from '@/lib/siteConfig'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 
 const { pricing } = siteConfig
 

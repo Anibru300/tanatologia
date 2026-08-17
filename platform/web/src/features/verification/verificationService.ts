@@ -210,8 +210,8 @@ export async function deleteDocument(id: string, storagePath: string): Promise<v
 
   const { error: storageError } = await supabase.storage.from(BUCKET).remove([storagePath])
   if (storageError) {
-    // El registro ya se eliminó; solo registramos el problema en Storage.
-    console.error('No se pudo eliminar el archivo de Storage:', storageError.message)
+    // El registro ya se eliminó; advertimos para que el usuario lo sepa.
+    throw new Error(`El documento se eliminó, pero el archivo no pudo borrarse de Storage: ${storageError.message}`)
   }
 }
 

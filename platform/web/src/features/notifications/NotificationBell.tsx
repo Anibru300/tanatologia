@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, CheckCheck } from 'lucide-react'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { Bell, CheckCheck, X } from 'lucide-react'
+import { useAuth } from '@/features/auth/useAuth'
 import {
   Notification,
   getNotifications,
@@ -38,6 +38,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loadError, setLoadError] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const userId = user?.id ?? null
@@ -110,15 +111,24 @@ export function NotificationBell() {
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.read_at) {
+      const previousReadAt = notification.read_at
       setNotifications((prev) =>
         prev.map((n) =>
           n.id === notification.id ? { ...n, read_at: new Date().toISOString() } : n
         )
       )
       setUnreadCount((prev) => Math.max(0, prev - 1))
-      markAsRead(notification.id).catch((err) =>
-        console.error('Error marcando notificación como leída:', err)
-      )
+      try {
+        await markAsRead(notification.id)
+      } catch {
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === notification.id ? { ...n, read_at: previousReadAt } : n
+          )
+        )
+        setUnreadCount((prev) => prev + 1)
+        setActionError('No se pudo marcar la notificación. Intenta de nuevo.')
+      }
     }
 
     setOpen(false)
@@ -128,12 +138,17 @@ export function NotificationBell() {
   }
 
   const handleMarkAllAsRead = async () => {
+    const previousNotifications = notifications
     const now = new Date().toISOString()
     setNotifications((prev) => prev.map((n) => ({ ...n, read_at: n.read_at || now })))
     setUnreadCount(0)
-    markAllAsRead().catch((err) =>
-      console.error('Error marcando todas como leídas:', err)
-    )
+    try {
+      await markAllAsRead()
+    } catch {
+      setNotifications(previousNotifications)
+      setUnreadCount(previousNotifications.filter((n) => !n.read_at).length)
+      setActionError('No se pudieron marcar todas las notificaciones. Intenta de nuevo.')
+    }
   }
 
   return (
@@ -169,6 +184,20 @@ export function NotificationBell() {
               </button>
             )}
           </div>
+
+          {actionError && (
+            <div className="px-4 py-2 bg-error-light/30 border-b border-error-light text-error-dark text-xs flex items-start gap-2">
+              <span className="flex-1">{actionError}</span>
+              <button
+                type="button"
+                onClick={() => setActionError(null)}
+                className="hover:text-error"
+                aria-label="Cerrar advertencia"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
 
           <div className="max-h-96 overflow-y-auto">
             {loadError ? (

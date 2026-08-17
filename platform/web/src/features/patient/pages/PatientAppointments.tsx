@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Calendar, Clock, Video } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 import {
   getPatientProfileId,
   getAppointmentsForPatient,

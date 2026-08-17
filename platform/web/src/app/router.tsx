@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 import { RootLayout } from '@/app/layouts/RootLayout'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RegisterPage } from '@/features/auth/RegisterPage'
@@ -53,6 +53,9 @@ const PatientResources = lazy(() =>
 )
 const PatientHelp = lazy(() =>
   import('@/features/patient/pages/PatientHelp').then((m) => ({ default: m.PatientHelp }))
+)
+const PatientSettings = lazy(() =>
+  import('@/features/patient/pages/PatientSettings').then((m) => ({ default: m.PatientSettings }))
 )
 const PatientVideoRoom = lazy(() =>
   import('@/features/patient/pages/PatientVideoRoom').then((m) => ({ default: m.PatientVideoRoom }))
@@ -146,7 +149,7 @@ const AdminSupport = lazy(() =>
   import('@/features/admin/pages/AdminSupport').then((m) => ({ default: m.AdminSupport }))
 )
 
-import type { UserRole } from '@/features/auth/AuthProvider'
+import type { UserRole } from '@/features/auth/types'
 
 function ProtectedRoute({ role, children }: { role: UserRole; children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -235,6 +238,7 @@ export function AppRouter() {
         <Route path="recursos" element={<PatientResources />} />
         <Route path="cotizacion" element={<QuotePage />} />
         <Route path="ayuda" element={<PatientHelp />} />
+        <Route path="configuracion" element={<PatientSettings />} />
         <Route path="sala/:appointmentId" element={<PatientVideoRoom />} />
       </Route>
 

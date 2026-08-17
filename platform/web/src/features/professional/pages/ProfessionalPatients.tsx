@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { useAuth } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'

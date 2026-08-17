@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth, type UserRole } from '@/features/auth/AuthProvider'
+import { useAuth } from '@/features/auth/useAuth'
+import { type UserRole } from '@/features/auth/types'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'

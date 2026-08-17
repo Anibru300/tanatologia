@@ -27,7 +27,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/profesional/citas', icon: ClipboardList, label: 'Citas' },
   { to: '/profesional/videollamada', icon: Video, label: 'Videollamada', matchPaths: ['/profesional/sala'] },
   { to: '/profesional/notas', icon: FileText, label: 'Notas clínicas' },
-  { to: '/profesional/ingresos', icon: DollarSign, label: 'Ingresos', soon: true },
+  { to: '/profesional/ingresos', icon: DollarSign, label: 'Ingresos' },
   { to: '/profesional/membresia', icon: Crown, label: 'Membresía', soon: true },
   { to: '/profesional/mensajes', icon: MessageSquare, label: 'Mensajes' },
   { to: '/profesional/recursos', icon: BookOpen, label: 'Recursos', soon: true },
