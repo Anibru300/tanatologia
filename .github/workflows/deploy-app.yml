@@ -78,6 +78,6 @@ jobs:
           cp -r platform/web/dist app
 
       - name: Commit y push del build
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'chore: build automático de /app'
