@@ -4,7 +4,8 @@ import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
-import { Mail, KeyRound } from 'lucide-react'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Mail, KeyRound, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/useAuth'
 
@@ -24,6 +25,33 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true)
+    setDeleteError(null)
+    try {
+      // Limpieza best-effort de archivos propios en Storage (avatares y documentos)
+      if (user?.id) {
+        for (const bucket of ['avatars', 'professional-documents']) {
+          const { data: objects } = await supabase.storage.from(bucket).list(user.id)
+          if (objects?.length) {
+            await supabase.storage.from(bucket).remove(objects.map((o) => `${user.id}/${o.name}`))
+          }
+        }
+      }
+      const { error } = await supabase.rpc('delete_own_account')
+      if (error) throw error
+      await supabase.auth.signOut()
+      window.location.href = '/'
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'No pudimos eliminar tu cuenta. Intenta de nuevo.')
+      setDeleteLoading(false)
+    }
+  }
 
   const handleEmailChange = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -179,6 +207,50 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
           </form>
         </CardContent>
       </Card>
+
+      <Card className="border-error/40">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-error-dark">
+            <Trash2 size={20} />
+            Eliminar cuenta
+          </CardTitle>
+          <CardDescription>
+            Esta acción es permanente: se borran tu perfil, tus citas, tus documentos y
+            toda tu información. No se puede deshacer.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {deleteError && (
+            <Alert variant="error" className="p-3 rounded-sm mb-4">
+              {deleteError}
+            </Alert>
+          )}
+          <Button variant="danger" onClick={() => setDeleteOpen(true)}>
+            Eliminar mi cuenta
+          </Button>
+        </CardContent>
+      </Card>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title="Eliminar tu cuenta"
+        destructive
+        confirmLabel="Sí, eliminar mi cuenta"
+        loading={deleteLoading}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteAccount}
+        message={
+          <>
+            <p className="mb-2">
+              Vas a eliminar permanentemente la cuenta <strong>{user?.email}</strong>.
+            </p>
+            <p>
+              Se borrarán tu perfil, citas programadas, documentos e historial. Si tienes
+              una sesión próxima, considera cancelarla primero para avisar a tu profesional.
+            </p>
+          </>
+        }
+      />
     </div>
   )
 }
