@@ -8,7 +8,7 @@ import {
   Calendar,
   Clock,
   Users,
-  DollarSign,
+  Heart,
   Star,
   FileText,
   Video,
@@ -147,13 +147,13 @@ export function ProfessionalDashboard() {
           <Card className="border-l-4 border-l-accent">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign size={20} className="text-accent" />
-                Ingresos del mes
+                <Heart size={20} className="text-accent" />
+                Beta gratuita
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">$0</p>
-              <p className="text-text-light text-sm">Los pagos aún no están habilitados</p>
+              <p className="text-3xl font-bold text-text">Gratis</p>
+              <p className="text-text-light text-sm">Tu participación en la Beta no tiene costo</p>
             </CardContent>
           </Card>
 
@@ -252,12 +252,6 @@ export function ProfessionalDashboard() {
                 <Button variant="outline" className="w-full justify-start gap-2">
                   <Video size={18} />
                   Sala de videollamada
-                </Button>
-              </Link>
-              <Link to="/profesional/ingresos">
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <DollarSign size={18} />
-                  Mis ingresos
                 </Button>
               </Link>
             </CardContent>

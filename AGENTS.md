@@ -59,6 +59,9 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - (Eliminadas 2026-07-29: la plataforma ya opera con usuarios reales. El script `scripts/seed-demo.mjs` se conserva solo como referencia.)
 
 ## Pendientes críticos
+0. 🔴 **(2026-09-02) El proyecto Supabase Cloud `qjwebikgrqtotqfipeqt` NO resuelve en DNS** (NXDOMAIN, verificado con 8.8.8.8 y 1.1.1.1). El sitio desplegado (formulario de contacto) y la app apuntan a ese ref. **Acción del cliente:** verificar en supabase.com si el proyecto fue eliminado/pausado o cambió el ref; restaurarlo o entregar `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` nuevos (también actualizar secrets de GitHub Actions y `index.html`).
+0b. ⏳ **Migraciones 010 y 011 escritas pero NO aplicadas en Cloud** (no se pudo verificar por el punto 0). Aplicar cuando el proyecto vuelva: `010_feedback.sql` (tabla `feedback` + RLS + trigger de rol) y `011_security_hardening.sql` (triggers que escriben `audit_logs` + Storage de documentos restringido a rol profesional). Redesplegar la Edge Function `contact-form` (ahora con rate-limit por IP).
+0c. ⏳ **Pruebas E2E pendientes:** con el proyecto accesible, correr `node scripts/test-auth-flow.mjs` (crea usuarios de prueba marcados; borrarlos después del dashboard) y validar flujos paciente/profesional/admin de los Bloques 3–6 y 10.
 1. ✅ Autenticación conectada a Supabase Auth; `MOCK_USERS` eliminado.
 2. ✅ Migración SQL ACID ejecutada en proyecto Supabase Cloud.
 3. ✅ Integrar Jitsi Meet en `ProfessionalVideoRoom` y sala de paciente (usando `meet.jit.si`).
@@ -109,6 +112,17 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
   **Supabase Dashboard > Authentication > Providers > Email > Confirm email**.
 - Para aplicar el trigger actualizado con subperfiles, ejecuta en el SQL Editor:
   `platform/supabase/migrations/002_update_trigger_subprofiles.sql`.
+
+## Modo Beta gratuita (2026-09-02)
+- La plataforma opera en **Beta gratuita**: ningún precio, pago, membresía o cotización debe ser visible ni bloquear flujos.
+- Qué se eliminó y qué quedó reservado para monetización futura está documentado en `docs/beta-monetizacion-diferida.md` (incl. rutas retiradas y páginas admin conservadas sin menú).
+- `siteConfig.pricing` (app y sitio) queda como fuente central reservada — no añadir consumidores en UI durante la Beta.
+- Legales (terminos/cancelacion/aviso-privacidad) aún asumen cobros: pendiente versión "sin pagos" del cliente.
+
+## Feedback de la Beta (2026-09-02)
+- Tabla `feedback` (migración 010): tipo (`general|suggestion|issue|praise`), rating 1–5, comentario ≤2000, estado (`new|in_review|resolved|dismissed`), notas de admin. RLS: propio + admin total; DELETE propio solo en `new`.
+- UI: `FeedbackForm`/`FeedbackList` compartidos (`src/features/feedback/`); páginas `/paciente/feedback`, `/profesional/feedback` y `/admin/feedback` (filtros rol/tipo/estado/fecha, cambio de estado con notas).
+- El `role` de cada feedback lo fija el trigger `set_feedback_role()` desde `profiles` — nunca desde el cliente.
 
 ## Verificación de profesionistas (Fase 1)
 - El profesional captura su cédula y sube documentos (cédula, título, INE, comprobante) desde `/profesional/verificacion`; los archivos van al bucket privado `professional-documents` (carpeta por `profile_id`).

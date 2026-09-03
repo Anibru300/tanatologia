@@ -5,7 +5,7 @@ import { siteConfig } from '@/lib/siteConfig'
 
 const faqs = [
   { q: '¿Cómo configuro mi disponibilidad?', a: 'Ve a "Disponibilidad" y selecciona los horarios por día.' },
-  { q: '¿Cuándo recibo mis pagos?', a: 'Estamos integrando pagos en línea (tarjeta, PayPal y transferencia SPEI). Te avisaremos cuando estén disponibles.' },
+  { q: '¿Tiene algún costo participar?', a: 'No. Durante la Beta de Somos Calma tu acceso es completamente gratuito; no hay pagos ni membresías.' },
   { q: '¿Cómo subo mis credenciales?', a: 'En "Mi perfil" puedes actualizar tu cédula y especialidades.' },
 ]
 

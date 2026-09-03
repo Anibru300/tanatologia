@@ -72,9 +72,10 @@ export type UpdateProfessionalProfileInput = {
   bio: string | null
   languages: string[]
   years_experience: number | null
-  session_price: number | null // centavos
-  program_4_price: number | null // centavos
-  program_6_price: number | null // centavos
+  // RESERVADO fase monetización — opcionales durante la Beta gratuita
+  session_price?: number | null // centavos
+  program_4_price?: number | null // centavos
+  program_6_price?: number | null // centavos
 }
 
 function friendlyError(error: { message?: string } | null, fallback: string): Error {
@@ -185,9 +186,9 @@ export async function updateProfessionalProfile(
       bio: input.bio,
       languages: input.languages,
       years_experience: input.years_experience,
-      session_price: input.session_price,
-      program_4_price: input.program_4_price,
-      program_6_price: input.program_6_price,
+      ...(input.session_price !== undefined && { session_price: input.session_price }),
+      ...(input.program_4_price !== undefined && { program_4_price: input.program_4_price }),
+      ...(input.program_6_price !== undefined && { program_6_price: input.program_6_price }),
     })
     .eq('profile_id', profileId)
 

@@ -19,10 +19,6 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-function formatPrice(cents: number) {
-  return `$${(cents / 100).toLocaleString('es-MX')}`
-}
-
 export function TherapistDirectory() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
@@ -129,10 +125,10 @@ export function TherapistDirectory() {
             </div>
             <h3 className="text-lg font-semibold text-text mb-1">Pronto tendremos profesionales disponibles</h3>
             <p className="text-text-light max-w-md mx-auto mb-6">
-              Estamos verificando a los primeros especialistas. Mientras tanto, puedes solicitar una cotización y te contactaremos para asignarte al terapeuta adecuado.
+              Estamos verificando a los primeros especialistas. Vuelve pronto: durante la Beta el acompañamiento es gratuito.
             </p>
-            <Link to="/cotizacion">
-              <Button>Solicitar cotización</Button>
+            <Link to="/paciente">
+              <Button>Volver a mi espacio</Button>
             </Link>
           </div>
         ) : (
@@ -167,11 +163,8 @@ export function TherapistDirectory() {
                         </Badge>
                       ))}
                     </div>
-                    <div className="flex items-center justify-between mt-auto gap-3">
-                      <span className="text-xl font-bold text-text">
-                        {formatPrice(t.session_price)}
-                        <span className="text-sm font-normal text-text-light">/sesión</span>
-                      </span>
+                    <div className="flex flex-col items-start mt-auto gap-3">
+                      <span className="text-lg font-bold text-success-dark">Gratis en la Beta</span>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => setSelected(t)}>
                           Ver perfil
@@ -242,8 +235,8 @@ export function TherapistDirectory() {
               </div>
 
               <div className="flex items-center justify-between p-4 bg-primary/5 rounded-sm">
-                <span className="text-text">Costo por sesión</span>
-                <span className="text-2xl font-bold text-primary-dark">{formatPrice(selected.session_price)}</span>
+                <span className="text-text">Costo durante la Beta</span>
+                <span className="text-2xl font-bold text-success-dark">Gratuito</span>
               </div>
 
               <div className="flex gap-3">

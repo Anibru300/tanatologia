@@ -27,12 +27,38 @@ function escapeHtml(text: string): string {
     .replaceAll('"', "&quot;");
 }
 
+// Rate-limit en memoria por IP (mitiga spam; sin dependencias externas).
+// Límite: MAX_REQUESTS ventanas de WINDOW_MS por IP. Al ser por instancia de
+// la función no es global, pero frena bots y ráfagas simples.
+const rateLimits = new Map<string, number[]>();
+const WINDOW_MS = 60_000;
+const MAX_REQUESTS = 5;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const hits = (rateLimits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+  hits.push(now);
+  rateLimits.set(ip, hits);
+  // Limpieza ocasional para no crecer sin fin
+  if (rateLimits.size > 10_000) {
+    for (const [key, times] of rateLimits) {
+      if (times.every((t) => now - t > WINDOW_MS)) rateLimits.delete(key);
+    }
+  }
+  return hits.length > MAX_REQUESTS;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders });
+  }
+
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  if (isRateLimited(ip)) {
+    return json({ error: "Demasiados intentos. Espera un minuto e inténtalo de nuevo." }, 429);
   }
 
   let body: Record<string, unknown>;
