@@ -113,7 +113,11 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - Para aplicar el trigger actualizado con subperfiles, ejecuta en el SQL Editor:
   `platform/supabase/migrations/002_update_trigger_subprofiles.sql`.
 
-## Modo Beta gratuita (2026-09-02)
+## Modo Beta gratuita (2026-09-02) → **Beta 1.0 en operación (2026-09-03)**
+- La plataforma opera en **Beta 1.0** (`platform/web/package.json` = `1.0.0-beta.1`), en modo **operación y validación con usuarios reales**: estabilidad → observabilidad → feedback → corrección. **No agregar funcionalidades nuevas por iniciativa propia.**
+- Documento operativo: `BETA-OPERATIONS.md` (checklists, prioridades P0–P3, reglas de deploy y smoke test, observaciones externas: correo Hostinger Plan B y meet.jit.si).
+- Backlog deliberadamente pospuesto: `docs/backlog-post-beta.md` (8 ítems + monetización diferida).
+- Auditoría de release: `docs/auditoria-pre-beta-2026-09-03.md` (0 críticos, 0 importantes, 84+ pruebas).
 - La plataforma opera en **Beta gratuita**: ningún precio, pago, membresía o cotización debe ser visible ni bloquear flujos.
 - Qué se eliminó y qué quedó reservado para monetización futura está documentado en `docs/beta-monetizacion-diferida.md` (incl. rutas retiradas y páginas admin conservadas sin menú).
 - `siteConfig.pricing` (app y sitio) queda como fuente central reservada — no añadir consumidores en UI durante la Beta.
