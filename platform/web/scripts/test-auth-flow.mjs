@@ -106,23 +106,30 @@ check('Registro profesional', signupPro.status === 200 && !!signupPro.json?.acce
 const proToken = signupPro.json?.access_token
 
 if (proToken) {
-  const prof = await api('/rest/v1/profiles?select=role', { token: proToken })
+  const prof = await api('/rest/v1/profiles?select=id,role', { token: proToken })
   check('Rol professional asignado', prof.json?.[0]?.role === 'professional', `role=${prof.json?.[0]?.role}`)
-  const pp = await api('/rest/v1/professional_profiles?select=id,verification_status', { token: proToken })
+  // Filtrar por el perfil propio: el directorio (verified + visible) también es legible por RLS
+  const ownProfileId = prof.json?.[0]?.id
+  const pp = await api(
+    `/rest/v1/professional_profiles?select=id,verification_status&profile_id=eq.${ownProfileId}`,
+    { token: proToken }
+  )
   check(
     'Subperfil professional_profiles creado (verification_status=pending)',
     pp.status === 200 && pp.json?.[0]?.verification_status === 'pending',
     `status=${pp.json?.[0]?.verification_status}`
   )
   // 6. El profesional NO puede auto-verificarse
-  const own = await api('/rest/v1/professional_profiles?select=id', { token: proToken })
-  const proProfileId = own.json?.[0]?.id
+  const proProfileId = pp.json?.[0]?.id
   const _hack = await api(`/rest/v1/professional_profiles?id=eq.${proProfileId}`, {
     method: 'PATCH',
     token: proToken,
     body: { verification_status: 'verified' },
   })
-  const after = await api('/rest/v1/professional_profiles?select=verification_status', { token: proToken })
+  const after = await api(
+    `/rest/v1/professional_profiles?select=verification_status&profile_id=eq.${ownProfileId}`,
+    { token: proToken }
+  )
   check(
     'Profesional NO puede auto-verificarse (trigger bloquea)',
     after.json?.[0]?.verification_status !== 'verified',
