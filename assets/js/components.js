@@ -26,7 +26,6 @@
                 <li><a href="${root}pages/pacientes.html">Para pacientes</a></li>
                 <li><a href="${root}pages/profesionales.html">Para profesionales</a></li>
                 <li><a href="${root}pages/recursos.html">Recursos</a></li>
-                <li><a href="${root}pages/membresias.html">Beta gratuita</a></li>
                 <li><a href="${root}pages/matching.html">Encuentra terapeuta</a></li>
                 <li><a href="${root}index.html#contacto">Contacto</a></li>
             </ul>
@@ -60,7 +59,7 @@
                     <h4 class="footer__title">Pacientes</h4>
                     <ul class="footer__links">
                         <li><a href="${root}pages/pacientes.html">Cómo funciona</a></li>
-                        <li><a href="${root}pages/membresias.html">Beta gratuita</a></li>
+                        <li><a href="${root}pages/matching.html">Encuentra terapeuta</a></li>
                     </ul>
                 </div>
                 <div>

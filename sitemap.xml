@@ -16,11 +16,6 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://somos-calma.com/pages/membresias.html</loc>
-    <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
     <loc>https://somos-calma.com/pages/matching.html</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
