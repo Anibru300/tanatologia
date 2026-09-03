@@ -40,3 +40,34 @@ Ver `docs/beta-monetizacion-diferida.md`: pagos (Openpay: tarjeta + SPEI;
 PayPal aparte), membresías, comisiones, cotizaciones, `siteConfig.pricing`,
 páginas admin financieras en disco. Requisitos del cliente: tarjeta
 Visa/Mastercard, PayPal y transferencia SPEI.
+
+## Ideas de mejora (ideación 2026-09-03, benchmark Doctoralia/Sanamente/BetterHelp/Talkspace/Alma/Headway)
+
+**Quick wins (alto impacto, bajo esfuerzo):**
+1. Recordatorios de cita (email Resend + botón WhatsApp prellenado) 24 h y 1 h antes — reduce no-shows.
+2. Reprogramación directa desde la tarjeta de la cita (sin cancelar y re-agendar).
+3. Botón de crisis visible dentro del portal paciente.
+4. Evaluación post-sesión (rating + comentario) ligada a la cita.
+5. Pausar disponibilidad por rango de fechas (vacaciones) en lugar de borrar slots.
+6. Plantillas de nota clínica (estructura de evolución prellenada).
+7. Indicador de perfil completo del profesional (afecta visibilidad en directorio).
+8. Recordatorios de cita también al profesional.
+
+**Diferenciadores de medio esfuerzo:**
+9. Seguimiento de progreso clínico (PHQ-9/GAD-7 / escala breve de duelo) con gráfica para el profesional.
+10. Diario emocional entre sesiones, opcionalmente compartible con el terapeuta.
+11. Mensajería segura asíncrona paciente↔profesional entre sesiones.
+12. Perfil profesional enriquecido: video corto, enfoque terapéutico, especialidades, idiomas, "3 palabras que describen mi práctica".
+13. Filtros avanzados de directorio: género, especialidad, idioma, enfoque.
+14. Supervisión de casos entre colegas (red de tanatología).
+15. Seguimiento visible de programas (progreso 4/6 sesiones + materiales por sesión).
+
+**Estructurales (cuando el feedback lo justifique):**
+16. Matching conectado al directorio real (ver arriba).
+17. PWA instalable / app móvil.
+18. Dashboard admin con métricas de salud de la Beta.
+
+**Descartadas por ahora (no encajan en la Beta):** pagos/seguros,
+prescripción de medicamento, chat anónimo masivo.
+
+Regla: ninguna se implementa hasta que el feedback de usuarios reales lo justifique (P2/P3 de `BETA-OPERATIONS.md`).
