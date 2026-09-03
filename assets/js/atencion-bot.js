@@ -5,7 +5,6 @@
 (function () {
     const cfg = window.SOMOS_CALMA_CONFIG || {};
     const contact = cfg.contact || {};
-    const pricing = cfg.pricing || {};
     const urls = cfg.urls || {};
     const whatsapp = contact.whatsapp || {};
 
@@ -19,13 +18,11 @@
     // Rutas absolutas para evitar problemas en subcarpetas anidadas (p. ej. pages/profesionales/)
     const BASE = '/';
     const PATHS = {
-        matching: urls.app ? `${urls.app}#/cotizacion` : `${BASE}pages/matching.html`,
+        registroPaciente: urls.app ? `${urls.app}#/register?role=patient` : `${BASE}pages/matching.html`,
         profesionales: `${BASE}pages/profesionales.html`,
         profesionalDashboard: '/app/#/login',
         crisis: `${BASE}pages/crisis.html`,
     };
-
-    const singlePrice = pricing.session && pricing.session.single ? `$${pricing.session.single} MXN` : '$400 MXN';
 
     const typingMessages = [
         'Déjame buscar la mejor respuesta para ti...',
@@ -48,26 +45,10 @@
             ]
         },
         precios: {
-            message: `Tenemos opciones accesibles:\n\n• Consulta aislada: ${singlePrice} (una sesión de 50 minutos).\n• Programas (Salud Mental, 4 sesiones; y Acompañamiento por duelo, muerte o pérdida, 6 sesiones): el precio se confirma al agendar; nuestro equipo te lo comparte antes de tu primera sesión.`,
+            message: 'Somos Calma está en Beta y el acceso es completamente gratuito: ni pacientes ni profesionistas pagan durante esta etapa. Puedes registrarte, agendar y recibir acompañamiento sin costo.',
             options: [
-                { id: 'como_pagar', label: '¿Cómo puedo pagar?' },
-                { id: 'descuento', label: '¿Hay descuentos?' },
+                { id: 'agendar', label: 'Quiero comenzar ahora', primary: true },
                 { id: 'programas', label: 'Cuéntame más de los programas' },
-                { id: 'volver', label: 'Ver otras opciones' }
-            ]
-        },
-        como_pagar: {
-            message: 'Actualmente coordinamos el pago de forma sencilla. Al agendar te indicamos las opciones disponibles. También puedes escribirnos por WhatsApp y nuestro equipo te guía paso a paso.',
-            options: [
-                { id: 'agendar', label: 'Quiero agendar una sesión', primary: true },
-                { id: 'whatsapp', label: 'Escribir por WhatsApp', primary: true, external: true },
-                { id: 'volver', label: 'Ver otras opciones' }
-            ]
-        },
-        descuento: {
-            message: 'De vez en cuando tenemos promociones de lanzamiento. Si te interesa, escríbenos por WhatsApp para que te cuenten las condiciones actuales.',
-            options: [
-                { id: 'whatsapp', label: 'Escribir por WhatsApp', primary: true, external: true },
                 { id: 'volver', label: 'Ver otras opciones' }
             ]
         },
@@ -94,7 +75,7 @@
             ]
         },
         profesional: {
-            message: 'Qué gusto que quieras ser parte. La membresía para profesionales incluye:\n\n• Perfil en nuestro directorio.\n• Acceso a conferencias magistrales grabadas.\n• Biblioteca con recursos profesionales.\n• Flexibilidad de horarios y flujo de pacientes.',
+            message: 'Qué gusto que quieras ser parte. El acceso para profesionistas es gratuito durante la Beta e incluye:\n\n• Perfil en nuestro directorio.\n• Acceso a conferencias magistrales grabadas.\n• Biblioteca con recursos profesionales.\n• Flexibilidad de horarios y flujo de pacientes.',
             options: [
                 { id: 'requisitos', label: '¿Cuáles son los requisitos?' },
                 { id: 'portal', label: 'Ir a la plataforma' },
@@ -126,8 +107,8 @@
     };
 
     const actionHandlers = {
-        agendar: { href: PATHS.matching },
-        matching: { href: PATHS.matching },
+        agendar: { href: PATHS.registroPaciente },
+        matching: { href: PATHS.registroPaciente },
         whatsapp: { href: WHATSAPP_URL, external: true },
         aplicar: { href: PATHS.profesionales },
         portal: { href: PATHS.profesionalDashboard },

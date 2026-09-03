@@ -37,13 +37,14 @@
       },
     },
 
-    pricing: {
-      currency: 'MXN',
-      session: { single: 400, singleLabel: 'Consulta aislada' },
-      program4: { price: null, priceNote: 'Se confirma al agendar', label: 'Programa Salud Mental', sessions: 4, subtitle: '4 sesiones al mes' },
-      program6: { price: null, priceNote: 'Se confirma al agendar', label: 'Acompañamiento por duelo', sessions: 6, subtitle: '6 sesiones al mes' },
-      professional: { quarterly: 300, quarterlyLabel: 'Membresía trimestral', trialMonths: 3 },
-    },
+    // RESERVADO fase monetización — no mostrar durante la Beta
+    // pricing: {
+    //   currency: 'MXN',
+    //   session: { single: 400, singleLabel: 'Consulta aislada' },
+    //   program4: { price: null, priceNote: 'Se confirma al agendar', label: 'Programa Salud Mental', sessions: 4, subtitle: '4 sesiones al mes' },
+    //   program6: { price: null, priceNote: 'Se confirma al agendar', label: 'Acompañamiento por duelo', sessions: 6, subtitle: '6 sesiones al mes' },
+    //   professional: { quarterly: 300, quarterlyLabel: 'Membresía trimestral', trialMonths: 3 },
+    // },
 
     urls: {
       app: '/app/',

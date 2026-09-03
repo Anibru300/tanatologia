@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/Button'
 import { Stepper } from '@/components/ui/Stepper'
 import { Calendar, Clock, Video, Check, User, ArrowLeft, ArrowRight, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/features/auth/useAuth'
-import { siteConfig } from '@/lib/siteConfig'
 import {
   getProfessionalProfiles,
   getPatientProfileId,
@@ -177,17 +176,6 @@ export function BookAppointment() {
     return cells
   }, [viewMonth])
 
-  const getPrice = (therapist?: ProfessionalProfile) => {
-    if (!therapist) return 0
-    if (selectedService === 'single') return therapist.session_price
-    if (selectedService === 'program_4') return therapist.program_4_price
-    return therapist.program_6_price
-  }
-
-  const formatPrice = (cents: number) => {
-    return `$${(cents / 100).toLocaleString('es-MX')}`
-  }
-
   // '2026-08-03' -> 'lunes, 3 de agosto de 2026'
   const formatDateLong = (isoDate: string) => {
     const [y, m, d] = isoDate.split('-').map(Number)
@@ -197,18 +185,6 @@ export function BookAppointment() {
       month: 'long',
       year: 'numeric',
     })
-  }
-
-  // Precio de referencia (siteConfig, en pesos) cuando aún no hay terapeuta elegido
-  const referencePrice = () => {
-    const { pricing } = siteConfig
-    const pesos =
-      selectedService === 'single'
-        ? pricing.session.single
-        : selectedService === 'program_4'
-          ? pricing.program4.price
-          : pricing.program6.price
-    return `$${pesos.toLocaleString('es-MX')}`
   }
 
   const canContinue = () => {
@@ -394,12 +370,8 @@ export function BookAppointment() {
                       </p>
                     </div>
                     <span className="text-right whitespace-nowrap">
-                      <span className="block text-xl font-bold text-primary-dark">
-                        {selectedTherapistData ? formatPrice(getPrice(selectedTherapistData)) : referencePrice()}
-                      </span>
-                      {!selectedTherapistData && (
-                        <span className="text-xs text-text-light">precio de referencia</span>
-                      )}
+                      <span className="block text-xl font-bold text-success-dark">Gratis</span>
+                      <span className="text-xs text-text-light">durante la Beta</span>
                     </span>
                   </div>
                 </button>
@@ -441,8 +413,8 @@ export function BookAppointment() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="block font-bold text-text">{formatPrice(getPrice(therapist))}</span>
-                    <span className="text-xs text-text-light">/servicio</span>
+                    <span className="block font-bold text-success-dark">Gratis</span>
+                    <span className="text-xs text-text-light">en la Beta</span>
                   </div>
                 </button>
               ))}
@@ -602,10 +574,8 @@ export function BookAppointment() {
                 <SummaryRow icon={Video} label="Modalidad" value="Videollamada privada" />
               </div>
               <div className="flex items-center justify-between p-4 bg-primary/5 rounded-sm">
-                <span className="text-text">Total a pagar</span>
-                <span className="text-xl font-bold text-primary-dark">
-                  {selectedTherapistData ? formatPrice(getPrice(selectedTherapistData)) : '—'}
-                </span>
+                <span className="text-text">Costo durante la Beta</span>
+                <span className="text-xl font-bold text-success-dark">Gratuito</span>
               </div>
               {submitError && <Alert variant="error">{submitError}</Alert>}
             </CardContent>

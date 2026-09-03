@@ -56,19 +56,6 @@ const VERIFICATION_BADGES: Record<VerificationStatus, { variant: 'success' | 'wa
 
 type SaveStatus = 'idle' | 'saving' | 'success' | 'error'
 
-function centavosToPesos(centavos: number | null): string {
-  if (centavos === null || centavos === undefined) return ''
-  return (centavos / 100).toString()
-}
-
-function pesosToCentavos(pesos: string): number | null {
-  const trimmed = pesos.trim()
-  if (!trimmed) return null
-  const value = Number(trimmed)
-  if (Number.isNaN(value) || value < 0) return null
-  return Math.round(value * 100)
-}
-
 export function ProfessionalProfile() {
   const { user } = useAuth()
 
@@ -87,9 +74,6 @@ export function ProfessionalProfile() {
   const [bio, setBio] = useState('')
   const [languages, setLanguages] = useState<string[]>([])
   const [yearsExperience, setYearsExperience] = useState('')
-  const [sessionPrice, setSessionPrice] = useState('')
-  const [program4Price, setProgram4Price] = useState('')
-  const [program6Price, setProgram6Price] = useState('')
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('pending')
 
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
@@ -119,9 +103,6 @@ export function ProfessionalProfile() {
           setYearsExperience(
             professionalProfile.years_experience !== null ? String(professionalProfile.years_experience) : ''
           )
-          setSessionPrice(centavosToPesos(professionalProfile.session_price))
-          setProgram4Price(centavosToPesos(professionalProfile.program_4_price))
-          setProgram6Price(centavosToPesos(professionalProfile.program_6_price))
           setVerificationStatus(professionalProfile.verification_status || 'pending')
         }
       })
@@ -171,9 +152,6 @@ export function ProfessionalProfile() {
         bio: bio.trim() || null,
         languages,
         years_experience: years,
-        session_price: pesosToCentavos(sessionPrice),
-        program_4_price: pesosToCentavos(program4Price),
-        program_6_price: pesosToCentavos(program6Price),
       })
       setSaveStatus('success')
       setSaveMessage('Tus cambios se guardaron correctamente.')
@@ -316,40 +294,12 @@ export function ProfessionalProfile() {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Tarifas</CardTitle>
-            <CardDescription>Define tus precios en pesos mexicanos (MXN).</CardDescription>
+            <CardTitle>Beta gratuita</CardTitle>
+            <CardDescription>
+              Durante la Beta de Somos Calma no se cobra nada a pacientes ni profesionales.
+              Las tarifas se definirán en una fase posterior.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              <Input
-                label="Sesión individual"
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder="800.00"
-                value={sessionPrice}
-                onChange={(e) => setSessionPrice(e.target.value)}
-              />
-              <Input
-                label="Programa 4 sesiones"
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder="2800.00"
-                value={program4Price}
-                onChange={(e) => setProgram4Price(e.target.value)}
-              />
-              <Input
-                label="Programa 6 sesiones"
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder="4000.00"
-                value={program6Price}
-                onChange={(e) => setProgram6Price(e.target.value)}
-              />
-            </div>
-          </CardContent>
         </Card>
 
         {saveMessage && (

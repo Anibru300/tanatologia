@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 item.classList.toggle('is-open', !isOpen);
             });
-        });
+        }
     });
 
     // Botón volver arriba

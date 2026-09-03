@@ -14,7 +14,6 @@ export function RootLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navLinks = [
-    { to: '/cotizacion', label: 'Cotización' },
     ...(user?.role === 'patient' ? [{ to: '/paciente', label: 'Mi espacio' }] : []),
     ...(user?.role === 'professional' ? [{ to: '/profesional', label: 'Portal profesional' }] : []),
     ...(user?.role === 'admin' ? [{ to: '/admin', label: 'Administración' }] : []),
@@ -130,7 +129,7 @@ export function RootLayout() {
               <h4 className="font-semibold mb-4">Enlaces</h4>
               <ul className="space-y-2 text-sm text-white/80">
                 <li><a href={siteConfig.urls.legacy} className="hover:text-white">Inicio</a></li>
-                <li><Link to="/cotizacion" className="hover:text-white">Cotización</Link></li>
+                <li><Link to="/register" className="hover:text-white">Crear cuenta</Link></li>
                 <li><Link to="/login" className="hover:text-white">Iniciar sesión</Link></li>
               </ul>
             </div>

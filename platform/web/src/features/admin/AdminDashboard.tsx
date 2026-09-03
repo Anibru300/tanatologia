@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import {
   Users,
   Calendar,
-  DollarSign,
+  Heart,
   CheckCircle,
   ArrowRight,
 } from 'lucide-react'
@@ -128,13 +128,13 @@ export function AdminDashboard() {
           <Card className="border-l-4 border-l-warning">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign size={20} className="text-warning" />
-                Ingresos
+                <Heart size={20} className="text-warning" />
+                Beta gratuita
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-text">$0</p>
-              <p className="text-text-light text-sm">Los pagos aún no están habilitados</p>
+              <p className="text-3xl font-bold text-text">Activa</p>
+              <p className="text-text-light text-sm">Todo el acceso de la Beta es gratuito</p>
             </CardContent>
           </Card>
         </div>

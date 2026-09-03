@@ -45,7 +45,9 @@ export const siteConfig = {
     },
   },
 
-  // Precios públicos en MXN
+  // RESERVADO PARA FASE DE MONETIZACIÓN — No mostrar durante la Beta.
+  // Fuente central de precios públicos en MXN. La UI no consume estos valores
+  // mientras la plataforma opera en modo Beta gratuita.
   // PENDIENTE: Validar precios finales con el equipo
   pricing: {
     currency: 'MXN',
