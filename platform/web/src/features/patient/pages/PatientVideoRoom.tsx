@@ -138,6 +138,7 @@ export function PatientVideoRoom() {
         title="Tu sesión"
         subtitle={`${appointment.professionalName} · ${new Date(appointment.scheduled_at).toLocaleString('es-MX')}`}
         preJoinTip="Busca un lugar tranquilo y privado. Tu profesional de la salud ya puede estar dentro de la sala."
+        appointmentId={appointment.id}
         onExit={() => navigate('/paciente/citas')}
       />
     </Suspense>

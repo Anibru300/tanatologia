@@ -1,11 +1,12 @@
 /**
- * Configuración y utilidades para videollamadas.
- *
- * Proveedor actual: Jitsi Meet (meet.jit.si, gratuito).
- * El dominio se puede cambiar con VITE_JITSI_DOMAIN sin tocar código,
- * pensado para migrar a JaaS (8x8.vc) o a un servidor propio cuando
- * el volumen lo justifique. Con datos sensibles de salud, el objetivo a
- * mediano plazo es un servidor con autenticación JWT y sin terceros.
+ * Proveedor actual: Jitsi Meet.
+ * - Modo gratuito: meet.jit.si (limitado a 5 min en modo demo/embebido).
+ * - Modo producción: JaaS (8x8.vc) con JWT firmado por la Edge Function
+ *   `jaas-token`; el frontend lo obtiene al entrar a la sala y, si no está
+ *   configurado, cae automáticamente a meet.jit.si.
+ * El dominio base se puede cambiar con VITE_JITSI_DOMAIN sin tocar código.
+ * Con datos sensibles de salud, el objetivo a mediano plazo es un servidor
+ * con autenticación JWT y sin terceros.
  */
 
 const DEFAULT_JITSI_DOMAIN = 'meet.jit.si'
@@ -43,7 +44,13 @@ export function getJitsiDomain(): string {
 /**
  * Devuelve la URL completa de una sala (útil como respaldo para abrir
  * la videollamada en una pestaña nueva si el iframe falla).
+ * Con JaaS, la sala va prefijada con el appId y el JWT va como query param.
  */
-export function getJitsiRoomUrl(roomName: string): string {
-  return `https://${getJitsiDomain()}/${roomName}`
+export function getJitsiRoomUrl(
+  roomName: string,
+  opts?: { appId?: string; jwt?: string },
+): string {
+  const room = opts?.appId ? `${opts.appId}/${roomName}` : roomName
+  const qs = opts?.jwt ? `?jwt=${encodeURIComponent(opts.jwt)}` : ''
+  return `https://${getJitsiDomain()}/${room}${qs}`
 }
