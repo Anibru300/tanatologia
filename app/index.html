@@ -16,6 +16,38 @@
       function gtag() { window.dataLayer.push(arguments); }
       gtag('js', new Date());
       gtag('config', 'G-CJ0QQ9JY27');
+
+      /* Analítica first-party (panel Admin > Analíticas): beacon hacia track-view */
+      (function () {
+        try {
+          var STORAGE_KEY = 'sc_analytics_sid';
+          var sid = localStorage.getItem(STORAGE_KEY);
+          if (!sid) {
+            sid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+              var r = Math.random() * 16 | 0;
+              return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+            try { localStorage.setItem(STORAGE_KEY, sid); } catch (e) { /* modo privado */ }
+          }
+          var sendView = function () {
+            try {
+              fetch('https://qjwebikgrqtotqfipeqt.supabase.co/functions/v1/track-view', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  path: window.location.pathname + window.location.hash,
+                  referrer: document.referrer || null,
+                  sessionKey: sid,
+                  source: 'app'
+                }),
+                keepalive: true
+              }).catch(function () { /* offline: se omite */ });
+            } catch (e) { /* nunca romper la app */ }
+          };
+          window.addEventListener('hashchange', sendView);
+          sendView();
+        } catch (e) { /* sin localStorage: omitir */ }
+      })();
       window.addEventListener('hashchange', function () {
         gtag('event', 'page_view', {
           page_path: window.location.pathname + window.location.hash,
@@ -34,9 +66,9 @@
         }
       })();
     </script>
-    <script type="module" crossorigin src="/app/assets/index-Dk1QReyM.js"></script>
+    <script type="module" crossorigin src="/app/assets/index-Wnc57y3e.js"></script>
     <link rel="modulepreload" crossorigin href="/app/assets/jsx-runtime-CsLdoyK9.js">
-    <link rel="stylesheet" crossorigin href="/app/assets/index-DtKipJqa.css">
+    <link rel="stylesheet" crossorigin href="/app/assets/index-DcaDkxPz.css">
   </head>
   <body>
     <div id="root"></div>
