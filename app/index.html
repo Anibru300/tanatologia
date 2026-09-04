@@ -17,7 +17,7 @@
       gtag('js', new Date());
       gtag('config', 'G-CJ0QQ9JY27');
 
-      /* Analítica first-party (panel Admin > Analíticas): beacon hacia track-view */
+      /* Analítica first-party (panel Admin > Flujo de la página): beacon hacia track-view */
       (function () {
         try {
           var STORAGE_KEY = 'sc_analytics_sid';
@@ -38,7 +38,8 @@
                   path: window.location.pathname + window.location.hash,
                   referrer: document.referrer || null,
                   sessionKey: sid,
-                  source: 'app'
+                  source: 'app',
+                  timezone: (window.Intl && Intl.DateTimeFormat().resolvedOptions().timeZone) || null
                 }),
                 keepalive: true
               }).catch(function () { /* offline: se omite */ });
@@ -66,9 +67,9 @@
         }
       })();
     </script>
-    <script type="module" crossorigin src="/app/assets/index-Wnc57y3e.js"></script>
+    <script type="module" crossorigin src="/app/assets/index-IQk-J52U.js"></script>
     <link rel="modulepreload" crossorigin href="/app/assets/jsx-runtime-CsLdoyK9.js">
-    <link rel="stylesheet" crossorigin href="/app/assets/index-DcaDkxPz.css">
+    <link rel="stylesheet" crossorigin href="/app/assets/index-aAhyYPAr.css">
   </head>
   <body>
     <div id="root"></div>
