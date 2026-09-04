@@ -39,6 +39,19 @@ async function fn(payload, token) {
   return { status: res.status, json }
 }
 const b64url = (s) => Buffer.from(s, 'base64').toString('utf8')
+const b64urlBytes = (s) => Buffer.from(s.replace(/-/g, '+').replace(/_/g, '/'), 'base64')
+
+// Clave pública de JaaS (par de la privada en secrets). Es pública: sirve para
+// verificar en el test que la Edge Function firma correctamente (RS256).
+const JAAS_PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgFTFj/JddKj6Dv8c8u3N
+jquVIK3SNRziSMhlEXZ7/uxn7G6LRs9iYk+yJmpIwGKYzmMyns/NCoD5moVB38Ut
+QWEzR/KDKhVm8L6KwyA3qLXXft2t4JT7AWqcnjxvHpEQmYIQxI1td/O723Q6evPN
+pDEo4FYTmApFeaqMo917RM8fw2cXFKXk0Zp2VWcRyPtAkGFVYt9U9/h70TNVsVqY
+hwLW2a2I+ZWBatYqs+ytXz9og6M56/ODAJUMA3cpSmXyX/EqtaLbiBgzi34KV7Xu
+ZlgEiLradkCgjjRAJ0UxAW/PRtNRp5k+appIrJ/cFRx1zkEUU+897Z83CgH62NZf
+zQIDAQAB
+-----END PUBLIC KEY-----`
 
 // Usuarios de prueba: un paciente y un profesional con cita entre ellos
 const PAT = `jaas-pat-${ts}@test.somos-calma.com`
@@ -121,6 +134,13 @@ if (jaasConfigured) {
   check('JWT: paciente NO es moderador', claims.context?.user?.moderator === false)
   check('JWT: features desactivadas (recording/streaming off)', claims.context?.features?.recording === false && claims.context?.features?.livestreaming === false)
   check('JWT: expira en ~3h', claims.exp - Math.floor(Date.now() / 1000) > 2.5 * 3600, `exp=${claims.exp}`)
+  // Verificación criptográfica real: la firma debe validar con la clave pública.
+  const [jh, jp, js] = r.json.jwt.split('.')
+  const { createVerify, createPublicKey } = await import('node:crypto')
+  const ok = createVerify('RSA-SHA256')
+    .update(`${jh}.${jp}`)
+    .verify(createPublicKey(JAAS_PUBLIC_KEY_PEM), b64urlBytes(js))
+  check('JWT: firma RS256 válida (verificada con clave pública)', ok)
 
   // 6. Profesional de la cita → moderador
   r = await fn({ appointmentId: apptId }, proLogin.access_token)

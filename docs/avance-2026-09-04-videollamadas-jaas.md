@@ -44,3 +44,15 @@
   verifica al profesional de prueba con el truco de desactivar el trigger 003).
 - `Prefer: return=representation` es obligatorio en inserts vía PostgREST si se
   necesita el row creado (sin él, 201 con cuerpo vacío).
+
+---
+
+# Actualización — JaaS ACTIVO (2026-09-04)
+
+- Secrets configurados en Supabase Cloud: `JAAS_APP_ID`, `JAAS_KID`, `JAAS_PRIVATE_KEY`.
+- `test-jaas.mjs` ahora verifica la firma RS256 con la clave pública: **18/18**.
+- Las videollamadas de citas usan 8x8.vc con JWT por participante (profesional=moderator).
+- Pendiente: videollamada real de prueba (2 personas) para confirmar que JaaS acepta el kid.
+  Si la sala no abriera, lo primero que se revisa es el Key ID (podría estar truncado:
+  el formato completo es `vpaas-magic-cookie-.../<hex>-<NOMBRE_APP>`).
+- La clave privada vive solo en los secrets de Supabase; la pública está en el test (es pública).
