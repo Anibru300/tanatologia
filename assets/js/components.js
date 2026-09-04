@@ -162,3 +162,41 @@
     window.gtag('js', new Date());
     window.gtag('config', 'G-CJ0QQ9JY27');
 })();
+
+/* === ANALÍTICA FIRST-PARTY (panel Admin > Analíticas) ===
+   Beacon mínimo hacia la Edge Function track-view de Supabase.
+   Solo registra: ruta, origen de la visita (referrer), dispositivo y una clave
+   de sesión anónima. No usa cookies de terceros. */
+(function () {
+    try {
+        var STORAGE_KEY = 'sc_analytics_sid';
+        var sid = localStorage.getItem(STORAGE_KEY);
+        if (!sid) {
+            sid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+            try { localStorage.setItem(STORAGE_KEY, sid); } catch (e) { /* modo privado */ }
+        }
+        var sendView = function () {
+            try {
+                fetch('https://qjwebikgrqtotqfipeqt.supabase.co/functions/v1/track-view', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        path: window.location.pathname,
+                        referrer: document.referrer || null,
+                        sessionKey: sid,
+                        source: 'site'
+                    }),
+                    keepalive: true
+                }).catch(function () { /* offline: se omite */ });
+            } catch (e) { /* nunca romper la página */ }
+        };
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            sendView();
+        } else {
+            document.addEventListener('DOMContentLoaded', sendView);
+        }
+    } catch (e) { /* sin localStorage (modo privado estricto): omitir */ }
+})();

@@ -10,6 +10,7 @@ import {
   Inbox,
   ShieldCheck,
   Headphones,
+  BarChart3,
 } from 'lucide-react'
 
 const menuItems: PortalMenuItem[] = [
@@ -22,6 +23,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/admin/cms', icon: FileText, label: 'Contenidos', soon: true },
   { to: '/admin/auditoria', icon: Shield, label: 'Auditoría' },
   { to: '/admin/feedback', icon: Inbox, label: 'Feedback' },
+  { to: '/admin/analiticas', icon: BarChart3, label: 'Analíticas' },
   { to: '/admin/soporte', icon: Headphones, label: 'Soporte', soon: true },
 ]
 
