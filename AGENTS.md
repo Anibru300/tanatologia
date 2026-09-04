@@ -123,11 +123,12 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - `siteConfig.pricing` (app y sitio) queda como fuente central reservada — no añadir consumidores en UI durante la Beta.
 - Legales (terminos/cancelacion/aviso-privacidad) ✅ actualizados 2026-09-03 a versión "sin pagos" para la Beta: sin membresías/cargos/reembolsos vigentes; pagos futuros solo con aviso de 30 días y consentimiento expreso.
 
-## Analíticas (panel Admin, 2026-09-04)
-- **First-party**: tabla `page_views` (migración 016) alimentada por la Edge Function pública `track-view` (rate-limit 60/min por IP y por sesión; único escritor, service role; referrer sanitizado a origen). Beacons en `assets/js/components.js` (sitio, 17 páginas) y `platform/web/index.html` (app, por hashchange). Lectura/borrado solo admin (RLS).
-- **Panel**: `/admin/analiticas` (`AdminAnalytics.tsx`) — visitas por día (sitio vs app), sesiones únicas, referrers ("de dónde nos visitan"), páginas más vistas, dispositivos/navegadores, registros por día (pacientes/profesionales) y citas creadas por estado. Rangos 7/30/90 días. GA4 (G-CJ0QQ9JY27) sigue activo como complemento.
-- **Pruebas**: `scripts/test-analytics.mjs` (10/10; requiere `ADMIN_PASSWORD` para la parte admin).
-- Migraciones 013–017 aplicadas en Cloud (recordatorios/intake/reseñas, fixes 014/015, page_views 016, fix rol 017). **Ninguna migración pendiente.**
+## Analíticas (panel Admin “Flujo de la página”, 2026-09-04)
+- **First-party**: tabla `page_views` (migración 016) alimentada por la Edge Function pública `track-view` (rate-limit 60/min por IP y por sesión; único escritor, service role; referrer sanitizado a origen; **timezone IANA** desde migración 018). Beacons en `assets/js/components.js` (sitio, 17 páginas) y `platform/web/index.html` (app, por hashchange). Lectura/borrado solo admin (RLS).
+- **Geografía sin IP**: `profiles.timezone` y `page_views.timezone` guardan la zona horaria del navegador (enviada en el registro y en cada beacon); el mapeo a país/ciudad es en el frontend (`src/lib/timezoneGeo.ts`). Registros anteriores al 04-sep-2026 aparecen como “Desconocido”.
+- **Panel**: `/admin/analiticas` (menú “Flujo de la página”) — gráfica de área de visitas/día (sitio vs app), donas de referrers/países/dispositivos, tendencia vs período anterior en KPIs, embudo visitas→registros→citas, registros por país/ciudad, páginas top, navegadores. GA4 (G-CJ0QQ9JY27) sigue activo como complemento.
+- **Pruebas**: `scripts/test-analytics.mjs` (13/13; requiere `ADMIN_PASSWORD=demo123` para la parte admin).
+- Migraciones 013–018 aplicadas en Cloud (recordatorios/intake/reseñas, fixes 014/015, page_views 016, fix rol 017, timezone 018). **Ninguna migración pendiente.**
 
 ## Seguridad
 - **Fix crítico (migración 017)**: el trigger `handle_new_user()` aceptaba `role: 'admin'`/`'support'` desde el metadata del signup (escalación de privilegios vía API). Ahora el self-signup solo permite patient/professional; cualquier otro valor se degrada a patient. Los admins se crean solo desde el Dashboard de Supabase o SQL con service role.

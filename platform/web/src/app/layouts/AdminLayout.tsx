@@ -23,7 +23,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/admin/cms', icon: FileText, label: 'Contenidos', soon: true },
   { to: '/admin/auditoria', icon: Shield, label: 'Auditoría' },
   { to: '/admin/feedback', icon: Inbox, label: 'Feedback' },
-  { to: '/admin/analiticas', icon: BarChart3, label: 'Analíticas' },
+  { to: '/admin/analiticas', icon: BarChart3, label: 'Flujo de la página' },
   { to: '/admin/soporte', icon: Headphones, label: 'Soporte', soon: true },
 ]
 

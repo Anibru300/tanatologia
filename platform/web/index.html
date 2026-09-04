@@ -17,7 +17,7 @@
       gtag('js', new Date());
       gtag('config', 'G-CJ0QQ9JY27');
 
-      /* Analítica first-party (panel Admin > Analíticas): beacon hacia track-view */
+      /* Analítica first-party (panel Admin > Flujo de la página): beacon hacia track-view */
       (function () {
         try {
           var STORAGE_KEY = 'sc_analytics_sid';
@@ -38,7 +38,8 @@
                   path: window.location.pathname + window.location.hash,
                   referrer: document.referrer || null,
                   sessionKey: sid,
-                  source: 'app'
+                  source: 'app',
+                  timezone: (window.Intl && Intl.DateTimeFormat().resolvedOptions().timeZone) || null
                 }),
                 keepalive: true
               }).catch(function () { /* offline: se omite */ });
