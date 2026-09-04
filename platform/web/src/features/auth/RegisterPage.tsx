@@ -56,7 +56,7 @@ export function RegisterPage() {
       if (session) {
         setSuccess(true)
         setTimeout(() => {
-          navigate(role === 'patient' ? '/paciente' : '/profesional')
+          navigate(role === 'patient' ? '/paciente/encuesta' : '/profesional')
         }, 1500)
       } else {
         setNeedsConfirmation(true)

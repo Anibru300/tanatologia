@@ -432,3 +432,10 @@ enabled = true
 # Protección anti-spam por honeypot + validación estricta dentro de la función.
 verify_jwt = false
 entrypoint = "./functions/contact-form/index.ts"
+
+[functions.appointment-reminders]
+enabled = true
+# Función invocada por pg_cron (net.http_post) con el header x-cron-secret.
+# No recibe JWT de usuario; usa service role internamente.
+verify_jwt = false
+entrypoint = "./functions/appointment-reminders/index.ts"

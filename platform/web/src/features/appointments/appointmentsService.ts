@@ -14,7 +14,14 @@ export type ProfessionalProfile = {
   verification_status: string
   is_visible: boolean
   rating: number
+  rating_count: number
   bio?: string
+  education?: string
+  university?: string
+  professional_title?: string
+  languages?: string[]
+  years_experience?: number | null
+  approach?: string
 }
 
 export type Appointment = {
@@ -37,7 +44,7 @@ export async function getProfessionalProfiles(): Promise<ProfessionalProfile[]> 
   const { data, error } = await supabase
     .from('professional_profiles')
     .select(
-      'id, profile_id, full_name, specialties, session_price, program_4_price, program_6_price, verification_status, is_visible, rating, bio'
+      'id, profile_id, full_name, specialties, session_price, program_4_price, program_6_price, verification_status, is_visible, rating, rating_count, bio, education, university, professional_title, languages, years_experience, approach'
     )
     .eq('verification_status', 'verified')
     .eq('is_visible', true)
@@ -58,7 +65,14 @@ export async function getProfessionalProfiles(): Promise<ProfessionalProfile[]> 
       verification_status: String(row.verification_status),
       is_visible: Boolean(row.is_visible),
       rating: Number(row.rating),
+      rating_count: Number(row.rating_count || 0),
       bio: row.bio ? String(row.bio) : undefined,
+      education: row.education ? String(row.education) : undefined,
+      university: row.university ? String(row.university) : undefined,
+      professional_title: row.professional_title ? String(row.professional_title) : undefined,
+      languages: (row.languages as string[]) || [],
+      years_experience: row.years_experience !== null && row.years_experience !== undefined ? Number(row.years_experience) : null,
+      approach: row.approach ? String(row.approach) : undefined,
     }
   })
 }

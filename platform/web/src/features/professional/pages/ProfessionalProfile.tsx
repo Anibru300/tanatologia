@@ -74,6 +74,7 @@ export function ProfessionalProfile() {
   const [bio, setBio] = useState('')
   const [languages, setLanguages] = useState<string[]>([])
   const [yearsExperience, setYearsExperience] = useState('')
+  const [education, setEducation] = useState('')
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('pending')
 
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
@@ -103,6 +104,7 @@ export function ProfessionalProfile() {
           setYearsExperience(
             professionalProfile.years_experience !== null ? String(professionalProfile.years_experience) : ''
           )
+          setEducation(professionalProfile.education || '')
           setVerificationStatus(professionalProfile.verification_status || 'pending')
         }
       })
@@ -152,6 +154,7 @@ export function ProfessionalProfile() {
         bio: bio.trim() || null,
         languages,
         years_experience: years,
+        education: education.trim() || null,
       })
       setSaveStatus('success')
       setSaveMessage('Tus cambios se guardaron correctamente.')
@@ -277,6 +280,14 @@ export function ProfessionalProfile() {
               placeholder="Cuéntales a los pacientes quién eres y cómo trabajas."
               value={bio}
               onChange={(e) => setBio(e.target.value)}
+            />
+
+            <Textarea
+              label="Formación académica"
+              rows={3}
+              placeholder="Ej. Maestría en Psicología Clínica — Universidad La Salle; Especialidad en Tanatología — Instituto…"
+              value={education}
+              onChange={(e) => setEducation(e.target.value)}
             />
 
             <ChipMultiSelect label="Idiomas" options={LANGUAGE_OPTIONS} values={languages} onChange={setLanguages} />

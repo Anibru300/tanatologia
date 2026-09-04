@@ -4,7 +4,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { Video, CalendarDays, CheckCircle, XCircle } from 'lucide-react'
+import { Video, CalendarDays, CheckCircle, XCircle, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import {
@@ -13,6 +13,11 @@ import {
   updateAppointmentStatus,
   type Appointment,
 } from '@/features/appointments/appointmentsService'
+import { RatingDialog } from '@/features/reviews/RatingDialog'
+import {
+  getRatedAppointmentIdsForProfessional,
+  submitPatientReview,
+} from '@/features/reviews/reviewsService'
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -31,6 +36,9 @@ export function ProfessionalAppointments() {
   const [confirmCancel, setConfirmCancel] = useState<Appointment | null>(null)
   const [acting, setActing] = useState(false)
   const [tab, setTab] = useState<'upcoming' | 'past' | 'all'>('upcoming')
+  const [professionalProfileId, setProfessionalProfileId] = useState<string | null>(null)
+  const [ratedIds, setRatedIds] = useState<string[]>([])
+  const [ratingTarget, setRatingTarget] = useState<Appointment | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -44,8 +52,11 @@ export function ProfessionalAppointments() {
         if (!professionalProfileId) {
           throw new Error('No se encontró tu perfil profesional.')
         }
+        if (!cancelled) setProfessionalProfileId(professionalProfileId)
         const data = await getAppointmentsForProfessional(professionalProfileId)
         if (!cancelled) setAppointments(data)
+        const rated = await getRatedAppointmentIdsForProfessional(professionalProfileId)
+        if (!cancelled) setRatedIds(rated)
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Error cargando citas')
       } finally {
@@ -94,6 +105,18 @@ export function ProfessionalAppointments() {
       setActing(false)
       setConfirmCancel(null)
     }
+  }
+
+  const handleRatePatient = async (rating: number, comment: string | null) => {
+    if (!ratingTarget || !professionalProfileId) return
+    await submitPatientReview({
+      patient_profile_id: ratingTarget.patient_profile_id,
+      professional_profile_id: professionalProfileId,
+      appointment_id: ratingTarget.id,
+      rating,
+      comment,
+    })
+    setRatedIds((prev) => [...prev, ratingTarget.id])
   }
 
   return (
@@ -214,6 +237,23 @@ export function ProfessionalAppointments() {
                               </Button>
                             </>
                           )}
+                          {a.status === 'completed' && !ratedIds.includes(a.id) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1"
+                              title="Calificar paciente"
+                              onClick={() => setRatingTarget(a)}
+                            >
+                              <Star size={14} />
+                              Calificar
+                            </Button>
+                          )}
+                          {a.status === 'completed' && ratedIds.includes(a.id) && (
+                            <span className="flex items-center gap-1 text-sm text-success-dark" title="Paciente calificado">
+                              <Star size={14} className="fill-warning text-warning" />
+                            </span>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -223,6 +263,14 @@ export function ProfessionalAppointments() {
             </div>
           </CardContent>
         </Card>
+
+        <RatingDialog
+          open={ratingTarget !== null}
+          onClose={() => setRatingTarget(null)}
+          title={`Calificar a ${ratingTarget?.patientName || ''}`}
+          description="Tu calificación es privada: solo la ven otros profesionales que atiendan a este paciente y el equipo de SOMOS-CALMA."
+          onSubmit={handleRatePatient}
+        />
 
         <ConfirmDialog
           open={confirmCancel !== null}

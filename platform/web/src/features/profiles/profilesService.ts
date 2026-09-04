@@ -35,6 +35,7 @@ export type ProfessionalProfileData = {
   bio: string | null
   languages: string[]
   years_experience: number | null
+  education: string | null
   session_price: number | null // centavos
   program_4_price: number | null // centavos
   program_6_price: number | null // centavos
@@ -72,6 +73,7 @@ export type UpdateProfessionalProfileInput = {
   bio: string | null
   languages: string[]
   years_experience: number | null
+  education: string | null
   // RESERVADO fase monetización — opcionales durante la Beta gratuita
   session_price?: number | null // centavos
   program_4_price?: number | null // centavos
@@ -123,7 +125,7 @@ export async function getMyProfile(userId: string): Promise<MyProfileResult> {
     const { data, error } = await supabase
       .from('professional_profiles')
       .select(
-        'id, profile_id, full_name, professional_title, license_number, university, specialties, approach, bio, languages, years_experience, session_price, program_4_price, program_6_price, verification_status'
+        'id, profile_id, full_name, professional_title, license_number, university, specialties, approach, bio, languages, years_experience, education, session_price, program_4_price, program_6_price, verification_status'
       )
       .eq('profile_id', userId)
       .maybeSingle()
@@ -186,6 +188,7 @@ export async function updateProfessionalProfile(
       bio: input.bio,
       languages: input.languages,
       years_experience: input.years_experience,
+      education: input.education,
       ...(input.session_price !== undefined && { session_price: input.session_price }),
       ...(input.program_4_price !== undefined && { program_4_price: input.program_4_price }),
       ...(input.program_6_price !== undefined && { program_6_price: input.program_6_price }),

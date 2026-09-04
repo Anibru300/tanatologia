@@ -3,7 +3,7 @@ import { useAuth } from '@/features/auth/useAuth'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'
-import { Search, Users, ChevronDown, ChevronUp } from 'lucide-react'
+import { Search, Users, ChevronDown, ChevronUp, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
@@ -12,6 +12,7 @@ import {
   getAppointmentsForProfessional,
   type Appointment,
 } from '@/features/appointments/appointmentsService'
+import { getPatientRatingsForProfessional } from '@/features/reviews/reviewsService'
 
 type PatientRow = {
   id: string
@@ -64,6 +65,7 @@ export function ProfessionalPatients() {
   const [search, setSearch] = useState('')
   const [error, setError] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [ratings, setRatings] = useState<Map<string, { rating: number; rating_count: number }>>(new Map())
 
   useEffect(() => {
     if (!user) return
@@ -78,6 +80,14 @@ export function ProfessionalPatients() {
         if (!cancelled) {
           setAppointments(appointments)
           setPatients(buildPatientRows(appointments))
+        }
+        try {
+          const rows = await getPatientRatingsForProfessional(professionalProfileId)
+          if (!cancelled) {
+            setRatings(new Map(rows.map((r) => [r.patient_profile_id, r])))
+          }
+        } catch {
+          // La calificación es informativa; si falla no bloqueamos la lista.
         }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'No se pudieron cargar tus pacientes.')
@@ -136,6 +146,7 @@ export function ProfessionalPatients() {
                       <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Nombre</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Sesiones completadas</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Última sesión</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Calificación</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-text-light">Estado</th>
                     </tr>
                   </thead>
@@ -171,6 +182,17 @@ export function ProfessionalPatients() {
                                 : '—'}
                             </td>
                             <td className="py-4 px-4">
+                              {ratings.has(p.id) ? (
+                                <span className="flex items-center gap-1" title="Calificación de colegas (privada)">
+                                  <Star size={14} className="fill-warning text-warning" />
+                                  <span className="text-text text-sm font-medium">{ratings.get(p.id)!.rating.toFixed(1)}</span>
+                                  <span className="text-xs text-text-light">({ratings.get(p.id)!.rating_count})</span>
+                                </span>
+                              ) : (
+                                <span className="text-text-light text-sm">—</span>
+                              )}
+                            </td>
+                            <td className="py-4 px-4">
                               <Badge variant={p.active ? 'success' : 'default'}>
                                 {p.active ? 'Activo' : 'Sin cita próxima'}
                               </Badge>
@@ -178,7 +200,7 @@ export function ProfessionalPatients() {
                           </tr>
                           {expanded && (
                             <tr key={`${p.id}-detail`} className="border-b border-border last:border-0 bg-bg-alt/30">
-                              <td colSpan={4} className="py-4 px-4">
+                              <td colSpan={5} className="py-4 px-4">
                                 <p className="text-xs font-semibold text-text-light uppercase tracking-wide mb-2">
                                   Últimas citas
                                 </p>
