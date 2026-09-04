@@ -30,4 +30,19 @@ describe('dominio Jitsi', () => {
   it('construye la URL completa de la sala', () => {
     expect(getJitsiRoomUrl('somos-calma-abc')).toBe('https://meet.jit.si/somos-calma-abc')
   })
+
+  it('con JaaS prefija el appId y agrega el JWT como query param', () => {
+    const url = getJitsiRoomUrl('somos-calma-abc', {
+      appId: 'vpaas-magic-cookie-xxx',
+      jwt: 'eyJ.hbGci.abc+/=',
+    })
+    expect(url).toBe(
+      'https://meet.jit.si/vpaas-magic-cookie-xxx/somos-calma-abc?jwt=eyJ.hbGci.abc%2B%2F%3D',
+    )
+  })
+
+  it('sin appId no prefija la sala aunque haya JWT', () => {
+    const url = getJitsiRoomUrl('somos-calma-abc', { jwt: 'tok' })
+    expect(url).toBe('https://meet.jit.si/somos-calma-abc?jwt=tok')
+  })
 })

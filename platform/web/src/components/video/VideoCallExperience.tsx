@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PhoneOff } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { DeviceCheck } from './DeviceCheck'
 import { JitsiMeetingRoom } from './JitsiMeetingRoom'
+import { fetchJaasToken, type JaasToken } from '@/lib/jaasService'
 
 interface VideoCallExperienceProps {
   roomName: string
@@ -13,6 +14,9 @@ interface VideoCallExperienceProps {
   subtitle: string
   /** Consejo contextual mostrado durante el chequeo de dispositivos. */
   preJoinTip?: string
+  /** ID de la cita: permite firmar un JWT de JaaS (8x8.vc). Sin JaaS
+   *  configurado, la sala usa meet.jit.si gratuito automáticamente. */
+  appointmentId?: string
   /** A dónde volver al colgar (normalmente navigate a la lista de citas). */
   onExit: () => void
 }
@@ -29,10 +33,23 @@ export function VideoCallExperience({
   title,
   subtitle,
   preJoinTip,
+  appointmentId,
   onExit,
 }: VideoCallExperienceProps) {
   const [joined, setJoined] = useState(false)
   const [videoMuted, setVideoMuted] = useState(false)
+  const [jaas, setJaas] = useState<JaasToken | null>(null)
+
+  useEffect(() => {
+    if (!appointmentId) return
+    let cancelled = false
+    fetchJaasToken(appointmentId).then((token) => {
+      if (!cancelled) setJaas(token)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [appointmentId])
 
   return (
     <div className="fixed inset-0 z-[60] bg-bg flex flex-col">
@@ -52,6 +69,7 @@ export function VideoCallExperience({
             roomName={roomName}
             displayName={displayName}
             startWithVideoMuted={videoMuted}
+            jaas={jaas ?? undefined}
             onReadyToClose={onExit}
           />
         ) : (

@@ -126,6 +126,7 @@ export function ProfessionalVideoRoom() {
               : 'Sala manual'
           }
           preJoinTip="Entra 1-2 minutos antes de la hora agendada: como anfitrión, tú abres la sala para tu paciente."
+          appointmentId={activeRoom ? undefined : appointmentId}
           onExit={() => navigate('/profesional/citas')}
         />
       </Suspense>

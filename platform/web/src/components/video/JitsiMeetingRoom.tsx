@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { JitsiMeeting } from '@jitsi/react-sdk'
+import { JitsiMeeting, JaaSMeeting } from '@jitsi/react-sdk'
 import { ExternalLink, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { getJitsiDomain, getJitsiRoomUrl } from '@/lib/video'
@@ -22,6 +22,11 @@ interface JitsiMeetingRoomProps {
   email?: string
   /** Entrar con la cámara apagada (p. ej. si el chequeo previo no la encontró). */
   startWithVideoMuted?: boolean
+  /**
+   * Token JaaS (8x8.vc) para la sala. Cuando se omite, se usa meet.jit.si
+   * gratuito (limitado a 5 min embebido). Se obtiene con fetchJaasToken().
+   */
+  jaas?: { jwt: string; appId: string; domain: string }
   onReadyToClose?: () => void
 }
 
@@ -41,6 +46,7 @@ export function JitsiMeetingRoom({
   displayName,
   email = '',
   startWithVideoMuted = false,
+  jaas,
   onReadyToClose,
 }: JitsiMeetingRoomProps) {
   const [loadState, setLoadState] = useState<LoadState>('loading')
@@ -74,7 +80,7 @@ export function JitsiMeetingRoom({
               <RefreshCw size={16} /> Reintentar
             </Button>
             <a
-              href={getJitsiRoomUrl(roomName)}
+              href={getJitsiRoomUrl(roomName, jaas ? { appId: jaas.appId, jwt: jaas.jwt } : undefined)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-sm border-2 border-primary text-primary-dark hover:bg-primary-dark hover:text-white transition-all"
@@ -87,6 +93,49 @@ export function JitsiMeetingRoom({
     )
   }
 
+  // Props comunes de la reunión (compartidos por JitsiMeeting y JaaSMeeting).
+  const meetingProps = {
+    roomName,
+    lang: 'es',
+    spinner: () => <p className="text-text-light">Preparando videollamada…</p>,
+    configOverwrite: {
+      prejoinPageEnabled: false,
+      startWithAudioMuted: false,
+      startWithVideoMuted,
+      disableDeepLinking: true,
+      enableWelcomePage: false,
+      enableClosePage: false,
+      disableInviteFunctions: true,
+      hideConferenceSubject: true,
+      defaultLanguage: 'es',
+      // Calidad: 720p ideal para sesiones 1:1 (mejor nitidez que el
+      // adaptativo por defecto del servidor público, sin exigir de más).
+      resolution: 720,
+      maxFullResolutionParticipantCount: 2,
+      constraints: {
+        video: {
+          height: { ideal: 720, max: 1080 },
+          width: { ideal: 1280, max: 1920 },
+        },
+      },
+    },
+    interfaceConfigOverwrite: {
+      DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+    },
+    userInfo: { displayName, email },
+    getIFrameRef: (parentNode: HTMLDivElement) => {
+      parentNode.style.height = '100%'
+      parentNode.style.width = '100%'
+    },
+    onApiReady: (externalApi: JitsiExternalApi) => {
+      apiRef.current = externalApi
+      setLoadState('ready')
+      // Cuando cualquier participante cuelga desde la barra de Jitsi.
+      externalApi.addListener('videoConferenceLeft', () => onReadyToClose?.())
+    },
+    onReadyToClose,
+  }
+
   return (
     <div className="relative w-full h-full min-h-0 overflow-hidden bg-bg-alt">
       {loadState === 'loading' && (
@@ -94,39 +143,11 @@ export function JitsiMeetingRoom({
           <p className="text-text-light">Conectando con la sala…</p>
         </div>
       )}
-      <JitsiMeeting
-        key={reloadKey}
-        domain={getJitsiDomain()}
-        roomName={roomName}
-        lang="es"
-        spinner={() => <p className="text-text-light">Preparando videollamada…</p>}
-        configOverwrite={{
-          prejoinPageEnabled: false,
-          startWithAudioMuted: false,
-          startWithVideoMuted,
-          disableDeepLinking: true,
-          enableWelcomePage: false,
-          enableClosePage: false,
-          disableInviteFunctions: true,
-          hideConferenceSubject: true,
-          defaultLanguage: 'es',
-        }}
-        interfaceConfigOverwrite={{
-          DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-        }}
-        userInfo={{ displayName, email }}
-        getIFrameRef={(parentNode: HTMLDivElement) => {
-          parentNode.style.height = '100%'
-          parentNode.style.width = '100%'
-        }}
-        onApiReady={(externalApi: JitsiExternalApi) => {
-          apiRef.current = externalApi
-          setLoadState('ready')
-          // Cuando cualquier participante cuelga desde la barra de Jitsi.
-          externalApi.addListener('videoConferenceLeft', () => onReadyToClose?.())
-        }}
-        onReadyToClose={onReadyToClose}
-      />
+      {jaas ? (
+        <JaaSMeeting key={reloadKey} appId={jaas.appId} jwt={jaas.jwt} {...meetingProps} />
+      ) : (
+        <JitsiMeeting key={reloadKey} domain={getJitsiDomain()} {...meetingProps} />
+      )}
     </div>
   )
 }

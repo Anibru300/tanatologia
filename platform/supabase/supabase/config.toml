@@ -446,3 +446,11 @@ enabled = true
 # sesión en el trigger 016; escribe con service role (la tabla no acepta inserts directos).
 verify_jwt = false
 entrypoint = "./functions/track-view/index.ts"
+
+[functions.jaas-token]
+enabled = true
+# Firma JWT de JaaS (8x8.vc) para la sala de una cita. Requiere sesión del
+# paciente/profesional de la cita (el gateway valida el JWT; la función además
+# aplica RLS). Sin secrets JAAS_* responde 501 y el frontend usa meet.jit.si.
+verify_jwt = true
+entrypoint = "./functions/jaas-token/index.ts"
