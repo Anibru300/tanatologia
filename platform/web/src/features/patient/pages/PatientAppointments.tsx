@@ -4,7 +4,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Calendar, Clock, Video } from 'lucide-react'
+import { Calendar, Clock, Video, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import {
@@ -14,6 +14,11 @@ import {
   type Appointment,
 } from '@/features/appointments/appointmentsService'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { RatingDialog } from '@/features/reviews/RatingDialog'
+import {
+  getRatedAppointmentIdsForPatient,
+  submitProfessionalReview,
+} from '@/features/reviews/reviewsService'
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -40,6 +45,9 @@ export function PatientAppointments() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [confirmCancel, setConfirmCancel] = useState<Appointment | null>(null)
   const [acting, setActing] = useState(false)
+  const [patientProfileId, setPatientProfileId] = useState<string | null>(null)
+  const [ratedIds, setRatedIds] = useState<string[]>([])
+  const [ratingTarget, setRatingTarget] = useState<Appointment | null>(null)
 
   const handleCancel = async (apt: Appointment) => {
     try {
@@ -55,6 +63,18 @@ export function PatientAppointments() {
     }
   }
 
+  const handleRate = async (rating: number, comment: string | null) => {
+    if (!ratingTarget || !patientProfileId) return
+    await submitProfessionalReview({
+      professional_profile_id: ratingTarget.professional_profile_id,
+      patient_profile_id: patientProfileId,
+      appointment_id: ratingTarget.id,
+      rating,
+      comment,
+    })
+    setRatedIds((prev) => [...prev, ratingTarget.id])
+  }
+
   useEffect(() => {
     if (!user) return
     const userId = user.id
@@ -68,8 +88,11 @@ export function PatientAppointments() {
         if (!patientProfileId) {
           throw new Error('No se encontró tu perfil de paciente.')
         }
+        if (!cancelled) setPatientProfileId(patientProfileId)
         const data = await getAppointmentsForPatient(patientProfileId)
         if (!cancelled) setAppointments(data)
+        const rated = await getRatedAppointmentIdsForPatient(patientProfileId)
+        if (!cancelled) setRatedIds(rated)
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Error cargando citas')
       } finally {
@@ -142,6 +165,18 @@ export function PatientAppointments() {
                         </Button>
                       </Link>
                     )}
+                    {apt.status === 'completed' && !ratedIds.includes(apt.id) && (
+                      <Button size="sm" variant="outline" className="gap-1" onClick={() => setRatingTarget(apt)}>
+                        <Star size={16} />
+                        Calificar
+                      </Button>
+                    )}
+                    {apt.status === 'completed' && ratedIds.includes(apt.id) && (
+                      <span className="flex items-center gap-1 text-sm text-success-dark px-2">
+                        <Star size={14} className="fill-warning text-warning" />
+                        Calificada
+                      </span>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
@@ -189,6 +224,14 @@ export function PatientAppointments() {
             </Card>
           ))}
         </div>
+
+        <RatingDialog
+          open={ratingTarget !== null}
+          onClose={() => setRatingTarget(null)}
+          title={`Califica tu sesión con ${ratingTarget?.professionalName || ''}`}
+          description="Tu reseña es anónima (aparecerás como “Paciente verificado”) y ayuda a otras personas a elegir."
+          onSubmit={handleRate}
+        />
 
         <ConfirmDialog
           open={confirmCancel !== null}

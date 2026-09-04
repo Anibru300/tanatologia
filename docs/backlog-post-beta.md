@@ -24,7 +24,8 @@ con las reglas P0–P3 de `BETA-OPERATIONS.md`.
 6. **Conectar matching.js con el directorio real** — `pages/matching.html` +
    `assets/js/matching.js` muestran cards hardcodeadas de las fundadoras; no se
    sincronizan con profesionales verificados nuevos. Conectar a Supabase o
-   derivar al directorio de la app.
+   derivar al directorio de la app. (Parcial 2026-09-02: la app ya filtra el
+   directorio con la encuesta de registro; falta el sitio estático.)
 7. **AdminSupport estático** — página de tickets "próximamente" bajo badge
    "Pronto" (admin-only); implementar cuando exista soporte real.
 
@@ -44,17 +45,22 @@ Visa/Mastercard, PayPal y transferencia SPEI.
 ## Ideas de mejora (ideación 2026-09-03, benchmark Doctoralia/Sanamente/BetterHelp/Talkspace/Alma/Headway)
 
 **Quick wins (alto impacto, bajo esfuerzo):**
-1. Recordatorios de cita (email Resend + botón WhatsApp prellenado) 24 h y 1 h antes — reduce no-shows.
+1. ~~Recordatorios de cita~~ ✅ IMPLEMENTADO 2026-09-02 (email 24h + 15min + alarma
+   in-app; falta decisión del cliente para WhatsApp Business API — ver
+   `docs/encuesta-matching-investigacion.md` §4).
 2. Reprogramación directa desde la tarjeta de la cita (sin cancelar y re-agendar).
 3. Botón de crisis visible dentro del portal paciente.
-4. Evaluación post-sesión (rating + comentario) ligada a la cita.
+4. ~~Evaluación post-sesión (rating + comentario) ligada a la cita~~ ✅ IMPLEMENTADO
+   2026-09-02 (bidireccional: paciente→profesional pública anónima; profesional→paciente
+   privada entre colegas).
 5. Pausar disponibilidad por rango de fechas (vacaciones) en lugar de borrar slots.
 6. Plantillas de nota clínica (estructura de evolución prellenada).
 7. Indicador de perfil completo del profesional (afecta visibilidad en directorio).
-8. Recordatorios de cita también al profesional.
+8. ~~Recordatorios de cita también al profesional~~ ✅ IMPLEMENTADO 2026-09-02.
 
 **Diferenciadores de medio esfuerzo:**
-9. Seguimiento de progreso clínico (PHQ-9/GAD-7 / escala breve de duelo) con gráfica para el profesional.
+9. Seguimiento de progreso clínico (PHQ-9/GAD-7 ya capturados en la encuesta de
+   registro; falta gráfica de evolución para el profesional y reaplicación por sesión).
 10. Diario emocional entre sesiones, opcionalmente compartible con el terapeuta.
 11. Mensajería segura asíncrona paciente↔profesional entre sesiones.
 12. Perfil profesional enriquecido: video corto, enfoque terapéutico, especialidades, idiomas, "3 palabras que describen mi práctica".

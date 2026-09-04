@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
-import { Star, Search, Filter, Calendar, Award, CheckCircle } from 'lucide-react'
+import { Star, Search, Filter, Calendar, Award, CheckCircle, GraduationCap, Languages, Briefcase, Sparkles, MessageSquareQuote } from 'lucide-react'
 import { getProfessionalProfiles, type ProfessionalProfile } from '@/features/appointments/appointmentsService'
+import { useAuth } from '@/features/auth/useAuth'
+import { getMyIntake } from '@/features/intake/intakeService'
+import { suggestedSpecialties } from '@/features/intake/intakeContent'
+import { getProfessionalReviewsPublic, type ProfessionalReviewPublic } from '@/features/reviews/reviewsService'
+import { StarRating } from '@/features/reviews/StarRating'
 
 const specialtyOptions = ['Todas', 'Duelo', 'Ansiedad', 'Estrés', 'Depresión', 'Pérdida', 'Familias']
 
@@ -19,7 +24,48 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
+function ReviewList({ professionalProfileId }: { professionalProfileId: string }) {
+  const [reviews, setReviews] = useState<ProfessionalReviewPublic[] | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    getProfessionalReviewsPublic(professionalProfileId)
+      .then((data) => {
+        if (!cancelled) setReviews(data)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'No se pudieron cargar las reseñas')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [professionalProfileId])
+
+  if (error) return <p className="text-sm text-text-light">{error}</p>
+  if (reviews === null) return <p className="text-sm text-text-light">Cargando reseñas...</p>
+  if (reviews.length === 0) return <p className="text-sm text-text-light">Aún no hay reseñas publicadas.</p>
+
+  return (
+    <ul className="space-y-3">
+      {reviews.map((r) => (
+        <li key={r.id} className="p-3 bg-bg-alt rounded-md">
+          <div className="flex items-center justify-between mb-1">
+            <StarRating value={r.rating} size={14} />
+            <span className="text-xs text-text-light">
+              {new Date(r.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </span>
+          </div>
+          {r.comment && <p className="text-sm text-text">{r.comment}</p>}
+          <p className="text-xs text-muted mt-1">Paciente verificado</p>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export function TherapistDirectory() {
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [specialty, setSpecialty] = useState('Todas')
@@ -27,13 +73,24 @@ export function TherapistDirectory() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState<ProfessionalProfile | null>(null)
+  const [intakeSpecs, setIntakeSpecs] = useState<string[]>([])
+  const [useIntakeMatch, setUseIntakeMatch] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    getProfessionalProfiles()
-      .then((data) => {
-        if (!cancelled) setTherapists(data)
+    Promise.all([getProfessionalProfiles(), user ? getMyIntake(user.id) : Promise.resolve(null)])
+      .then(([data, intake]) => {
+        if (cancelled) return
+        // Orden: mejor calificación primero
+        setTherapists([...data].sort((a, b) => b.rating - a.rating))
+        if (intake) {
+          const specs = suggestedSpecialties(intake)
+          if (specs.length > 0) {
+            setIntakeSpecs(specs)
+            setUseIntakeMatch(true)
+          }
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Error al cargar el directorio')
@@ -44,15 +101,21 @@ export function TherapistDirectory() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [user])
 
-  const filtered = therapists.filter((t) => {
-    const name = t.full_name.toLowerCase()
-    const specs = (t.specialties || []).join(' ').toLowerCase()
-    const matchesSearch = name.includes(search.toLowerCase()) || specs.includes(search.toLowerCase())
-    const matchesSpecialty = specialty === 'Todas' || (t.specialties || []).some((s) => s.toLowerCase().includes(specialty.toLowerCase()))
-    return matchesSearch && matchesSpecialty
-  })
+  const filtered = useMemo(() => {
+    return therapists.filter((t) => {
+      const name = t.full_name.toLowerCase()
+      const specs = (t.specialties || []).join(' ').toLowerCase()
+      const matchesSearch = name.includes(search.toLowerCase()) || specs.includes(search.toLowerCase())
+      const matchesSpecialty = specialty === 'Todas' || (t.specialties || []).some((s) => s.toLowerCase().includes(specialty.toLowerCase()))
+      const matchesIntake =
+        !useIntakeMatch ||
+        intakeSpecs.length === 0 ||
+        (t.specialties || []).some((s) => intakeSpecs.some((i) => i.toLowerCase() === s.toLowerCase()))
+      return matchesSearch && matchesSpecialty && matchesIntake
+    })
+  }, [therapists, search, specialty, useIntakeMatch, intakeSpecs])
 
   if (loading) {
     return (
@@ -83,9 +146,35 @@ export function TherapistDirectory() {
         <div className="mb-8 text-center max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold text-text mb-2">Encuentra tu terapeuta</h1>
           <p className="text-text-light">
-            Filtra por especialidad o nombre y elige al profesional verificado que mejor se ajuste a lo que necesitas.
+            Profesionales verificados con biografía, formación y reseñas de pacientes. Elige a quien
+            mejor se ajuste a lo que necesitas.
           </p>
         </div>
+
+        {intakeSpecs.length > 0 && (
+          <div className="max-w-3xl mx-auto mb-6">
+            <div className="flex items-center justify-between gap-3 p-4 bg-primary/5 border border-primary/20 rounded-md flex-wrap">
+              <p className="text-sm text-text flex items-center gap-2">
+                <Sparkles size={16} className="text-primary shrink-0" />
+                {useIntakeMatch ? (
+                  <span>
+                    Mostrando profesionales afines a tu encuesta: <strong>{intakeSpecs.join(', ')}</strong>
+                  </span>
+                ) : (
+                  <span>Filtro de tu encuesta desactivado.</span>
+                )}
+              </p>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setUseIntakeMatch((v) => !v)}>
+                  {useIntakeMatch ? 'Ver todos' : 'Usar mi encuesta'}
+                </Button>
+                <Link to="/paciente/encuesta">
+                  <Button size="sm" variant="ghost">Rehacer encuesta</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Card className="mb-8">
           <CardContent className="p-4">
@@ -145,11 +234,12 @@ export function TherapistDirectory() {
                         <div className="flex items-center gap-1">
                           <Star size={16} className="text-warning fill-warning" />
                           <span className="font-semibold text-text">{Number(t.rating).toFixed(1)}</span>
+                          {t.rating_count > 0 && <span className="text-xs text-text-light">({t.rating_count})</span>}
                         </div>
                       )}
                     </div>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      {t.full_name}
+                      {t.professional_title ? `${t.professional_title} ` : ''}{t.full_name}
                       {t.verification_status === 'verified' && <CheckCircle size={16} className="text-success-dark" />}
                     </CardTitle>
                     <CardDescription>{(t.specialties || []).slice(0, 2).join(' · ') || 'Acompañamiento emocional'}</CardDescription>
@@ -188,7 +278,10 @@ export function TherapistDirectory() {
                   <Search size={32} className="text-text-light" />
                 </div>
                 <h3 className="text-lg font-semibold text-text mb-1">No encontramos resultados</h3>
-                <p className="text-text-light">Prueba con otro nombre o especialidad.</p>
+                <p className="text-text-light mb-4">Prueba con otro nombre o especialidad, o quita el filtro de tu encuesta.</p>
+                {useIntakeMatch && (
+                  <Button variant="outline" onClick={() => setUseIntakeMatch(false)}>Ver todos los profesionales</Button>
+                )}
               </div>
             )}
           </>
@@ -203,57 +296,114 @@ export function TherapistDirectory() {
                 {getInitials(selected.full_name)}
               </div>
               <div>
-                <p className="text-text-light">{(selected.specialties || []).slice(0, 2).join(' · ') || 'Acompañamiento emocional'}</p>
-                <div className="flex items-center gap-2 mt-1">
+                <p className="text-text-light">
+                  {selected.professional_title ? `${selected.professional_title} · ` : ''}
+                  {(selected.specialties || []).slice(0, 2).join(' · ') || 'Acompañamiento emocional'}
+                </p>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   {selected.verification_status === 'verified' && (
                     <span className="flex items-center gap-1 text-success-dark text-sm">
                       <CheckCircle size={16} /> Verificado
                     </span>
                   )}
-                  {Number(selected.rating || 0) > 0 && (
+                  {Number(selected.rating || 0) > 0 ? (
                     <span className="flex items-center gap-1">
-                      <Star size={16} className="text-warning fill-warning" />
+                      <StarRating value={Math.round(selected.rating)} size={14} />
                       <span className="font-semibold text-text">{Number(selected.rating).toFixed(1)}</span>
+                      {selected.rating_count > 0 && (
+                        <span className="text-sm text-text-light">· {selected.rating_count} reseña{selected.rating_count !== 1 ? 's' : ''}</span>
+                      )}
                     </span>
+                  ) : (
+                    <span className="text-sm text-text-light">Sin reseñas aún</span>
                   )}
                 </div>
               </div>
             </div>
-              <div>
-                <h4 className="font-semibold text-text mb-2">Sobre mí</h4>
-                <p className="text-text-light">{selected.bio || 'Especialista en acompañamiento emocional y tanatología.'}</p>
-              </div>
 
+            <div>
+              <h4 className="font-semibold text-text mb-2">Sobre mí</h4>
+              <p className="text-text-light whitespace-pre-line">{selected.bio || 'Especialista en acompañamiento emocional y tanatología.'}</p>
+            </div>
+
+            {(selected.education || selected.university || selected.approach || (selected.languages && selected.languages.length > 0) || selected.years_experience != null) && (
               <div className="grid sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-bg-alt rounded-sm">
-                  <Award size={20} className="text-primary" />
-                  <div>
-                    <p className="text-xs text-text-light">Especialidades</p>
-                    <p className="text-text text-sm font-medium">{(selected.specialties || []).join(', ') || '—'}</p>
+                {selected.education && (
+                  <div className="flex items-start gap-3 p-4 bg-bg-alt rounded-sm">
+                    <GraduationCap size={20} className="text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-text-light">Formación</p>
+                      <p className="text-text text-sm font-medium whitespace-pre-line">{selected.education}</p>
+                    </div>
                   </div>
-                </div>
+                )}
+                {!selected.education && selected.university && (
+                  <div className="flex items-start gap-3 p-4 bg-bg-alt rounded-sm">
+                    <GraduationCap size={20} className="text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-text-light">Universidad</p>
+                      <p className="text-text text-sm font-medium">{selected.university}</p>
+                    </div>
+                  </div>
+                )}
+                {selected.approach && (
+                  <div className="flex items-start gap-3 p-4 bg-bg-alt rounded-sm">
+                    <Award size={20} className="text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-text-light">Enfoque terapéutico</p>
+                      <p className="text-text text-sm font-medium">{selected.approach}</p>
+                    </div>
+                  </div>
+                )}
+                {selected.languages && selected.languages.length > 0 && (
+                  <div className="flex items-start gap-3 p-4 bg-bg-alt rounded-sm">
+                    <Languages size={20} className="text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-text-light">Idiomas</p>
+                      <p className="text-text text-sm font-medium">{selected.languages.join(', ')}</p>
+                    </div>
+                  </div>
+                )}
+                {selected.years_experience != null && (
+                  <div className="flex items-start gap-3 p-4 bg-bg-alt rounded-sm">
+                    <Briefcase size={20} className="text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-text-light">Experiencia</p>
+                      <p className="text-text text-sm font-medium">{selected.years_experience} años</p>
+                    </div>
+                  </div>
+                )}
               </div>
+            )}
 
-              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-sm">
-                <span className="text-text">Costo durante la Beta</span>
-                <span className="text-2xl font-bold text-success-dark">Gratuito</span>
-              </div>
+            <div>
+              <h4 className="font-semibold text-text mb-2 flex items-center gap-2">
+                <MessageSquareQuote size={18} className="text-primary" />
+                Reseñas de pacientes
+              </h4>
+              <ReviewList professionalProfileId={selected.id} />
+            </div>
 
-              <div className="flex gap-3">
-                <Button
-                  className="flex-1 gap-2"
-                  onClick={() => {
-                    setSelected(null)
-                    navigate('/paciente/agendar', { state: { therapistId: selected.id } })
-                  }}
-                >
-                  <Calendar size={18} />
-                  Agendar cita
-                </Button>
-                <Button variant="outline" className="flex-1" onClick={() => setSelected(null)}>
-                  Cerrar
-                </Button>
-              </div>
+            <div className="flex items-center justify-between p-4 bg-primary/5 rounded-sm">
+              <span className="text-text">Costo durante la Beta</span>
+              <span className="text-2xl font-bold text-success-dark">Gratuito</span>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                className="flex-1 gap-2"
+                onClick={() => {
+                  setSelected(null)
+                  navigate('/paciente/agendar', { state: { therapistId: selected.id } })
+                }}
+              >
+                <Calendar size={18} />
+                Agendar cita
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => setSelected(null)}>
+                Cerrar
+              </Button>
+            </div>
           </div>
         )}
       </Modal>

@@ -59,6 +59,9 @@ const PatientVideoRoom = lazy(() =>
 const PatientFeedback = lazy(() =>
   import('@/features/patient/pages/PatientFeedback').then((m) => ({ default: m.PatientFeedback }))
 )
+const IntakeSurvey = lazy(() =>
+  import('@/features/intake/pages/IntakeSurvey').then((m) => ({ default: m.IntakeSurvey }))
+)
 
 // Professional pages
 const ProfessionalDashboard = lazy(() =>
@@ -223,6 +226,7 @@ export function AppRouter() {
         <Route path="recursos" element={<PatientResources />} />
         <Route path="ayuda" element={<PatientHelp />} />
         <Route path="feedback" element={<PatientFeedback />} />
+        <Route path="encuesta" element={<IntakeSurvey />} />
         <Route path="configuracion" element={<PatientSettings />} />
         <Route path="sala/:appointmentId" element={<PatientVideoRoom />} />
       </Route>

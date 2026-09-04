@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Headphones,
   Users,
+  Sparkles,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -22,12 +23,14 @@ import {
   getAppointmentsForPatient,
   type Appointment,
 } from '@/features/appointments/appointmentsService'
+import { hasCompletedIntake } from '@/features/intake/intakeService'
 
 export function PatientDashboard() {
   const { user } = useAuth()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [intakeDone, setIntakeDone] = useState(true)
 
   useEffect(() => {
     if (!user) return
@@ -40,6 +43,8 @@ export function PatientDashboard() {
         if (!patientProfileId) throw new Error('No se encontró tu perfil de paciente.')
         const data = await getAppointmentsForPatient(patientProfileId)
         if (!cancelled) setAppointments(data)
+        const done = await hasCompletedIntake(userId)
+        if (!cancelled) setIntakeDone(done)
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'No se pudieron cargar tus citas.')
       } finally {
@@ -85,6 +90,29 @@ export function PatientDashboard() {
         </div>
 
         {error && <Alert variant="error" className="mb-6 p-3 rounded-sm">{error}</Alert>}
+
+        {!loading && !intakeDone && (
+          <Card className="mb-8 border-l-4 border-l-warning bg-warning/5">
+            <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-start gap-3 flex-1">
+                <Sparkles size={22} className="text-warning shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-text">Cuéntanos qué necesitas</p>
+                  <p className="text-sm text-text-light">
+                    Responde una encuesta de 2 minutos y te mostraremos los profesionales que
+                    mejor se ajustan a ti. Incluye un tamizaje opcional basado en instrumentos validados.
+                  </p>
+                </div>
+              </div>
+              <Link to="/paciente/encuesta" className="shrink-0">
+                <Button className="gap-1">
+                  Hacer mi encuesta
+                  <ArrowRight size={16} />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="border-l-4 border-l-primary">
