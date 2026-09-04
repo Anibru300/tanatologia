@@ -36,3 +36,22 @@ La fundadora no encontraba "el panel" de analíticas porque no existía: lo úni
 - Sin cookies, fingerprinting ni IP: primer-party mínimo y suficiente para las preguntas de la fundadora (tráfico, origen, registro).
 - Quirk confirmado: PostgREST `?col=eq.false` devuelve vacío en booleanos falsos → usar `is.false`.
 - El panel no sustituye a GA4 (aún útil para comportamiento de sesión); solo da la visión directa dentro del admin.
+
+---
+
+# Actualización 2026-09-04 (noche) — "Flujo de la página": geografía y mejora de gráficas
+
+## Cambios
+- **Renombrado**: el menú Admin y el panel pasan de "Analíticas" a **"Flujo de la página"** (ruta `/admin/analiticas` sin cambio).
+- **Geografía sin usar IP** (migración 018):
+  - `profiles.timezone` y `page_views.timezone` guardan la zona horaria IANA del navegador (`Intl.DateTimeFormat().resolvedOptions().timeZone`), enviada en el registro (metadata del signup, persistida por `handle_new_user()`) y en cada beacon.
+  - El mapeo zona horaria → país/ciudad es 100% frontend (`src/lib/timezoneGeo.ts`, con tests). Aproximación deliberada (sin IP, sin cookies).
+  - Paneles nuevos: Países (visitas, dona), Países (registros), Ciudades (registros). Registros previos al 04-sep-2026 = "Desconocido".
+- **Gráficas mejoradas**: gráfica de área SVG con degradado y tooltip (sitio+app apiladas), donas para referrers/países/dispositivos, KPIs con **tendencia % vs período anterior** (el servicio trae 2× el rango), y **embudo de conversión** visitas→registros→citas con % de conversión y citas por estado.
+- Edge Function `track-view` actualizada (acepta y valida `timezone`) y redeplegada.
+
+## Verificación
+- `test-analytics.mjs` 13/13 (incluye timezone persistido en signup y en beacon; input malicioso bloqueado por el WAF del gateway con 403 — defensa en profundidad).
+- Regresiones: features-013 25/25 (con CRON_SECRET), security-negative 22/22 (setup completo re-creado).
+- Build + lint + 29 tests unitarios verdes.
+- Dato: **2 registros reales nuevos** llegaron solos durante la sesión (el sitio en vivo está captando usuarios: 9 → 11 cuentas reales).

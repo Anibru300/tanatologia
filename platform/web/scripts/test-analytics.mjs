@@ -14,7 +14,8 @@ const SESSION = `anatest-${ts}`
 let passed = 0, failed = 0
 function check(name, ok, detail = '') {
   console.log(`${ok ? '✅' : '❌'} ${name}${detail ? ` — ${detail}` : ''}`)
-  ok ? passed++ : failed++
+  if (ok) passed++
+  else failed++
 }
 async function api(path, { method = 'GET', token, body } = {}) {
   const res = await fetch(`${URL}${path}`, {
@@ -33,20 +34,21 @@ async function track(payload) {
   return { status: res.status, json }
 }
 
-// 1. Escalación de rol en signup (017): pedir 'admin' debe degradar a 'patient'
-const evil = await api('/auth/v1/signup', { method: 'POST', body: { email: `anatest-${ts}-evil@test.somos-calma.com`, password: 'Test1234!x', data: { full_name: 'Evil', role: 'admin' } } })
+// 1. Escalación de rol en signup (017) + timezone persistido (018)
+const evil = await api('/auth/v1/signup', { method: 'POST', body: { email: `anatest-${ts}-evil@test.somos-calma.com`, password: 'Test1234!x', data: { full_name: 'Evil', role: 'admin', timezone: 'America/Monterrey' } } })
 const evilUser = evil.json?.user?.id
 const evilLogin = (await api('/auth/v1/token?grant_type=password', { method: 'POST', body: { email: `anatest-${ts}-evil@test.somos-calma.com`, password: 'Test1234!x' } })).json
-const evilRole = (await api(`/rest/v1/profiles?select=role&id=eq.${evilUser}`, { token: evilLogin.access_token })).json?.[0]?.role
-check('Seguridad: signup con role=admin se degrada a patient (017)', evilRole === 'patient', `role=${evilRole}`)
+const evilProfile = (await api(`/rest/v1/profiles?select=role,timezone&id=eq.${evilUser}`, { token: evilLogin.access_token })).json?.[0]
+check('Seguridad: signup con role=admin se degrada a patient (017)', evilProfile?.role === 'patient', `role=${evilProfile?.role}`)
+check('Signup: timezone persistido en profiles (018)', evilProfile?.timezone === 'America/Monterrey', `timezone=${evilProfile?.timezone}`)
 
-// 2. Tracking: beacon anónimo válido
-let r = await track({ path: '/index.html', referrer: 'https://www.instagram.com/p/xyz', sessionKey: SESSION, source: 'site' })
+// 2. Tracking: beacon anónimo válido (con timezone)
+let r = await track({ path: '/index.html', referrer: 'https://www.instagram.com/p/xyz', sessionKey: SESSION, source: 'site', timezone: 'America/Mexico_City' })
 check('Track: beacon anónimo aceptado', r.status === 200 && r.json?.ok === true, `status ${r.status}`)
 
-// 3. Referrer sanitizado a origen
-r = await api(`/rest/v1/page_views?select=referrer,device,browser&session_key=eq.${SESSION}`, { token: evilLogin.access_token })
-// (este token es patient → no debe leer; la comprobación real de lectura va con admin abajo)
+// 3. Timezone maliciosa: el WAF del gateway la bloquea (403) o la función la ignora (200)
+r = await track({ path: '/tz', sessionKey: SESSION, source: 'site', timezone: "bad'; DROP TABLE--" })
+check('Track: timezone maliciosa bloqueada/ignorada', r.status === 200 || r.status === 403, `status ${r.status}`)
 
 // 4. Path inválido rechazado
 r = await track({ path: 'javascript:alert(1)', sessionKey: SESSION, source: 'site' })
@@ -71,10 +73,11 @@ if (ADMIN_PASSWORD) {
   if (!adminLogin.access_token) {
     check('Admin login para verificación', false, 'credenciales admin inválidas')
   } else {
-    r = await api(`/rest/v1/page_views?select=path,referrer,device,browser&session_key=eq.${SESSION}`, { token: adminLogin.access_token })
+    r = await api(`/rest/v1/page_views?select=path,referrer,device,browser,timezone&session_key=eq.${SESSION}&path=eq.%2Findex.html`, { token: adminLogin.access_token })
     const row = r.json?.[0]
     check('Admin: lee la vista registrada', r.status === 200 && !!row, `status ${r.status}`)
     check('Admin: referrer sanitizado a origen', row?.referrer === 'https://www.instagram.com', `referrer=${row?.referrer}`)
+    check('Admin: timezone guardado en la vista', row?.timezone === 'America/Mexico_City', `timezone=${row?.timezone}`)
     // 8. Cleanup de SOLO los rows de prueba
     r = await api(`/rest/v1/page_views?session_key=eq.${SESSION}`, { method: 'DELETE', token: adminLogin.access_token })
     check('Cleanup: admin borra solo las filas de prueba', r.status === 200 || r.status === 204, `status ${r.status}`)

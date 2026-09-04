@@ -13,6 +13,8 @@ const corsHeaders = {
 const VALID_PATH = /^\/[A-Za-z0-9\-_./%?=&+#]*$/;
 const VALID_SOURCE = /^(site|app)$/;
 const VALID_SESSION = /^[A-Za-z0-9-]{8,64}$/;
+// Zona horaria IANA (America/Mexico_City, Europe/Madrid, Etc/GMT+5...)
+const VALID_TZ = /^[A-Za-z0-9_\/+-]{1,64}$/;
 
 const rateByIp = new Map();
 function rateLimit(ip) {
@@ -63,6 +65,7 @@ Deno.serve(async (req) => {
   const referrer = typeof payload.referrer === "string" ? payload.referrer.trim().slice(0, 500) : null;
   const sessionKey = typeof payload.sessionKey === "string" ? payload.sessionKey.trim() : "";
   const source = typeof payload.source === "string" && VALID_SOURCE.test(payload.source) ? payload.source : "site";
+  const timezone = typeof payload.timezone === "string" && VALID_TZ.test(payload.timezone) ? payload.timezone : null;
 
   // Sanitiza referrer: solo origen (protocolo + host) para no filtrar datos de
   // las páginas externas ni query strings con tokens.
@@ -99,6 +102,7 @@ Deno.serve(async (req) => {
     source,
     device,
     browser,
+    timezone,
   });
 
   if (error) {

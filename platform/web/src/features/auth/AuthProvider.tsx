@@ -125,7 +125,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       options: {
         // Estos metadatos son leídos por el trigger handle_new_user() en la base de datos
         // para crear el perfil atómicamente dentro de la misma transacción.
-        data: { full_name: fullName, role },
+        // `timezone` (zona horaria IANA del navegador) alimenta la geografía aproximada
+        // del panel Admin (país/ciudad), sin usar IP.
+        data: {
+          full_name: fullName,
+          role,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || undefined,
+        },
       },
     })
 

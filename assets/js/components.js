@@ -187,7 +187,8 @@
                         path: window.location.pathname,
                         referrer: document.referrer || null,
                         sessionKey: sid,
-                        source: 'site'
+                        source: 'site',
+                        timezone: (window.Intl && Intl.DateTimeFormat().resolvedOptions().timeZone) || null
                     }),
                     keepalive: true
                 }).catch(function () { /* offline: se omite */ });
