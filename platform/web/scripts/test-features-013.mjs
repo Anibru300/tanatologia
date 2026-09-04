@@ -24,7 +24,6 @@ const env = Object.fromEntries(
 const SUPABASE_URL = env.VITE_SUPABASE_URL
 const ANON = env.VITE_SUPABASE_ANON_KEY
 const CRON_SECRET = process.env.CRON_SECRET
-const REF = SUPABASE_URL.match(/https:\/\/([a-z0-9]+)\.supabase\.co/)?.[1]
 
 const ts = Date.now().toString(36)
 const EMAIL_PAT = `e2e-f13-${ts}-pat@test.somos-calma.com`

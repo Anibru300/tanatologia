@@ -439,3 +439,10 @@ enabled = true
 # No recibe JWT de usuario; usa service role internamente.
 verify_jwt = false
 entrypoint = "./functions/appointment-reminders/index.ts"
+
+[functions.track-view]
+enabled = true
+# Beacon público de analítica first-party. Rate-limit por IP en la función y por
+# sesión en el trigger 016; escribe con service role (la tabla no acepta inserts directos).
+verify_jwt = false
+entrypoint = "./functions/track-view/index.ts"

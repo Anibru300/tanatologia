@@ -123,6 +123,14 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - `siteConfig.pricing` (app y sitio) queda como fuente central reservada — no añadir consumidores en UI durante la Beta.
 - Legales (terminos/cancelacion/aviso-privacidad) ✅ actualizados 2026-09-03 a versión "sin pagos" para la Beta: sin membresías/cargos/reembolsos vigentes; pagos futuros solo con aviso de 30 días y consentimiento expreso.
 
+## Analíticas (panel Admin, 2026-09-04)
+- **First-party**: tabla `page_views` (migración 016) alimentada por la Edge Function pública `track-view` (rate-limit 60/min por IP y por sesión; único escritor, service role; referrer sanitizado a origen). Beacons en `assets/js/components.js` (sitio, 17 páginas) y `platform/web/index.html` (app, por hashchange). Lectura/borrado solo admin (RLS).
+- **Panel**: `/admin/analiticas` (`AdminAnalytics.tsx`) — visitas por día (sitio vs app), sesiones únicas, referrers ("de dónde nos visitan"), páginas más vistas, dispositivos/navegadores, registros por día (pacientes/profesionales) y citas creadas por estado. Rangos 7/30/90 días. GA4 (G-CJ0QQ9JY27) sigue activo como complemento.
+- **Pruebas**: `scripts/test-analytics.mjs` (10/10; requiere `ADMIN_PASSWORD` para la parte admin).
+
+## Seguridad
+- **Fix crítico (migración 017)**: el trigger `handle_new_user()` aceptaba `role: 'admin'`/`'support'` desde el metadata del signup (escalación de privilegios vía API). Ahora el self-signup solo permite patient/professional; cualquier otro valor se degrada a patient. Los admins se crean solo desde el Dashboard de Supabase o SQL con service role.
+
 ## Funciones de la Beta 1.1 (2026-09-02) — recordatorios, encuesta de registro y reseñas
 - **Recordatorios de cita:** Edge Function `appointment-reminders` (pg_cron cada 10 min vía `net.http_post` con header `x-cron-secret`; secreto `CRON_SECRET` en vault). Envía email (Resend) 24 h y 15 min antes a paciente y profesional con botón de sala y enlace a Google Calendar, e inserta notificación in-app (`type=appointment_reminder`). Banderas `appointments.reminder_24h_sent`/`reminder_15m_sent` con claim atómico. **WhatsApp:** requiere WhatsApp Business API (Meta/Twilio, de pago) → pendiente de decisión del cliente (ver `docs/encuesta-matching-investigacion.md` §4).
 - **Encuesta de registro (intake):** `patient_profiles.intake` (JSONB) + `intake_completed_at`. Wizard en `/paciente/encuesta` (se ofrece tras el registro y desde el banner del dashboard). Bloque A filtra el directorio (nivel de necesidad → `specialties[]` del profesional); Bloque B = tamizaje OPCIONAL PHQ-9 + GAD-7 (instrumentos validados, dominio público; ítem 9 del PHQ-9 > 0 muestra tarjeta de crisis). Investigación: `docs/encuesta-matching-investigacion.md`.
