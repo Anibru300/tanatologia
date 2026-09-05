@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-CsLdoyK9.js";import{t}from"./AccountSettings-Css9AVr0.js";var n=e();function r(){return(0,n.jsx)(t,{profilePath:`/app/#/paciente/perfil`,profileLabel:`Mi perfil`})}export{r as PatientSettings};

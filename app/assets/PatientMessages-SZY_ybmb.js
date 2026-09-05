@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-CsLdoyK9.js";import{t}from"./MessagesInterim-BjXKGJEN.js";var n=e();function r(){return(0,n.jsx)(t,{audience:`patient`,appointmentsTo:`/paciente/citas`,appointmentsLabel:`Ir a mis citas`})}export{r as PatientMessages};
