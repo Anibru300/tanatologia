@@ -82,6 +82,7 @@
             </div>
             <div class="footer__bottom">
                 <p>&copy; <span id="year"></span> SOMOS-CALMA. Todos los derechos reservados.</p>
+                <p class="footer__credit">Música de fondo: «Gymnopédie No. 1» de <a href="https://incompetech.com" target="_blank" rel="noopener">Kevin MacLeod</a> (incompetech.com), licenciada bajo <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons: By Attribution 4.0</a>.</p>
             </div>
         </div>
     </footer>
