@@ -148,7 +148,13 @@ export function RootLayout() {
             </div>
           </div>
           <div className="border-t border-white/20 mt-8 pt-8 text-center text-sm text-white/60">
-            © {new Date().getFullYear()} SOMOS-CALMA. Todos los derechos reservados.
+            <p>© {new Date().getFullYear()} SOMOS-CALMA. Todos los derechos reservados.</p>
+            <p className="mt-2 text-xs text-white/50">
+              Música de fondo: «Gymnopédie No. 1» de{' '}
+              <a href="https://incompetech.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/80">Kevin MacLeod</a>{' '}
+              (incompetech.com), licenciada bajo{' '}
+              <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/80">Creative Commons: By Attribution 4.0</a>.
+            </p>
           </div>
         </div>
       </footer>
