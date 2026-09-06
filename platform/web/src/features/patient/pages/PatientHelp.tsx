@@ -1,7 +1,13 @@
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
-import { Phone, Mail, MessageCircle, AlertTriangle } from 'lucide-react'
+import { Phone, Mail, MessageCircle, AlertTriangle, Send } from 'lucide-react'
 import { LinkButton } from '@/components/ui/LinkButton'
+import { Alert } from '@/components/ui/Alert'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
 import { siteConfig } from '@/lib/siteConfig'
+import { supabase } from '@/lib/supabase'
 
 const faqs = [
   { q: '¿Cómo agendo una cita?', a: 'Ve a "Agendar cita", elige el tipo de servicio, fecha y hora.' },
@@ -10,6 +16,45 @@ const faqs = [
 ]
 
 export function PatientHelp() {
+  const [subject, setSubject] = useState('')
+  const [message, setMessage] = useState('')
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+
+  const canSend = subject.trim().length > 0 && message.trim().length > 0 && !sending
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!canSend) return
+    setSending(true)
+    setError('')
+    setNotice('')
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('support-request', {
+        body: { subject: subject.trim(), message: message.trim() },
+      })
+      if (invokeError) {
+        const status = (invokeError as { context?: Response }).context?.status
+        const backendMsg = data && typeof data === 'object' ? (data as { error?: string }).error : undefined
+        throw new Error(
+          backendMsg ||
+            (status === 429
+              ? 'Demasiados mensajes. Espera un minuto e inténtalo de nuevo.'
+              : invokeError.message)
+        )
+      }
+      if (!data?.ok) throw new Error(data?.error || 'No se pudo enviar tu mensaje.')
+      setNotice('Recibimos tu mensaje. Te responderemos a tu correo registrado lo antes posible.')
+      setSubject('')
+      setMessage('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo enviar tu mensaje.')
+    } finally {
+      setSending(false)
+    }
+  }
+
   return (
     <div className="section-calma">
       <div className="container-calma max-w-3xl">
@@ -44,6 +89,40 @@ export function PatientHelp() {
                 <p className="text-text-light text-sm">{faq.a}</p>
               </div>
             ))}
+          </CardContent>
+        </Card>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Enviar mensaje a soporte</CardTitle>
+            <CardDescription>Escríbenos desde aquí y te respondemos a tu correo registrado.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && <Alert variant="error">{error}</Alert>}
+              {notice && <Alert variant="success">{notice}</Alert>}
+              <Input
+                label="Asunto"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                maxLength={150}
+                placeholder="¿En qué podemos ayudarte?"
+              />
+              <Textarea
+                label="Mensaje"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={6}
+                maxLength={3000}
+                placeholder="Describe tu duda o problema…"
+              />
+              <div className="pt-2">
+                <Button type="submit" disabled={!canSend}>
+                  <Send size={16} className="mr-2" />
+                  {sending ? 'Enviando…' : 'Enviar mensaje'}
+                </Button>
+              </div>
+            </form>
           </CardContent>
         </Card>
 
