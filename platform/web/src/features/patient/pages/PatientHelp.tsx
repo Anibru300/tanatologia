@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Mail, MessageCircle, AlertTriangle, Send, ChevronDown, PlayCircle, Search, HelpCircle } from 'lucide-react'
@@ -81,7 +81,10 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
 const externalLink =
   'text-primary-dark font-medium hover:underline'
 
+const topicChips = ['Citas', 'Videollamada', 'Cuenta', 'Privacidad', 'Otro'] as const
+
 export function PatientHelp() {
+  const formRef = useRef<HTMLDivElement>(null)
   const [subject, setSubject] = useState('Pregunta desde la sección de Ayuda')
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -96,9 +99,20 @@ export function PatientHelp() {
   const filteredFaqs = faqs.filter((faq) => {
     const matchesCategory = category === 'Todas' || faq.c === category
     const term = search.trim().toLowerCase()
-    const matchesSearch = !term || faq.q.toLowerCase().includes(term)
+    const answerText = typeof faq.a === 'string' ? faq.a.toLowerCase() : ''
+    const matchesSearch = !term || faq.q.toLowerCase().includes(term) || answerText.includes(term)
     return matchesCategory && matchesSearch
   })
+
+  function pickTopic(topic: string) {
+    setSubject(`[${topic}] — describe tu duda`)
+    setNotice('')
+    setError('')
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    window.setTimeout(() => {
+      formRef.current?.querySelector('textarea')?.focus()
+    }, 400)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -264,17 +278,33 @@ export function PatientHelp() {
           </CardContent>
         </Card>
 
-        <Card id="formulario-soporte" className="mb-6 scroll-mt-6 border-primary/30">
+        <Card id="formulario-soporte" ref={formRef} className="mb-6 scroll-mt-6 border-primary/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <HelpCircle size={20} className="text-primary-dark" />
               ¿Tienes otra pregunta?
             </CardTitle>
             <CardDescription>
-              Escríbela aquí y te respondemos a tu correo registrado. También puedes responder directamente al correo que te enviemos.
+              Elige un tema para pre-llenar el asunto, o escríbenos directo. Te respondemos a tu correo registrado.
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {topicChips.map((chip) => (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() => pickTopic(chip)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    subject.startsWith(`[${chip}]`)
+                      ? 'bg-primary-dark text-white'
+                      : 'bg-primary/10 text-primary-dark hover:bg-primary/20'
+                  }`}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && <Alert variant="error">{error}</Alert>}
               {notice && <Alert variant="success">{notice}</Alert>}
