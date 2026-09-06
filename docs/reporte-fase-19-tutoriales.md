@@ -17,23 +17,20 @@ Todos h264 ~1364×600 @30fps + AAC 48kHz; sin duplicados ni corruptos.
 ## CLASIFICACIÓN (revisión visual completa, 5 dictámenes + auditoría PII frame-a-frame)
 | Video | Dictamen | Decisión |
 |-------|----------|----------|
-| v1 | 🔴 NO PUBLICABLE | `rejected` — PII real distribuida en **todo** el metraje (nombre completo, correo Gmail, teléfono, fecha de nacimiento, contacto de emergencia, popup de gestor de contraseñas ~16:05, explorador de archivos personal ~02:57). Cuenta real; creó y canceló una cita real. Requiere **re-grabación** con cuenta de demostración. |
+| v1 | 🔴 NO PUBLICABLE (dictamen técnico) | `approved` **por decisión del dueño (2026-09-06)** — contiene PII real distribuida en **todo** el metraje (nombre completo, correo Gmail, teléfono, fecha de nacimiento, contacto de emergencia de un tercero, popup de gestor de contraseñas ~16:05, explorador de archivos personal ~02:57). Cuenta real; creó y canceló una cita real. El dueño aceptó el riesgo; se recomienda re-grabación futura con cuenta demo. Subido a 1280w CRF 21 (31 MB). |
 | v2 | 🟡 REQUIERE_EDICION | `approved` (editado) — único PII: nombre "Carlos Urías" en el pie del sidebar (zona fija). Videollamada no muestra llamada real (menú ligeramente desactualizado, documentado en la descripción). |
 | v3 | 🟡 REQUIERE_EDICION | `approved` (editado) — correo `ing.carlosurbina@gmail.com` en Configuración (2 puntos) + tel/cédula en Mi perfil durante el repaso; sección Ayuda desfasada (sin formulario de soporte nuevo). |
 | v4 | 🟡 REQUIERE_EDICION | `approved` (editado) — **explorador de archivos personal** (carpetas "Bitácora", "PNRS", "Primera Milla (Dario)"…) en 3:17–3:22 que los revisores no habían detectado, correo Gmail visible 3:14–4:10, avatar foto personal. |
-| v5 | 🔴 NO PUBLICABLE | `rejected` — el flujo de verificación **falla en cámara** (02:11–02:38); ese error **ya está corregido en producción** (verificado 2026-09-06 con cuenta de prueba real: `submit_for_review` → `in_review`), por lo que el video está desactualizado. Además: explorador de archivos personal 01:41–01:44, omite subida de cédula/título, nombre "Carlos Ojeda" persistente. Requiere **re-grabación** (~90 s). |
+| v5 | 🔴 NO PUBLICABLE (dictamen técnico) | `approved` **por decisión del dueño (2026-09-06)** — el flujo de verificación **falla en cámara** (02:11–02:38; error ya corregido en producción, verificado `submit_for_review` → `in_review`), muestra explorador de archivos personal 01:41–01:44 y omite la subida de cédula/título. El dueño aceptó publicarlo; se recomienda re-grabación (~90 s). Subido a 1280w CRF 21 (6.9 MB). |
 
 ## PUBLICADOS
 **Ninguno a usuarios.** Verificado en producción: paciente autenticado consulta `tutorials?status=published` → `[]`; intento de signed URL de video `approved` por paciente → 404. Admin firma y descarga OK (200, 10.6 MB).
 
-Subidos como `approved` (listos para el clic final en `/admin/tutoriales`):
-1. **Dashboard y Mi Perfil del Profesional** (v4 editado, 6:11, 10.7 MB)
-2. **Agenda, disponibilidad, pacientes, notas clínicas y videollamadas** (v2 editado, 6:16, 10.6 MB)
-3. **Mensajes, feedback, configuración y recorrido completo** (v3 editado, 3:46, 7.1 MB)
+**Los 5 videos están subidos como `approved` (listos, NO publicados).** Los 3 profesionales editados (v2/v3/v4) pasaron la auditoría PII; v1 y v5 fueron aprobados por decisión expresa del dueño pese a los hallazgos de privacidad/desactualización (detalle arriba) — con re-grabación recomendada cuando sea posible.
 
 ## PENDIENTES (para el dueño)
-1. **Ver los 3 videos editados** y, si están bien, pasarlos a `published` desde `/admin/tutoriales` (o pedirme que lo haga).
-2. **Re-grabar v1** (portal del paciente) y **v5** (verificación profesional) con **cuentas de demostración** — guion mínimo en las descripciones de los registros `rejected`. Grabar a 1080p, ocultar el explorador de archivos, sin gestor de contraseñas a la vista.
+1. **Ver los 5 videos** en `/admin/tutoriales` y pasarlos a `published` los que apruebe (o pedirme que lo haga).
+2. **(Recomendado) Re-grabar v1 y v5** con cuentas de demostración — v1 expone PII real propia y de un tercero; v5 muestra un error ya corregido y el explorador de archivos. Grabar a 1080p.
 3. Escucha humana final de la narración de los 3 editados (verificado automáticamente: pista AAC presente con voz, mean −31 dB; no se evaluó contenido verbal).
 4. Decisión de anonimato: en v4 se dejó visible el nombre "Carlos Urbina" en el saludo del dashboard (los profesionales son públicos por diseño en el directorio); el pie del sidebar va borroso en los 3. Si se prefiere anonimato total, se re-graba.
 

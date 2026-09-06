@@ -82,26 +82,30 @@ function broadcastHtml(subject: string, bodyText: string): string {
 async function sendBatch(
   items: { to: string; subject: string; html: string }[],
 ): Promise<{ ok: boolean }[]> {
-  const res = await fetch("https://api.resend.com/emails/batch", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(
-      items.map((e) => ({ from: RESEND_FROM_EMAIL, to: [e.to], subject: e.subject, html: e.html })),
-    ),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    console.error("Resend batch falló:", res.status, text);
-    return items.map(() => ({ ok: false }));
+  // Envío individual secuencial: el endpoint /emails/batch de Resend fue rechazado
+  // en producción (2026-09-06) mientras el envío simple funciona (lo usan send-email,
+  // user-emails, contact-form). Se respeta el rate limit con pausa entre envíos.
+  const results: { ok: boolean }[] = [];
+  for (const e of items) {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ from: RESEND_FROM_EMAIL, to: [e.to], subject: e.subject, html: e.html }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Resend rechazó:", e.to, res.status, text);
+      results.push({ ok: false });
+    } else {
+      const data = await res.json();
+      results.push({ ok: Boolean(data?.id) });
+    }
+    await new Promise((r) => setTimeout(r, 400));
   }
-  const data = await res.json();
-  // Responde array [{id}, ...] alineado con el request.
-  return Array.isArray(data)
-    ? data.map((d: { id?: string }) => ({ ok: Boolean(d?.id) }))
-    : items.map(() => ({ ok: false }));
+  return results;
 }
 
 Deno.serve(async (req) => {
