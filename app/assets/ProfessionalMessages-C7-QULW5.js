@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-CsLdoyK9.js";import{t}from"./MessagesInterim-CwGEVa7R.js";var n=e();function r(){return(0,n.jsx)(t,{audience:`professional`,appointmentsTo:`/profesional/agenda`,appointmentsLabel:`Ir a mi agenda`})}export{r as ProfessionalMessages};

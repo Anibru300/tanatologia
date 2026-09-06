@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-CsLdoyK9.js";import{t}from"./AccountSettings-DGV_JW8v.js";var n=e();function r(){return(0,n.jsx)(t,{profilePath:`/app/#/profesional/perfil`,profileLabel:`Mi perfil`})}export{r as ProfessionalSettings};
