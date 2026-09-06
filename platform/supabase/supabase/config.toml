@@ -454,6 +454,20 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/user-emails/index.ts"
 
+[functions.admin-contact]
+enabled = true
+# Admin contacta a un paciente/profesional desde su perfil. Correo de marca +
+# notificación in-app (admin_message). Solo rol admin; valida JWT internamente.
+verify_jwt = false
+entrypoint = "./functions/admin-contact/index.ts"
+
+[functions.support-request]
+enabled = true
+# Soporte desde los portales (paciente/profesional autenticados). Llega a
+# CONTACT_INBOX con reply_to del usuario + notificación in-app (support_request).
+verify_jwt = false
+entrypoint = "./functions/support-request/index.ts"
+
 [functions.send-broadcast]
 enabled = true
 # Comunicados (newsletter) desde el panel admin. Requiere sesión de admin; la
