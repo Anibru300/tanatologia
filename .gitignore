@@ -27,3 +27,4 @@ build/
 # Entorno
 .env
 .env.local
+.tools/
