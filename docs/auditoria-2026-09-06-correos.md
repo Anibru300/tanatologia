@@ -100,10 +100,11 @@ de soporte/recordatorios en el Webmail de Hostinger.
    chunks `AdminBroadcasts`/`AdminPatients`/`AdminProfessionals` servidos en
    `somos-calma.com/app/assets/` (200) y contienen la integración `admin-contact`.
 3. **Entregabilidad (accepted vs delivered):** todos los envíos fueron *accepted*
-   por Resend/SES (200, `sent:N`, `failed:0` en cada respuesta). El estado
-   *delivered/bounced* no es consultable con la API key de solo-envío; se verifica
-   en el dashboard de Resend (Logs) y visualmente en bandejas — confirmación del
-   dueño de la cuenta.
+   por Resend/SES (200, `sent:N`, `failed:0` en cada respuesta). **Delivered
+   confirmado el 2026-09-06 por el dueño de las bandejas:** los correos llegaron a
+   la bandeja de entrada de Gmail (bienvenidas ×3, admin-contact, recuperación de
+   contraseña) y a la bandeja de entrada del Webmail de Hostinger (soporte y
+   formulario público) — ninguno en spam. Sin rebotes (`failed:0`).
 4. **mailto: restantes — todos intencionales:** `AdminQuotes` (módulo legacy de
    cotizaciones, diferido), `MessagesInterim` (placeholder "pronto"), tarjetas
    "Otros medios de contacto" en Help (alternativa al formulario funcional) y
