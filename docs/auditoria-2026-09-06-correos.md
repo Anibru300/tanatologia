@@ -86,6 +86,35 @@ de soporte/recordatorios en el Webmail de Hostinger.
   contenido; destinatario siempre deducido del servidor, nunca arbitrario.
 - Errores al usuario en español y genéricos; detalle técnico solo en logs.
 
+## Fase de cierre (misma sesión) — GO/NO-GO
+
+1. **Segunda rotación de CRON_SECRET (crítico):** al commitear la migración 021 el
+   NUEVO secreto quedó también en el repo. Detectado en la búsqueda de secretos de
+   la fase de cierre. Acciones: (a) rotación #3 aplicada (vault + Edge Function
+   secret), valor nunca versionado; (b) migración 021 sanitizada en el repo (el
+   valor se removió, queda nota documentada; la migración ya había sido aplicada);
+   (c) verificado: valor del repo rechazado (401) y cadena vault → dispatch →
+   funciones operando (200). Los tres valores históricos conocidos quedan
+   invalidados.
+2. **Deploy verificado en producción:** GitHub Actions success en ambos commits;
+   chunks `AdminBroadcasts`/`AdminPatients`/`AdminProfessionals` servidos en
+   `somos-calma.com/app/assets/` (200) y contienen la integración `admin-contact`.
+3. **Entregabilidad (accepted vs delivered):** todos los envíos fueron *accepted*
+   por Resend/SES (200, `sent:N`, `failed:0` en cada respuesta). El estado
+   *delivered/bounced* no es consultable con la API key de solo-envío; se verifica
+   en el dashboard de Resend (Logs) y visualmente en bandejas — confirmación del
+   dueño de la cuenta.
+4. **mailto: restantes — todos intencionales:** `AdminQuotes` (módulo legacy de
+   cotizaciones, diferido), `MessagesInterim` (placeholder "pronto"), tarjetas
+   "Otros medios de contacto" en Help (alternativa al formulario funcional) y
+   footer de la plantilla admin-contact. Ninguno debía reemplazarse.
+5. **Re-verificación de seguridad (usuario temporal, luego eliminado):** paciente
+   → admin-contact 403; paciente → tercero vía send-email 403; paciente →
+   send-broadcast 403; secreto inválido → user-emails 401; soporte autenticado 200.
+6. **Datos de prueba:** 0 restos (auth, profiles, citas, broadcasts, notificaciones).
+7. **admin@demo.com:** cuenta de pruebas E2E conservada; contraseña de auditoría
+   reemplazada por una aleatoria fuerte entregada al dueño por canal privado.
+
 ## Pendientes / observaciones (no bloquean)
 
 1. Confirmación visual por el usuario de las bandejas (Gmail + Webmail).

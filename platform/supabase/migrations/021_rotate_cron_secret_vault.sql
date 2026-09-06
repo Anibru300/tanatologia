@@ -18,8 +18,14 @@
 BEGIN;
 
 -- 1. Nuevo secreto en vault (idempotente: borra el anterior si existiera)
+-- ⚠️ VALOR NO VERSIONADO: la instrucción original insertaba el secreto en texto
+-- plano y fue REMOVIDA tras detectar la exposición. El valor vigente solo vive en
+-- el vault de Supabase y en el Edge Function secret CRON_SECRET (rotado de nuevo
+-- el 2026-09-06 en esta misma sesión; los valores históricos del repo quedaron
+-- invalidados). Para reproducir: INSERT manual con vault.create_secret('<valor>', ...)
+-- ejecutado localmente, nunca commiteado.
+-- (El DELETE anterior se conserva por idempotencia.)
 DELETE FROM vault.secrets WHERE name = 'CRON_SECRET';
-SELECT vault.create_secret('36bdef37afffb50a279af8d5f058193dfb58f1eb', 'CRON_SECRET', 'Compartido pg_net/edge functions (user-emails, appointment-reminders). Rotado 2026-09-06; el valor previo quedó expuesto en repo (migración 020).');
 
 -- 2. dispatch_user_email lee del vault (best-effort, sin secretos en el código)
 CREATE OR REPLACE FUNCTION public.dispatch_user_email(p_type TEXT, p_payload JSONB)

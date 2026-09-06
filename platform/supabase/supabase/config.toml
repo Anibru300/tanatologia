@@ -482,3 +482,4 @@ enabled = true
 # aplica RLS). Sin secrets JAAS_* responde 501 y el frontend usa meet.jit.si.
 verify_jwt = true
 entrypoint = "./functions/jaas-token/index.ts"
+
