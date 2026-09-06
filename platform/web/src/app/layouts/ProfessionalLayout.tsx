@@ -12,6 +12,7 @@ import {
   MessageSquare,
   MessageSquarePlus,
   BookOpen,
+  GraduationCap,
   Settings,
   HelpCircle,
 } from 'lucide-react'
@@ -29,6 +30,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/profesional/mensajes', icon: MessageSquare, label: 'Mensajes' },
   { to: '/profesional/feedback', icon: MessageSquarePlus, label: 'Feedback' },
   { to: '/profesional/recursos', icon: BookOpen, label: 'Recursos', soon: true },
+  { to: '/profesional/tutoriales', icon: GraduationCap, label: 'Tutoriales' },
   { to: '/profesional/configuracion', icon: Settings, label: 'Configuración' },
   { to: '/profesional/ayuda', icon: HelpCircle, label: 'Ayuda' },
 ]

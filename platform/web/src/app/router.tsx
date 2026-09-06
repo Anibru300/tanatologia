@@ -62,6 +62,11 @@ const PatientFeedback = lazy(() =>
 const IntakeSurvey = lazy(() =>
   import('@/features/intake/pages/IntakeSurvey').then((m) => ({ default: m.IntakeSurvey }))
 )
+const PatientTutorials = lazy(() =>
+  import('@/features/tutorials/pages/TutorialsPage').then((m) => ({
+    default: () => <m.TutorialsPage audience="patient" />,
+  }))
+)
 
 // Professional pages
 const ProfessionalDashboard = lazy(() =>
@@ -106,6 +111,11 @@ const ProfessionalSettings = lazy(() =>
 const ProfessionalFeedback = lazy(() =>
   import('@/features/professional/pages/ProfessionalFeedback').then((m) => ({ default: m.ProfessionalFeedback }))
 )
+const ProfessionalTutorials = lazy(() =>
+  import('@/features/tutorials/pages/TutorialsPage').then((m) => ({
+    default: () => <m.TutorialsPage audience="professional" />,
+  }))
+)
 
 // Admin pages
 const AdminDashboard = lazy(() =>
@@ -143,6 +153,9 @@ const AdminAnalytics = lazy(() =>
 )
 const AdminBroadcasts = lazy(() =>
   import('@/features/admin/pages/AdminBroadcasts').then((m) => ({ default: m.AdminBroadcasts }))
+)
+const AdminTutorials = lazy(() =>
+  import('@/features/admin/pages/AdminTutorials').then((m) => ({ default: m.AdminTutorials }))
 )
 
 import type { UserRole } from '@/features/auth/types'
@@ -233,6 +246,7 @@ export function AppRouter() {
         <Route path="ayuda" element={<PatientHelp />} />
         <Route path="feedback" element={<PatientFeedback />} />
         <Route path="encuesta" element={<IntakeSurvey />} />
+        <Route path="tutoriales" element={<PatientTutorials />} />
         <Route path="configuracion" element={<PatientSettings />} />
         <Route path="sala/:appointmentId" element={<PatientVideoRoom />} />
       </Route>
@@ -261,6 +275,7 @@ export function AppRouter() {
         <Route path="configuracion" element={<ProfessionalSettings />} />
         <Route path="ayuda" element={<ProfessionalHelp />} />
         <Route path="feedback" element={<ProfessionalFeedback />} />
+        <Route path="tutoriales" element={<ProfessionalTutorials />} />
         <Route path="sala/:appointmentId" element={<ProfessionalVideoRoom />} />
       </Route>
 
@@ -286,6 +301,7 @@ export function AppRouter() {
         <Route path="feedback" element={<AdminFeedback />} />
         <Route path="analiticas" element={<AdminAnalytics />} />
         <Route path="comunicados" element={<AdminBroadcasts />} />
+        <Route path="tutoriales" element={<AdminTutorials />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
