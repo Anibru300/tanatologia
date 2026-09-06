@@ -51,7 +51,7 @@ jobs:
 
       - name: Subir build como artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-build
           path: platform/web/dist
