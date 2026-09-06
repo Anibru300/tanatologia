@@ -447,6 +447,20 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/track-view/index.ts"
 
+[functions.user-emails]
+enabled = true
+# Función INTERNA: correos transaccionales (bienvenida, cancelación, verificación)
+# disparados por triggers vía pg_net con el header x-cron-secret. Service role interno.
+verify_jwt = false
+entrypoint = "./functions/user-emails/index.ts"
+
+[functions.send-broadcast]
+enabled = true
+# Comunicados (newsletter) desde el panel admin. Requiere sesión de admin; la
+# función valida el JWT internamente (mismo patrón que send-email).
+verify_jwt = false
+entrypoint = "./functions/send-broadcast/index.ts"
+
 [functions.jaas-token]
 enabled = true
 # Firma JWT de JaaS (8x8.vc) para la sala de una cita. Requiere sesión del

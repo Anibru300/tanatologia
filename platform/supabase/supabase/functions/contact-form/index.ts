@@ -93,7 +93,8 @@ Deno.serve(async (req) => {
     empresa: "Empresa o institución",
   };
 
-  const html = `
+  const html = `<!DOCTYPE html>
+  <html><head><meta charset="UTF-8"></head><body>
     <h2 style="font-family: sans-serif; color: #4a5d43;">Nuevo mensaje de contacto — somos-calma.com</h2>
     <table style="font-family: sans-serif; font-size: 15px; border-collapse: collapse;">
       <tr><td style="padding: 6px 12px; font-weight: bold;">Nombre:</td><td style="padding: 6px 12px;">${escapeHtml(nombre)}</td></tr>
@@ -103,7 +104,7 @@ Deno.serve(async (req) => {
     <p style="font-family: sans-serif; font-size: 15px; font-weight: bold; margin-bottom: 4px;">Mensaje:</p>
     <p style="font-family: sans-serif; font-size: 15px; white-space: pre-wrap; background: #f7f5f2; padding: 12px; border-radius: 8px;">${escapeHtml(mensaje)}</p>
     <p style="font-family: sans-serif; font-size: 12px; color: #888;">Puedes responder directamente a este correo (Reply-To: ${escapeHtml(email)}).</p>
-  `;
+  </body></html>`;
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
