@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Mail, MessageCircle, Send, ChevronDown, PlayCircle, Search, HelpCircle } from 'lucide-react'
@@ -11,13 +11,14 @@ import { Badge } from '@/components/ui/Badge'
 import { siteConfig } from '@/lib/siteConfig'
 import { supabase } from '@/lib/supabase'
 
-type Category = 'Verificación' | 'Agenda' | 'Videollamada' | 'Perfil' | 'Beta'
+type Category = 'Verificación' | 'Agenda' | 'Videollamada' | 'Perfil' | 'Privacidad' | 'Beta'
 
-const categories: ('Todas' | Category)[] = ['Todas', 'Verificación', 'Agenda', 'Videollamada', 'Perfil', 'Beta']
+const categories: ('Todas' | Category)[] = ['Todas', 'Verificación', 'Agenda', 'Videollamada', 'Perfil', 'Privacidad', 'Beta']
 
 const linkStyle = 'text-primary-dark font-medium hover:underline'
 
-const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
+// k = texto plano de la respuesta, usado para el buscador
+const faqs: { q: string; c: Category; k: string; a: React.ReactNode }[] = [
   {
     q: '¿Cómo publico mi disponibilidad para recibir citas?',
     c: 'Agenda',
@@ -30,6 +31,7 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
         Agenda te lo mostramos paso a paso.
       </>
     ),
+    k: 'disponibilidad horarios bloques calendario 50 minutos sesión publicar editar eliminar',
   },
   {
     q: '¿Cómo me verifico para aparecer en el directorio?',
@@ -42,6 +44,7 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
         para los pacientes. Te avisamos por correo y con una notificación en el portal.
       </>
     ),
+    k: 'cédula profesional sep documentos título identificación aprobar directorio revisión credenciales',
   },
   {
     q: '¿Dónde veo mis citas y cómo entro a la videollamada?',
@@ -54,16 +57,19 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
         notificación automática.
       </>
     ),
+    k: 'citas sesiones ordenadas fecha sala acceso notificación confirmar cancelar',
   },
   {
     q: '¿Cómo funcionan las videollamadas? ¿Necesito instalar algo?',
     c: 'Videollamada',
     a: 'No. La videollamada se abre directamente en el navegador (Chrome, Edge o Firefox recomendados), sin instalar programas ni crear cuentas. Al entrar verás una prueba de cámara y micrófono: verifica que el navegador tenga permisos concedidos. Si tu firewall o red corporativa bloquea la llamada, usa el botón "Abrir en pestaña nueva" que aparece en la pantalla de error, o intenta desde otra red.',
+    k: 'navegador chrome edge firefox instalar cámara micrófono permisos firewall red bloqueo pestaña',
   },
   {
     q: '¿Qué pasa si mi paciente no se conecta a la sesión?',
     c: 'Videollamada',
     a: 'La sala del paciente también se abre 15 minutos antes; espera dentro de la sala al menos 15 minutos después de la hora de inicio. Si no aparece, puedes registrar la ausencia en tu agenda y escribirnos por este formulario si necesitas liberar o ajustar ese horario. Los recordatorios automáticos (24 h y 15 min antes) reducen mucho las faltas.',
+    k: 'paciente falta ausente no se conecta esperar ausencia liberar horario recordatorios',
   },
   {
     q: '¿Cómo escribo notas clínicas de mis sesiones?',
@@ -76,6 +82,7 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
         de la cita.
       </>
     ),
+    k: 'notas clínicas evolución privadas historial sesión registrar',
   },
   {
     q: '¿Cómo completo mi perfil para que los pacientes me elijan?',
@@ -88,6 +95,7 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
         si lo tienes.
       </>
     ),
+    k: 'foto biografía formación especialidades idiomas experiencia directorio video presentación reseñas',
   },
   {
     q: '¿Dónde veo la información de mis pacientes?',
@@ -99,21 +107,25 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
         clínicas. Recuerda que su información está protegida: úsala solo para fines de tu acompañamiento profesional.
       </>
     ),
+    k: 'pacientes información historial encuesta registro datos protegida acompañamiento',
   },
   {
     q: '¿Cómo recibo y respondo las reseñas de mis pacientes?',
     c: 'Perfil',
     a: 'Al terminar una cita, el paciente puede dejarte una reseña anónima con calificación de 1 a 5 estrellas y un comentario. Las reseñas se publican en tu perfil del directorio y alimentan tu promedio visible. No puedes editarlas, pero si recibes una reseña que consideres inapropiada, escríbenos por este formulario y la revisamos.',
+    k: 'reseñas calificación estrellas comentario anónima promedio directorio inapropiada',
   },
   {
     q: '¿Tiene algún costo participar como profesional?',
     c: 'Beta',
     a: 'No. Durante la Beta de Somos Calma tu acceso es completamente gratuito: no hay comisiones, membresías ni pagos de ningún tipo, y no te pediremos datos bancarios. Si en el futuro se integra algún modelo de pago, te avisaremos con al menos 30 días de anticipación y tú decides si continuar.',
+    k: 'costo gratis gratuito comisiones membresías pagos bancarios futuro aviso',
   },
   {
     q: '¿Olvidé mi contraseña o quiero cambiar mi correo?',
     c: 'Perfil',
     a: 'En la pantalla de inicio de sesión presiona "¿Olvidaste tu contraseña?" y recibirás un correo para restablecerla (revisa spam si no llega). Para cambiar tu correo de acceso o tu contraseña dentro del portal, usa la sección Configuración del menú lateral.',
+    k: 'contraseña olvidé correo cambiar restablecer spam configuración acceso',
   },
   {
     q: '¿Cómo doy mi opinión o reporto un problema con la plataforma?',
@@ -125,10 +137,33 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
         puedes escribirnos directamente por el formulario de esta página o por WhatsApp.
       </>
     ),
+    k: 'opinión sugerencias reportes feedback calificación estrellas problema',
+  },
+  {
+    q: '¿Cómo se protegen los datos clínicos de mis pacientes?',
+    c: 'Privacidad',
+    a: (
+      <>
+        La plataforma opera conforme a la NOM-004 y al aviso de privacidad: las notas clínicas y la información de tus
+        pacientes están cifradas, solo tú tienes acceso a sus expedientes y el acceso administrativo es mínimo y auditado.
+        Nunca compartas credenciales ni exportes datos a servicios externos sin consentimiento. Si detectas cualquier
+        acceso sospechoso, repórtalo de inmediato por este formulario.
+      </>
+    ),
+    k: 'nom-004 datos clínicos protección cifrado privacidad expediente acceso sospechoso seguridad confidencial',
+  },
+  {
+    q: '¿Qué recordatorios automáticos reciben mis pacientes?',
+    c: 'Agenda',
+    a: 'El sistema envía a tu paciente y a ti un correo recordatorio 24 horas antes de cada sesión y otro 15 minutos antes, con el enlace directo a la sala y un botón para agregarla a Google Calendar. Tú recibes además una notificación dentro del portal cada vez que se confirma o cancela una cita. No necesitas configurar nada: funciona automáticamente con cada cita agendada.',
+    k: 'recordatorios correo 24 horas 15 minutos google calendar notificación automático confirmar cancelar',
   },
 ]
 
+const topicChips = ['Agenda', 'Verificación', 'Videollamada', 'Perfil', 'Privacidad', 'Cuenta', 'Otro'] as const
+
 export function ProfessionalHelp() {
+  const formRef = useRef<HTMLDivElement>(null)
   const [subject, setSubject] = useState('Pregunta desde la sección de Ayuda')
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -143,9 +178,20 @@ export function ProfessionalHelp() {
   const filteredFaqs = faqs.filter((faq) => {
     const matchesCategory = category === 'Todas' || faq.c === category
     const term = search.trim().toLowerCase()
-    const matchesSearch = !term || faq.q.toLowerCase().includes(term)
+    const matchesSearch =
+      !term || faq.q.toLowerCase().includes(term) || faq.k.toLowerCase().includes(term)
     return matchesCategory && matchesSearch
   })
+
+  function pickTopic(topic: string) {
+    setSubject(`[${topic}] — describe tu duda`)
+    setNotice('')
+    setError('')
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    window.setTimeout(() => {
+      formRef.current?.querySelector('textarea')?.focus()
+    }, 400)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -283,17 +329,33 @@ export function ProfessionalHelp() {
           </CardContent>
         </Card>
 
-        <Card id="formulario-soporte" className="mb-6 scroll-mt-6 border-primary/30">
+        <Card id="formulario-soporte" ref={formRef} className="mb-6 scroll-mt-6 border-primary/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <HelpCircle size={20} className="text-primary-dark" />
               ¿Tienes otra pregunta?
             </CardTitle>
             <CardDescription>
-              Escríbela aquí y te respondemos a tu correo registrado. También puedes responder directamente al correo que te enviemos.
+              Elige un tema para pre-llenar el asunto, o escríbenos directo. Te respondemos a tu correo registrado.
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {topicChips.map((chip) => (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() => pickTopic(chip)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    subject.startsWith(`[${chip}]`)
+                      ? 'bg-primary-dark text-white'
+                      : 'bg-primary/10 text-primary-dark hover:bg-primary/20'
+                  }`}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && <Alert variant="error">{error}</Alert>}
               {notice && <Alert variant="success">{notice}</Alert>}
