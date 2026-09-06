@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Headphones,
   BarChart3,
+  Megaphone,
 } from 'lucide-react'
 
 const menuItems: PortalMenuItem[] = [
@@ -24,6 +25,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/admin/auditoria', icon: Shield, label: 'Auditoría' },
   { to: '/admin/feedback', icon: Inbox, label: 'Feedback' },
   { to: '/admin/analiticas', icon: BarChart3, label: 'Flujo de la página' },
+  { to: '/admin/comunicados', icon: Megaphone, label: 'Comunicados' },
   { to: '/admin/soporte', icon: Headphones, label: 'Soporte', soon: true },
 ]
 

@@ -141,6 +141,9 @@ const AdminFeedback = lazy(() =>
 const AdminAnalytics = lazy(() =>
   import('@/features/admin/pages/AdminAnalytics').then((m) => ({ default: m.AdminAnalytics }))
 )
+const AdminBroadcasts = lazy(() =>
+  import('@/features/admin/pages/AdminBroadcasts').then((m) => ({ default: m.AdminBroadcasts }))
+)
 
 import type { UserRole } from '@/features/auth/types'
 
@@ -282,6 +285,7 @@ export function AppRouter() {
         <Route path="soporte" element={<AdminSupport />} />
         <Route path="feedback" element={<AdminFeedback />} />
         <Route path="analiticas" element={<AdminAnalytics />} />
+        <Route path="comunicados" element={<AdminBroadcasts />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
