@@ -1,11 +1,16 @@
-import { MessagesInterim } from '@/features/messages/MessagesInterim'
+import { useSearchParams } from 'react-router-dom'
+import { ChatPage } from '@/features/messages/ChatPage'
 
 export function ProfessionalMessages() {
+  const [searchParams] = useSearchParams()
+  const withParam = searchParams.get('with')
+
   return (
-    <MessagesInterim
+    <ChatPage
       audience="professional"
-      appointmentsTo="/profesional/agenda"
-      appointmentsLabel="Ir a mi agenda"
+      emptyActionTo="/profesional/pacientes"
+      emptyActionLabel="Ver mis pacientes"
+      initialCounterpartyId={withParam}
     />
   )
 }

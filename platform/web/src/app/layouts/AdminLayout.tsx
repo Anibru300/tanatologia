@@ -13,6 +13,7 @@ import {
   BarChart3,
   Megaphone,
   GraduationCap,
+  MessagesSquare,
 } from 'lucide-react'
 
 const menuItems: PortalMenuItem[] = [
@@ -28,6 +29,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/admin/analiticas', icon: BarChart3, label: 'Flujo de la página' },
   { to: '/admin/comunicados', icon: Megaphone, label: 'Comunicados' },
   { to: '/admin/tutoriales', icon: GraduationCap, label: 'Tutoriales' },
+  { to: '/admin/chats', icon: MessagesSquare, label: 'Chats' },
   { to: '/admin/soporte', icon: Headphones, label: 'Soporte', soon: true },
 ]
 

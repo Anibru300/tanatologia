@@ -157,6 +157,9 @@ const AdminBroadcasts = lazy(() =>
 const AdminTutorials = lazy(() =>
   import('@/features/admin/pages/AdminTutorials').then((m) => ({ default: m.AdminTutorials }))
 )
+const AdminChats = lazy(() =>
+  import('@/features/admin/pages/AdminChats').then((m) => ({ default: m.AdminChats }))
+)
 
 import type { UserRole } from '@/features/auth/types'
 
@@ -302,6 +305,7 @@ export function AppRouter() {
         <Route path="analiticas" element={<AdminAnalytics />} />
         <Route path="comunicados" element={<AdminBroadcasts />} />
         <Route path="tutoriales" element={<AdminTutorials />} />
+        <Route path="chats" element={<AdminChats />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -133,6 +133,15 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - **Pruebas**: `scripts/test-analytics.mjs` (13/13; requiere `ADMIN_PASSWORD=demo123` para la parte admin).
 - Migraciones 013–018 aplicadas en Cloud (recordatorios/intake/reseñas, fixes 014/015, page_views 016, fix rol 017, timezone 018). **Ninguna migración pendiente.**
 
+## Chat paciente↔profesional (2026-09-06, migración 023)
+- **Tablas:** `conversations` (1 por par paciente/profesional, UNIQUE) y `messages` (texto ≤2000 y/o adjunto; `deleted_by_moderation`). **Regla de oro:** solo puede existir conversación si hay ≥1 cita NO cancelada entre ambos (`can_chat()`).
+- **Escritura SOLO vía RPCs SECURITY DEFINER** (`start_conversation`, `send_message`, `mark_conversation_read`): el cliente jamás inserta en las tablas (sin políticas de escritura). `send_message` crea la notificación in-app `chat_message` al otro participante.
+- **Adjuntos:** bucket privado `chat-attachments` (10 MB/archivo, imágenes + PDF). El path ES `{conversation_id}/{uuid}-{nombre}` — la política de subida valida que el primer segmento sea una conversación donde `auth.uid()` es participante. Signed URLs 1 h. Si `send_message` falla tras subir, el frontend borra el archivo (rollback).
+- **Realtime:** SOLO `conversations` en la publicación (REPLICA IDENTITY FULL). Los `messages` NUNCA se publican: su contenido viajaría por WAL sin RLS; al llegar el evento el cliente refetchea por REST.
+- **Supervisión silenciosa del admin:** RLS de lectura para admin en ambas tablas + panel `/admin/chats` (menú "Chats"). `moderate_message()` marca `deleted_by_moderation` y audita en `audit_logs`; los participantes ven "Mensaje eliminado por moderación" sin identidad del admin. Sin indicador de lectura: supervisión totalmente silenciosa. El admin no puede enviar mensajes.
+- **UI:** `src/features/messages/` (`ChatPage`, `ConversationThread`, `messagesService`). Acceso: menú "Mensajes" en ambos portales + botón "Mensaje" en `ProfessionalPatients`, `ProfessionalAppointments` y `PatientAppointments` (navega con `?with=<profile_id>`).
+- **Pruebas:** `scripts/test-chat.mjs` (28/28; requiere `ADMIN_EMAIL`/`ADMIN_PASSWORD`).
+
 ## Seguridad
 - **Fix crítico (migración 017)**: el trigger `handle_new_user()` aceptaba `role: 'admin'`/`'support'` desde el metadata del signup (escalación de privilegios vía API). Ahora el self-signup solo permite patient/professional; cualquier otro valor se degrada a patient. Los admins se crean solo desde el Dashboard de Supabase o SQL con service role.
 
