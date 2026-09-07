@@ -53,6 +53,10 @@ anfitrión) debe entrar primero; la app ya lo indica en pantalla. La migración 
 - [ ] Validaciones de profesionales pendientes (`/admin/verificacion`).
 - [ ] Feedback nuevo (`/admin/feedback`): clasificar y priorizar.
 - [ ] Reportes de videollamadas fallidas (sala no abre, micrófono/cámara).
+- [ ] **PRUEBA PENDIENTE (2026-09-07): videollamada real 2 personas en JaaS/8x8.vc** —
+      Ctrl+F5 en ambos navegadores; confirmar duración > 5 min y calidad 720p;
+      verificar que `JAAS_KID` no esté truncado (debe terminar en `-<NOMBRE_APP>`).
+      Detalle: `docs/avance-2026-09-06-videollamadas-fallback.md`.
 - [ ] Errores en Edge Functions (Supabase > Edge Functions > Logs).
 - [ ] Formulario de contacto: correos rebotados o no entregados.
 
