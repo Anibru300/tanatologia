@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { PhoneOff } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { Alert } from '@/components/ui/Alert'
 import { DeviceCheck } from './DeviceCheck'
 import { JitsiMeetingRoom } from './JitsiMeetingRoom'
 import { fetchJaasToken, type JaasToken } from '@/lib/jaasService'
@@ -39,13 +40,36 @@ export function VideoCallExperience({
   const [joined, setJoined] = useState(false)
   const [videoMuted, setVideoMuted] = useState(false)
   const [jaas, setJaas] = useState<JaasToken | null>(null)
+  /** Motivo por el que no hay token JaaS (fallback a meet.jit.si de 5 min). */
+  const [jaasWarning, setJaasWarning] = useState<string | null>(null)
 
   useEffect(() => {
     if (!appointmentId) return
     let cancelled = false
-    fetchJaasToken(appointmentId).then((token) => {
-      if (!cancelled) setJaas(token)
-    })
+    let attempts = 0
+
+    async function tryFetch() {
+      attempts++
+      const { token, reason } = await fetchJaasToken(appointmentId!)
+      if (cancelled) return
+      if (token) {
+        setJaas(token)
+        setJaasWarning(null)
+      } else if (attempts < 2) {
+        // Un reintento cubre cold-start o un fallo de red transitorio.
+        setTimeout(tryFetch, 2000)
+      } else {
+        // Fallback a meet.jit.si (límite de 5 min): visible, no silencioso.
+        console.error(`[videollamada] sin token JaaS: ${reason}`)
+        setJaasWarning(
+          'No pudimos activar la sala principal de videollamada, así que usarás la sala de ' +
+            'respaldo (máximo 5 minutos). Recarga la página con Ctrl+F5 e inténtalo de nuevo; ' +
+            `si el problema continúa, contacta a soporte. Motivo: ${reason}.`,
+        )
+      }
+    }
+
+    tryFetch()
     return () => {
       cancelled = true
     }
@@ -86,6 +110,11 @@ export function VideoCallExperience({
                 <p className="text-sm text-secondary-dark bg-secondary/10 p-3 rounded-sm">
                   {preJoinTip}
                 </p>
+              )}
+              {jaasWarning && (
+                <Alert variant="warning" className="text-left">
+                  {jaasWarning}
+                </Alert>
               )}
               <DeviceCheck
                 onContinue={({ startWithVideoMuted }) => {
