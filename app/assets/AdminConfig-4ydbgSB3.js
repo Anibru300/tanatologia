@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-CsLdoyK9.js";import{t}from"./AccountSettings-COB7kVzK.js";var n=e();function r(){return(0,n.jsx)(t,{})}export{r as AdminConfig};
