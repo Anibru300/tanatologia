@@ -4,8 +4,9 @@ import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { Video, CalendarDays, CheckCircle, XCircle, Star } from 'lucide-react'
+import { Video, CalendarDays, CheckCircle, XCircle, Star, MessageSquare } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import {
   getProfessionalProfileId,
@@ -14,6 +15,7 @@ import {
   type Appointment,
 } from '@/features/appointments/appointmentsService'
 import { RatingDialog } from '@/features/reviews/RatingDialog'
+import { getProfileIdBySubprofile } from '@/features/messages/messagesService'
 import {
   getRatedAppointmentIdsForProfessional,
   submitPatientReview,
@@ -29,6 +31,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export function ProfessionalAppointments() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -39,6 +42,19 @@ export function ProfessionalAppointments() {
   const [professionalProfileId, setProfessionalProfileId] = useState<string | null>(null)
   const [ratedIds, setRatedIds] = useState<string[]>([])
   const [ratingTarget, setRatingTarget] = useState<Appointment | null>(null)
+  const [openingChatFor, setOpeningChatFor] = useState<string | null>(null)
+
+  async function openChat(patientProfileId: string) {
+    setOpeningChatFor(patientProfileId)
+    setActionError('')
+    try {
+      const userId = await getProfileIdBySubprofile(patientProfileId, 'patient')
+      navigate(`/profesional/mensajes?with=${encodeURIComponent(userId)}`)
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'No se pudo abrir el chat.')
+      setOpeningChatFor(null)
+    }
+  }
 
   useEffect(() => {
     if (!user) return
@@ -204,6 +220,17 @@ export function ProfessionalAppointments() {
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1"
+                            title="Enviar mensaje al paciente"
+                            disabled={openingChatFor === a.patient_profile_id}
+                            onClick={() => openChat(a.patient_profile_id)}
+                          >
+                            <MessageSquare size={14} />
+                            Mensaje
+                          </Button>
                           {a.video_link && (
                             <Link to={`/profesional/sala/${a.id}`}>
                               <Button size="sm" variant="primary" className="gap-1">

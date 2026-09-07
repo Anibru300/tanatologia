@@ -4,8 +4,8 @@ import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Calendar, Clock, Video, Star } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Calendar, Clock, Video, Star, MessageSquare } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import {
   getPatientProfileId,
@@ -19,6 +19,7 @@ import {
   getRatedAppointmentIdsForPatient,
   submitProfessionalReview,
 } from '@/features/reviews/reviewsService'
+import { getProfileIdBySubprofile } from '@/features/messages/messagesService'
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -38,6 +39,7 @@ const STATUS_VARIANTS: Record<string, 'success' | 'info' | 'warning' | 'error' |
 
 export function PatientAppointments() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -48,6 +50,19 @@ export function PatientAppointments() {
   const [patientProfileId, setPatientProfileId] = useState<string | null>(null)
   const [ratedIds, setRatedIds] = useState<string[]>([])
   const [ratingTarget, setRatingTarget] = useState<Appointment | null>(null)
+  const [openingChatFor, setOpeningChatFor] = useState<string | null>(null)
+
+  async function openChat(professionalProfileId: string) {
+    setOpeningChatFor(professionalProfileId)
+    setActionError('')
+    try {
+      const userId = await getProfileIdBySubprofile(professionalProfileId, 'professional')
+      navigate(`/paciente/mensajes?with=${encodeURIComponent(userId)}`)
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'No se pudo abrir el chat.')
+      setOpeningChatFor(null)
+    }
+  }
 
   const handleCancel = async (apt: Appointment) => {
     try {
@@ -157,6 +172,17 @@ export function PatientAppointments() {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1"
+                      title="Enviar mensaje a tu profesional"
+                      disabled={openingChatFor === apt.professional_profile_id}
+                      onClick={() => openChat(apt.professional_profile_id)}
+                    >
+                      <MessageSquare size={14} />
+                      Mensaje
+                    </Button>
                     {apt.status === 'confirmed' && apt.video_link && (
                       <Link to={`/paciente/sala/${apt.id}`}>
                         <Button size="sm" className="gap-1">

@@ -5,7 +5,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'
 import { Search, Users, ChevronDown, ChevronUp, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import {
   getProfessionalProfileId,
@@ -13,6 +13,7 @@ import {
   type Appointment,
 } from '@/features/appointments/appointmentsService'
 import { getPatientRatingsForProfessional } from '@/features/reviews/reviewsService'
+import { getProfileIdBySubprofile } from '@/features/messages/messagesService'
 
 type PatientRow = {
   id: string
@@ -59,6 +60,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export function ProfessionalPatients() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [patients, setPatients] = useState<PatientRow[]>([])
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
@@ -66,6 +68,20 @@ export function ProfessionalPatients() {
   const [error, setError] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [ratings, setRatings] = useState<Map<string, { rating: number; rating_count: number }>>(new Map())
+  const [openingChatFor, setOpeningChatFor] = useState<string | null>(null)
+  const [chatError, setChatError] = useState('')
+
+  async function openChat(patientProfileId: string) {
+    setOpeningChatFor(patientProfileId)
+    setChatError('')
+    try {
+      const userId = await getProfileIdBySubprofile(patientProfileId, 'patient')
+      navigate(`/profesional/mensajes?with=${encodeURIComponent(userId)}`)
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : 'No se pudo abrir el chat.')
+      setOpeningChatFor(null)
+    }
+  }
 
   useEffect(() => {
     if (!user) return
@@ -128,6 +144,7 @@ export function ProfessionalPatients() {
         </div>
 
         {error && <Alert variant="error" className="mb-4 p-3 rounded-sm">{error}</Alert>}
+        {chatError && <Alert variant="error" className="mb-4 p-3 rounded-sm">{chatError}</Alert>}
 
         <Card>
           <CardContent className="p-0">
@@ -235,11 +252,21 @@ export function ProfessionalPatients() {
                                     ))}
                                   </ul>
                                 )}
-                                <Link to="/profesional/notas">
-                                  <Button size="sm" variant="outline">
-                                    Escribir nota clínica
+                                <div className="flex flex-wrap gap-2">
+                                  <Link to="/profesional/notas">
+                                    <Button size="sm" variant="outline">
+                                      Escribir nota clínica
+                                    </Button>
+                                  </Link>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={openingChatFor === p.id}
+                                    onClick={() => openChat(p.id)}
+                                  >
+                                    {openingChatFor === p.id ? 'Abriendo…' : 'Enviar mensaje'}
                                   </Button>
-                                </Link>
+                                </div>
                               </td>
                             </tr>
                           )}
