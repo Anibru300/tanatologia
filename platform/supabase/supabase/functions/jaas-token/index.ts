@@ -18,6 +18,17 @@ import { createClient } from "jsr:@supabase/supabase-js@^2";
 
 const ALLOWED_STATUS = ["pending", "confirmed"];
 
+// CORS: la función se invoca desde el navegador (supabase.functions.invoke),
+// cuyo preflight OPTIONS hay que responder con los headers explícitamente.
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+function json(body: unknown, status = 200) {
+  return Response.json(body, { status, headers: corsHeaders });
+}
+
 function b64url(data: Uint8Array | string): string {
   const bytes = typeof data === "string" ? new TextEncoder().encode(data) : data;
   let bin = "";
@@ -55,8 +66,11 @@ async function signRs256(payload: object, kid: string, pem: string): Promise<str
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
   if (req.method !== "POST") {
-    return Response.json({ error: "Method not allowed" }, { status: 405 });
+    return json({ error: "Method not allowed" }, 405);
   }
 
   let appointmentId = "";
@@ -70,7 +84,7 @@ Deno.serve(async (req) => {
     (typeof appointmentId !== "string" || appointmentId.length === 0) &&
     testRoom.length === 0
   ) {
-    return Response.json({ error: "appointmentId o testRoom requerido" }, { status: 400 });
+    return json({ error: "appointmentId o testRoom requerido" }, 400);
   }
 
   // Cliente con el JWT del usuario: el RLS de appointments garantiza que solo
@@ -84,7 +98,7 @@ Deno.serve(async (req) => {
 
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) {
-    return Response.json({ error: "No autenticado" }, { status: 401 });
+    return json({ error: "No autenticado" }, 401);
   }
   const user = userData.user;
 
@@ -94,7 +108,7 @@ Deno.serve(async (req) => {
   if (testRoom) {
     // Sala de prueba del panel admin: sin cita real, solo administradores.
     if (!/^[a-zA-Z0-9_-]{3,80}$/.test(testRoom)) {
-      return Response.json({ error: "testRoom inválido" }, { status: 400 });
+      return json({ error: "testRoom inválido" }, 400);
     }
     const { data: profile } = await supabase
       .from("profiles")
@@ -102,7 +116,7 @@ Deno.serve(async (req) => {
       .eq("id", user.id)
       .single();
     if (profile?.role !== "admin") {
-      return Response.json({ error: "Se requiere rol de administrador" }, { status: 403 });
+      return json({ error: "Se requiere rol de administrador" }, 403);
     }
     room = testRoom;
     moderator = true;
@@ -113,10 +127,10 @@ Deno.serve(async (req) => {
       .eq("id", appointmentId)
       .single();
     if (apptError || !appt?.video_link) {
-      return Response.json({ error: "Cita no encontrada" }, { status: 404 });
+      return json({ error: "Cita no encontrada" }, 404);
     }
     if (!ALLOWED_STATUS.includes(appt.status)) {
-      return Response.json({ error: "La cita no está activa" }, { status: 409 });
+      return json({ error: "La cita no está activa" }, 409);
     }
 
     // ¿Es el profesional de la cita? → moderador de la sala.
@@ -134,7 +148,7 @@ Deno.serve(async (req) => {
   const pem = Deno.env.get("JAAS_PRIVATE_KEY");
   if (!appId || !kid || !pem) {
     // JaaS aún no configurado: el frontend cae a meet.jit.si automáticamente.
-    return Response.json({ error: "JaaS no configurado" }, { status: 501 });
+    return json({ error: "JaaS no configurado" }, 501);
   }
 
   const now = Math.floor(Date.now() / 1000);
@@ -165,7 +179,7 @@ Deno.serve(async (req) => {
     pem,
   );
 
-  return Response.json({
+  return json({
     jwt,
     appId,
     domain: Deno.env.get("JAAS_DOMAIN") || "8x8.vc",
