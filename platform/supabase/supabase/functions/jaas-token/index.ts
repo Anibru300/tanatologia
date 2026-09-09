@@ -5,6 +5,11 @@ import { createClient } from "jsr:@supabase/supabase-js@^2";
 // el profesional entra como moderador. Sin los secrets de JaaS configurados
 // responde 501 y el frontend sigue usando meet.jit.si (fallback automático).
 //
+// Modo prueba (panel admin): body { testRoom: "nombre-sala" } en lugar de
+// appointmentId. Verifica que el usuario sea administrador (profiles.role) y
+// firma el JWT para esa sala con moderator=true. Permite probar las
+// videollamadas JaaS (sin límite de 5 min de meet.jit.si) sin crear citas.
+//
 // Secrets requeridos (supabase secrets set):
 //   JAAS_APP_ID      → vpaas-magic-cookie-xxxxxxxxxxxx
 //   JAAS_KID         → API Key ID del par de claves de JaaS
@@ -55,11 +60,17 @@ Deno.serve(async (req) => {
   }
 
   let appointmentId = "";
+  let testRoom = "";
   try {
-    appointmentId = (await req.json())?.appointmentId ?? "";
+    const body = await req.json();
+    appointmentId = body?.appointmentId ?? "";
+    testRoom = typeof body?.testRoom === "string" ? body.testRoom.trim() : "";
   } catch { /* cuerpo inválido */ }
-  if (typeof appointmentId !== "string" || appointmentId.length === 0) {
-    return Response.json({ error: "appointmentId requerido" }, { status: 400 });
+  if (
+    (typeof appointmentId !== "string" || appointmentId.length === 0) &&
+    testRoom.length === 0
+  ) {
+    return Response.json({ error: "appointmentId o testRoom requerido" }, { status: 400 });
   }
 
   // Cliente con el JWT del usuario: el RLS de appointments garantiza que solo
@@ -77,25 +88,46 @@ Deno.serve(async (req) => {
   }
   const user = userData.user;
 
-  const { data: appt, error: apptError } = await supabase
-    .from("appointments")
-    .select("id, video_link, status, professional_profile_id")
-    .eq("id", appointmentId)
-    .single();
-  if (apptError || !appt?.video_link) {
-    return Response.json({ error: "Cita no encontrada" }, { status: 404 });
-  }
-  if (!ALLOWED_STATUS.includes(appt.status)) {
-    return Response.json({ error: "La cita no está activa" }, { status: 409 });
-  }
+  let room: string;
+  let moderator: boolean;
 
-  // ¿Es el profesional de la cita? → moderador de la sala.
-  const { data: proProfile } = await supabase
-    .from("professional_profiles")
-    .select("profile_id")
-    .eq("id", appt.professional_profile_id)
-    .single();
-  const moderator = proProfile?.profile_id === user.id;
+  if (testRoom) {
+    // Sala de prueba del panel admin: sin cita real, solo administradores.
+    if (!/^[a-zA-Z0-9_-]{3,80}$/.test(testRoom)) {
+      return Response.json({ error: "testRoom inválido" }, { status: 400 });
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (profile?.role !== "admin") {
+      return Response.json({ error: "Se requiere rol de administrador" }, { status: 403 });
+    }
+    room = testRoom;
+    moderator = true;
+  } else {
+    const { data: appt, error: apptError } = await supabase
+      .from("appointments")
+      .select("id, video_link, status, professional_profile_id")
+      .eq("id", appointmentId)
+      .single();
+    if (apptError || !appt?.video_link) {
+      return Response.json({ error: "Cita no encontrada" }, { status: 404 });
+    }
+    if (!ALLOWED_STATUS.includes(appt.status)) {
+      return Response.json({ error: "La cita no está activa" }, { status: 409 });
+    }
+
+    // ¿Es el profesional de la cita? → moderador de la sala.
+    const { data: proProfile } = await supabase
+      .from("professional_profiles")
+      .select("profile_id")
+      .eq("id", appt.professional_profile_id)
+      .single();
+    room = appt.video_link;
+    moderator = proProfile?.profile_id === user.id;
+  }
 
   const appId = Deno.env.get("JAAS_APP_ID");
   const kid = Deno.env.get("JAAS_KID");
@@ -111,7 +143,7 @@ Deno.serve(async (req) => {
       aud: "jitsi",
       iss: "chat",
       sub: appId,
-      room: appt.video_link,
+      room,
       exp: now + 3 * 3600,
       nbf: now - 10,
       context: {

@@ -26,6 +26,22 @@ function statusOf(error: unknown): number | null {
  * el motivo del fallo para mostrarlo (antes el fallback era silencioso y
  * las sesiones morían a los 5 min sin que nadie supiera por qué).
  */
+function parseTokenResult(data: unknown): JaasResult {
+  const d = data as Record<string, unknown> | null
+  if (!d?.jwt || !d?.appId || !d?.domain) {
+    return { token: null, reason: 'respuesta incompleta de jaas-token' }
+  }
+  return {
+    token: {
+      jwt: String(d.jwt),
+      appId: String(d.appId),
+      domain: String(d.domain),
+      moderator: Boolean(d.moderator),
+    },
+    reason: null,
+  }
+}
+
 export async function fetchJaasToken(appointmentId: string): Promise<JaasResult> {
   try {
     const { data, error } = await supabase.functions.invoke('jaas-token', {
@@ -41,18 +57,33 @@ export async function fetchJaasToken(appointmentId: string): Promise<JaasResult>
         status ? `error ${status}` : error.message ?? 'error de red'
       return { token: null, reason }
     }
-    if (!data?.jwt || !data?.appId || !data?.domain) {
-      return { token: null, reason: 'respuesta incompleta de jaas-token' }
+    return parseTokenResult(data)
+  } catch (e) {
+    return { token: null, reason: e instanceof Error ? e.message : 'error de red' }
+  }
+}
+
+/**
+ * Pide un JWT de JaaS para una sala de PRUEBA del panel admin (sin cita).
+ * La Edge Function exige rol de administrador para testRoom (403 si no).
+ * NUNCA lanza: si JaaS no está configurado (501) el llamador decide qué hacer.
+ */
+export async function fetchJaasTestToken(roomName: string): Promise<JaasResult> {
+  try {
+    const { data, error } = await supabase.functions.invoke('jaas-token', {
+      body: { testRoom: roomName },
+    })
+    if (error) {
+      const status = statusOf(error)
+      const reason =
+        status === 401 ? 'sesión expirada (401)' :
+        status === 403 ? 'se requiere rol de administrador (403)' :
+        status === 400 ? 'nombre de sala inválido (400)' :
+        status === 501 ? 'JaaS no configurado (501)' :
+        status ? `error ${status}` : error.message ?? 'error de red'
+      return { token: null, reason }
     }
-    return {
-      token: {
-        jwt: String(data.jwt),
-        appId: String(data.appId),
-        domain: String(data.domain),
-        moderator: Boolean(data.moderator),
-      },
-      reason: null,
-    }
+    return parseTokenResult(data)
   } catch (e) {
     return { token: null, reason: e instanceof Error ? e.message : 'error de red' }
   }

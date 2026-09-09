@@ -160,6 +160,9 @@ const AdminTutorials = lazy(() =>
 const AdminChats = lazy(() =>
   import('@/features/admin/pages/AdminChats').then((m) => ({ default: m.AdminChats }))
 )
+const AdminVideoTest = lazy(() =>
+  import('@/features/admin/pages/AdminVideoTest').then((m) => ({ default: m.AdminVideoTest }))
+)
 
 import type { UserRole } from '@/features/auth/types'
 
@@ -306,6 +309,7 @@ export function AppRouter() {
         <Route path="comunicados" element={<AdminBroadcasts />} />
         <Route path="tutoriales" element={<AdminTutorials />} />
         <Route path="chats" element={<AdminChats />} />
+        <Route path="prueba-videollamada" element={<AdminVideoTest />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
