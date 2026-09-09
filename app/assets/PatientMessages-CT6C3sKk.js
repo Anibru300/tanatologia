@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-CsLdoyK9.js";import{t}from"./ChatPage-uDHCWY9f.js";import{O as n}from"./index-lORHSSP3.js";var r=e();function i(){let[e]=n(),i=e.get(`with`);return(0,r.jsx)(t,{audience:`patient`,emptyActionTo:`/paciente/agendar`,emptyActionLabel:`Agendar una cita`,initialCounterpartyId:i})}export{i as PatientMessages};
