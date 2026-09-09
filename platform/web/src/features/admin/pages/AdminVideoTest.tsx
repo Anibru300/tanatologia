@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState, lazy, Suspense } from 'react'
-import { Check, Copy, ExternalLink, RefreshCw, Video } from 'lucide-react'
+import { Check, Copy, ExternalLink, PhoneOff, RefreshCw, Video } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { useAuth } from '@/features/auth/useAuth'
+import { createDailyTestRoom } from '@/lib/dailyService'
 import { fetchJaasTestToken, type JaasToken } from '@/lib/jaasService'
 import { generateJitsiRoomName } from '@/lib/video'
 
@@ -13,6 +14,7 @@ const VideoCallExperience = lazy(() =>
 )
 
 type JaasStatus = 'checking' | 'ok' | 'not_configured' | 'error'
+type DailyStatus = 'idle' | 'creating' | 'ready' | 'not_configured' | 'error'
 
 const STATUS_BADGE: Record<JaasStatus, { variant: 'success' | 'warning' | 'error' | 'default'; label: string }> = {
   checking: { variant: 'default', label: 'Verificando…' },
@@ -38,6 +40,13 @@ export function AdminVideoTest() {
   const [reason, setReason] = useState<string | null>(null)
   const [active, setActive] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  // Comparación con Daily.co: la sala se crea bajo demanda (Edge Function con
+  // el API key protegido en Supabase) y se embebe con iframe fullscreen.
+  const [dailyStatus, setDailyStatus] = useState<DailyStatus>('idle')
+  const [dailyRoomUrl, setDailyRoomUrl] = useState<string | null>(null)
+  const [dailyReason, setDailyReason] = useState<string | null>(null)
+  const [dailyActive, setDailyActive] = useState(false)
 
   const checkToken = useCallback(async () => {
     setStatus('checking')
@@ -69,7 +78,48 @@ export function AdminVideoTest() {
     }
   }
 
-  // Sala activa: experiencia completa a viewport completo (DeviceCheck + Jitsi).
+  async function startDailyTest() {
+    if (dailyStatus === 'creating') return
+    setDailyStatus('creating')
+    setDailyReason(null)
+    const { room, reason } = await createDailyTestRoom()
+    if (room) {
+      setDailyRoomUrl(room.url)
+      setDailyStatus('ready')
+      setDailyActive(true)
+    } else {
+      setDailyRoomUrl(null)
+      setDailyReason(reason)
+      setDailyStatus(reason?.includes('(501)') ? 'not_configured' : 'error')
+    }
+  }
+
+  // Sala activa (JaaS): experiencia completa a viewport completo (DeviceCheck + Jitsi).
+  // Sala Daily activa: iframe Daily Prebuilt a viewport completo.
+  if (dailyActive && dailyRoomUrl) {
+    return (
+      <div className="fixed inset-0 z-[60] bg-bg flex flex-col">
+        <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-3 border-b border-border bg-surface shrink-0">
+          <div className="min-w-0">
+            <h1 className="text-lg font-bold text-text truncate">Prueba de videollamada — Daily.co</h1>
+            <p className="text-text-light text-xs sm:text-sm truncate">
+              Sala de prueba · sin límite de tiempo · la sala expira en ~3 h
+            </p>
+          </div>
+          <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={() => setDailyActive(false)}>
+            <PhoneOff size={16} /> Salir
+          </Button>
+        </div>
+        <iframe
+          src={dailyRoomUrl}
+          className="flex-1 min-h-0 w-full border-0"
+          allow="camera; microphone; fullscreen; autoplay; display-capture"
+          title="Sala de prueba Daily.co"
+        />
+      </div>
+    )
+  }
+
   if (active) {
     return (
       <Suspense
@@ -199,6 +249,66 @@ export function AdminVideoTest() {
                   Para probar entre dos personas: abre el enlace de arriba en una segunda pestaña
                   o en tu celular —ambas entran a la misma sala con token válido—, o copia el
                   nombre de la sala para unirte manualmente desde otro navegador.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Comparación con Daily.co (misma sala de prueba, otro proveedor) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                Comparar con Daily.co
+                {dailyStatus === 'creating' && <Badge variant="default">Creando sala…</Badge>}
+                {dailyStatus === 'ready' && <Badge variant="success">Sala lista</Badge>}
+                {dailyStatus === 'not_configured' && <Badge variant="warning">Daily no configurado</Badge>}
+                {dailyStatus === 'error' && <Badge variant="error">Error</Badge>}
+              </CardTitle>
+              <CardDescription>
+                Misma prueba con otro proveedor de videollamadas (iframe embebido). Entra con la
+                misma cámara y conexión y compara la nitidez contra la sala JaaS de arriba.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {dailyStatus === 'not_configured' && (
+                <Alert variant="warning">
+                  Falta el secret <code>DAILY_API_KEY</code> en Supabase. Para activarlo: crea una
+                  cuenta gratuita en daily.co, copia el API key (Dashboard → Developers) y ejecútalo
+                  con <code>supabase secrets set DAILY_API_KEY=tu_key</code>. El plan free incluye
+                  10,000 minutos/mes.
+                </Alert>
+              )}
+              {dailyStatus === 'error' && (
+                <Alert variant="error">No se pudo crear la sala de Daily. Motivo: {dailyReason}.</Alert>
+              )}
+              {dailyStatus === 'ready' && dailyRoomUrl && (
+                <div>
+                  <p className="text-text-light text-sm mb-1">URL de la sala (válida ~3 h)</p>
+                  <code className="block px-4 py-3 rounded-sm border border-border bg-bg-alt text-text text-sm break-all">
+                    {dailyRoomUrl}
+                  </code>
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button className="gap-2" onClick={startDailyTest} disabled={dailyStatus === 'creating'}>
+                  <Video size={18} />
+                  {dailyStatus === 'creating' ? 'Creando sala…' : 'Iniciar prueba con Daily'}
+                </Button>
+                {dailyStatus === 'ready' && dailyRoomUrl && (
+                  <a
+                    href={dailyRoomUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-sm border-2 border-primary text-primary-dark hover:bg-primary-dark hover:text-white transition-all"
+                  >
+                    <ExternalLink size={16} /> Abrir en pestaña nueva
+                  </a>
+                )}
+              </div>
+              {dailyStatus === 'ready' && (
+                <p className="text-text-light text-sm">
+                  Para probar entre dos personas: abre el enlace en una segunda pestaña o en tu
+                  celular —entran a la misma sala— y compara con la sala JaaS.
                 </p>
               )}
             </CardContent>
