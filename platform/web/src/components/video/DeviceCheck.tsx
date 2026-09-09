@@ -9,6 +9,8 @@ interface DeviceStatus {
   camera: boolean
   mic: boolean
   denied: boolean
+  /** Resolución y nombre de la cámara que negoció el navegador (diagnóstico). */
+  cameraInfo?: string
 }
 
 interface DeviceCheckProps {
@@ -35,11 +37,24 @@ export function DeviceCheck({ onContinue }: DeviceCheckProps) {
     let camera = false
     let mic = false
     let denied = false
+    let cameraInfo: string | undefined
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      // Pedimos el máximo (1080p) para diagnosticar qué negocia realmente el
+      // navegador: si aquí aparece 640×480 o una cámara distinta a la esperada
+      // (p. ej. cámara IR/virtual), ahí está la causa de la imagen pixelada.
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
+      })
       camera = stream.getVideoTracks().length > 0
       mic = stream.getAudioTracks().length > 0
+      const track = stream.getVideoTracks()[0]
+      if (track) {
+        const s = track.getSettings()
+        const dims = s.width && s.height ? `${s.width}×${s.height}` : 'resolución desconocida'
+        cameraInfo = `${dims}${track.label ? ` · ${track.label}` : ''}`
+      }
       stream.getTracks().forEach((t) => t.stop())
     } catch (err) {
       const name = err instanceof DOMException ? err.name : ''
@@ -56,7 +71,7 @@ export function DeviceCheck({ onContinue }: DeviceCheckProps) {
       }
     }
 
-    setStatus({ camera, mic, denied })
+    setStatus({ camera, mic, denied, cameraInfo })
     setState('done')
   }, [])
 
@@ -90,6 +105,9 @@ export function DeviceCheck({ onContinue }: DeviceCheckProps) {
           )}
           <span className="text-text">
             Cámara: {status.camera ? 'lista' : 'no disponible'}
+            {status.camera && status.cameraInfo && (
+              <span className="block text-text-light text-xs mt-0.5">{status.cameraInfo}</span>
+            )}
           </span>
         </li>
         <li className="flex items-center gap-2">
