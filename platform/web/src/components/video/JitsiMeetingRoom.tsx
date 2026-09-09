@@ -108,23 +108,28 @@ export function JitsiMeetingRoom({
       disableInviteFunctions: true,
       hideConferenceSubject: true,
       defaultLanguage: 'es',
-      // Calidad: 720p ideal para sesiones 1:1 (mejor nitidez que el
-      // adaptativo por defecto del servidor público, sin exigir de más).
-      resolution: 720,
+      // Calidad: preferir 1080p (la cámara cae a 720p/480p si no puede).
+      // OJO: minHeightForQualityLvl debe ir ANIDADO dentro de videoQuality;
+      // suelto en configOverwrite es ignorado (error común de Jitsi).
+      resolution: 1080,
       // Llamadas 1:1 siempre en alta resolución (-1 = nunca degradar a SD).
       maxFullResolutionParticipants: -1,
-      // Por defecto Jitsi solo pide la capa HD (720p) cuando el video mide
-      // 720px de alto EN PANTALLA; en laptops la sala embebida queda por
-      // debajo y se ve pixelada (capa de 360p). Bajamos el umbral para que
-      // pida alta calidad mucho antes.
-      minHeightForQualityLvl: {
-        240: 'standard',
-        360: 'high',
-      },
       constraints: {
         video: {
-          height: { ideal: 720, max: 1080 },
+          height: { ideal: 1080, max: 1080, min: 480 },
         },
+      },
+      videoQuality: {
+        // Pedir la capa HD con thumbnails pequeños: por defecto Jitsi solo
+        // pide 720p cuando el video mide 720px de alto en pantalla y en
+        // laptops la sala embebida queda debajo → capa de 360p (pixelada).
+        minHeightForQualityLvl: {
+          240: 'standard',
+          360: 'high',
+        },
+        // H.264 primero: acelerado por hardware en la mayoría de laptops;
+        // VP8 por software se ve "sucio"/pixelado bajo carga de CPU.
+        codecPreferenceOrder: ['H264', 'VP8', 'VP9'],
       },
     },
     interfaceConfigOverwrite: {
