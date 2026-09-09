@@ -483,3 +483,10 @@ enabled = true
 verify_jwt = true
 entrypoint = "./functions/jaas-token/index.ts"
 
+[functions.daily-test-room]
+enabled = true
+# Crea una sala de prueba en Daily.co solo para admin (comparación de calidad
+# en /admin/prueba-videollamada). Sin secret DAILY_API_KEY responde 501.
+verify_jwt = true
+entrypoint = "./functions/daily-test-room/index.ts"
+
