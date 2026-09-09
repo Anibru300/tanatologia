@@ -153,6 +153,20 @@ if (jaasConfigured) {
   console.log('   (JaaS sin configurar: se validó el fallback 501; el frontend usará meet.jit.si)')
 }
 
+// 8. Modo prueba (testRoom): paciente/profesional NO administradores → 403
+r = await fn({ testRoom: 'sala-prueba-jaas' }, patLogin.access_token)
+check('TestRoom: paciente (no admin) → 403', r.status === 403, `status ${r.status}`)
+r = await fn({ testRoom: 'sala-prueba-jaas' }, proLogin.access_token)
+check('TestRoom: profesional (no admin) → 403', r.status === 403, `status ${r.status}`)
+
+// 9. Modo prueba: nombre de sala inválido → 400 (antes del check de rol)
+r = await fn({ testRoom: 'sala con espacios y !@#' }, patLogin.access_token)
+check('TestRoom: sala inválida → 400', r.status === 400, `status ${r.status}`)
+
+// 10. Modo prueba: sin sesión → 401
+r = await fn({ testRoom: 'sala-prueba-jaas' })
+check('TestRoom: sin sesión → 401', r.status === 401, `status ${r.status}`)
+
 // Cleanup (statement por statement: el CLI puede no ejecutar varios en un solo -f)
 const cleanupStmts = [
   `DELETE FROM public.appointments WHERE id = '${apptId ?? '00000000-0000-0000-0000-000000000000'}';`,

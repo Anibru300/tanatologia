@@ -14,6 +14,7 @@ import {
   Megaphone,
   GraduationCap,
   MessagesSquare,
+  Video,
 } from 'lucide-react'
 
 const menuItems: PortalMenuItem[] = [
@@ -30,6 +31,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/admin/comunicados', icon: Megaphone, label: 'Comunicados' },
   { to: '/admin/tutoriales', icon: GraduationCap, label: 'Tutoriales' },
   { to: '/admin/chats', icon: MessagesSquare, label: 'Chats' },
+  { to: '/admin/prueba-videollamada', icon: Video, label: 'Prueba de video' },
   { to: '/admin/soporte', icon: Headphones, label: 'Soporte', soon: true },
 ]
 

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
 import { DeviceCheck } from './DeviceCheck'
 import { JitsiMeetingRoom } from './JitsiMeetingRoom'
-import { fetchJaasToken, type JaasToken } from '@/lib/jaasService'
+import { fetchJaasToken, type JaasResult, type JaasToken } from '@/lib/jaasService'
 
 interface VideoCallExperienceProps {
   roomName: string
@@ -18,6 +18,12 @@ interface VideoCallExperienceProps {
   /** ID de la cita: permite firmar un JWT de JaaS (8x8.vc). Sin JaaS
    *  configurado, la sala usa meet.jit.si gratuito automáticamente. */
   appointmentId?: string
+  /**
+   * Para salas de prueba (panel admin): función que obtiene el token JaaS
+   * sin cita. Si se omite, se usa fetchJaasToken(appointmentId). Debe ser
+   * estable (useCallback) para no disparar refetch en cada render.
+   */
+  fetchToken?: (roomName: string) => Promise<JaasResult>
   /** A dónde volver al colgar (normalmente navigate a la lista de citas). */
   onExit: () => void
 }
@@ -35,6 +41,7 @@ export function VideoCallExperience({
   subtitle,
   preJoinTip,
   appointmentId,
+  fetchToken,
   onExit,
 }: VideoCallExperienceProps) {
   const [joined, setJoined] = useState(false)
@@ -44,13 +51,15 @@ export function VideoCallExperience({
   const [jaasWarning, setJaasWarning] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!appointmentId) return
+    if (!appointmentId && !fetchToken) return
     let cancelled = false
     let attempts = 0
 
     async function tryFetch() {
       attempts++
-      const { token, reason } = await fetchJaasToken(appointmentId!)
+      const { token, reason } = fetchToken
+        ? await fetchToken(roomName)
+        : await fetchJaasToken(appointmentId!)
       if (cancelled) return
       if (token) {
         setJaas(token)
@@ -73,7 +82,7 @@ export function VideoCallExperience({
     return () => {
       cancelled = true
     }
-  }, [appointmentId])
+  }, [appointmentId, fetchToken, roomName])
 
   return (
     <div className="fixed inset-0 z-[60] bg-bg flex flex-col">
