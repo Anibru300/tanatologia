@@ -111,11 +111,19 @@ export function JitsiMeetingRoom({
       // Calidad: 720p ideal para sesiones 1:1 (mejor nitidez que el
       // adaptativo por defecto del servidor público, sin exigir de más).
       resolution: 720,
-      maxFullResolutionParticipantCount: 2,
+      // Llamadas 1:1 siempre en alta resolución (-1 = nunca degradar a SD).
+      maxFullResolutionParticipants: -1,
+      // Por defecto Jitsi solo pide la capa HD (720p) cuando el video mide
+      // 720px de alto EN PANTALLA; en laptops la sala embebida queda por
+      // debajo y se ve pixelada (capa de 360p). Bajamos el umbral para que
+      // pida alta calidad mucho antes.
+      minHeightForQualityLvl: {
+        240: 'standard',
+        360: 'high',
+      },
       constraints: {
         video: {
           height: { ideal: 720, max: 1080 },
-          width: { ideal: 1280, max: 1920 },
         },
       },
     },
