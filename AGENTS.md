@@ -135,6 +135,8 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - **Pruebas**: `scripts/test-analytics.mjs` (13/13; requiere `ADMIN_PASSWORD=demo123` para la parte admin).
 - Migraciones 013–018 aplicadas en Cloud (recordatorios/intake/reseñas, fixes 014/015, page_views 016, fix rol 017, timezone 018). **Ninguna migración pendiente.**
 
+16. ✅ **(2026-09-09) Fix disponibilidad "traslape fantasma" (migración 024):** el listado del profesional solo muestra slots futuros (`slot_start >= now`), pero la constraint EXCLUDE `availability_slots_no_overlap` bloqueaba inserts contra slots vencidos e invisibles → "no tengo horarios" + "se traslapa con otro registrado". Migración 024 purga los vencidos de inmediato y programa purga horaria vía pg_cron (`purge-expired-availability-slots`, `23 * * * *`). Frontend: mensaje claro cuando la carga falla (ya no parece calendario vacío) y, al rechazar por traslape, se refresca la lista para mostrar el horario conflictivo; `friendlyError` también detecta el código `23P01`.
+
 ## Chat paciente↔profesional (2026-09-06, migración 023)
 - **Tablas:** `conversations` (1 por par paciente/profesional, UNIQUE) y `messages` (texto ≤2000 y/o adjunto; `deleted_by_moderation`). **Regla de oro:** solo puede existir conversación si hay ≥1 cita NO cancelada entre ambos (`can_chat()`).
 - **Escritura SOLO vía RPCs SECURITY DEFINER** (`start_conversation`, `send_message`, `mark_conversation_read`): el cliente jamás inserta en las tablas (sin políticas de escritura). `send_message` crea la notificación in-app `chat_message` al otro participante.

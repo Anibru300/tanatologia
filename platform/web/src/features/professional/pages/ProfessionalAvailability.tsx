@@ -10,6 +10,7 @@ import {
   addSlot,
   deleteSlot,
   SLOT_DURATION_MINUTES,
+  isOverlapError,
   type AvailabilitySlot,
 } from '@/features/availability/availabilityService'
 
@@ -113,6 +114,11 @@ export function ProfessionalAvailability() {
       setSuccess(`Horario agregado: ${formatSelectedDate(selectedKey)} a las ${formatTime(created.slot_start)}.`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al agregar el horario')
+      // Si la BD rechazó por traslape, refrescar la lista para que el horario
+      // conflictivo (visible) aparezca y no parezca un error fantasma.
+      if (isOverlapError(err) && user) {
+        getMyAvailability(user.id).then(setSlots).catch(() => {})
+      }
     } finally {
       setActionPending(false)
     }

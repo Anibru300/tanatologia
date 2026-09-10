@@ -29,6 +29,21 @@ con las reglas P0–P3 de `BETA-OPERATIONS.md`.
 7. **AdminSupport estático** — página de tickets "próximamente" bajo badge
    "Pronto" (admin-only); implementar cuando exista soporte real.
 
+## Observabilidad (solicitado 2026-09-09)
+
+9. **Panel admin de rastreo de errores del cliente** — sección tipo "logs" en
+   `/admin` para detectar fallas que experimentan pacientes y profesionistas en
+   su navegador (errores de consola, excepciones no capturadas, fallos de red a
+   Supabase) sin depender de que el usuario copie la consola a mano.
+   Propuesta de diseño: Edge Function autenticada `client-error` (rate-limit
+   por usuario) que escriba en tabla `client_error_logs` (rol, página/hash,
+   mensaje, stack, user-agent, timestamp); captura en la app con
+   `window.onerror` + `unhandledrejection` + interceptor de `fetch` a
+   `*.supabase.co` que falle; página admin `/admin/errores` con filtros
+   por rol/página y sanitización (sin datos personales ni tokens en URLs).
+   Complementa (no sustituye) los logs de API de Supabase. Prioridad P1-P2
+   para operación Beta.
+
 ## Config / contenido
 
 8. **Config de crisis en `assets/js/siteConfig.js`** — líneas de crisis sin
