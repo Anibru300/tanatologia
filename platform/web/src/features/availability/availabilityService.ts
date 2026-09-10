@@ -20,11 +20,17 @@ function mapSlot(row: Record<string, unknown>): AvailabilitySlot {
 }
 
 /** Mensaje amigable cuando la constraint EXCLUDE detecta traslape. */
-function friendlyError(error: { message: string }): Error {
-  if (error.message.includes('availability_slots_no_overlap')) {
+function friendlyError(error: { message: string; code?: string }): Error {
+  if (error.code === '23P01' || error.message.includes('availability_slots_no_overlap')) {
     return new Error('Ese horario se traslapa con otro que ya tienes registrado.')
   }
   return new Error(error.message)
+}
+
+/** ¿El error es un rechazo por traslape de la constraint EXCLUDE? */
+export function isOverlapError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false
+  return err.message.includes('se traslapa con otro')
 }
 
 /** Slots futuros del profesional autenticado (recibe profiles.id del usuario). */
@@ -42,7 +48,7 @@ export async function getMyAvailability(profileId: string): Promise<Availability
     .order('slot_start', { ascending: true })
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(`No se pudo cargar tu disponibilidad (${error.message}). Recarga la página e intenta de nuevo.`)
   }
 
   return (data || []).map(mapSlot)
