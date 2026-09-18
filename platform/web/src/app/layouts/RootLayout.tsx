@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { Button } from '@/components/ui/Button'
 import { QuickExitButton } from '@/components/QuickExitButton'
+import { InstallAppBanner } from '@/components/InstallAppButton'
 import { Logo } from '@/components/ui/Logo'
 import { siteConfig } from '@/lib/siteConfig'
 import { Menu, X, User } from 'lucide-react'
@@ -117,6 +118,9 @@ export function RootLayout() {
       </main>
 
       {!isAuthPage && <QuickExitButton />}
+
+      {/* Aviso de instalación PWA en las pantallas de acceso (login/registro). */}
+      {isAuthPage && <InstallAppBanner />}
 
       <footer className="bg-primary-dark text-white py-12">
         <div className="container-calma">
