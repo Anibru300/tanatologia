@@ -407,6 +407,11 @@ body.page-with-bg::after {
     align-items: center;
 }
 
+/* Enlaces de acceso: solo visibles dentro del menú móvil (ver media query) */
+.nav__auth {
+    display: none;
+}
+
 .nav__toggle {
     display: none;
     flex-direction: column;
@@ -1143,6 +1148,31 @@ body.page-with-bg::after {
         display: block;
         padding: 0.85rem 0;
         border-bottom: 1px solid var(--color-border);
+    }
+
+    /* Acceso a la plataforma hasta arriba del menú móvil */
+    .nav__auth {
+        display: block;
+    }
+
+    .nav__auth .nav__auth-btn {
+        display: block;
+        text-align: center;
+        font-weight: 600;
+        padding: 0.8rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--color-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .nav__auth .nav__auth-btn--primary {
+        background-color: var(--color-primary);
+        color: #ffffff;
+    }
+
+    .nav__auth .nav__auth-btn:not(.nav__auth-btn--primary) {
+        color: var(--color-primary);
+        background-color: transparent;
     }
 
     .nav__actions {

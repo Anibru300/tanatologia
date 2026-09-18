@@ -22,6 +22,8 @@
                 <span></span>
             </button>
             <ul class="nav__menu">
+                <li class="nav__auth"><a href="/app/#/login" class="nav__auth-btn nav__auth-btn--primary">Iniciar sesión</a></li>
+                <li class="nav__auth"><a href="/app/#/register" class="nav__auth-btn">Crear cuenta gratis</a></li>
                 <li><a href="${root}pages/nosotros.html">Nosotros</a></li>
                 <li><a href="${root}pages/pacientes.html">Para pacientes</a></li>
                 <li><a href="${root}pages/profesionales.html">Para profesionales</a></li>

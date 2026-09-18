@@ -24,7 +24,9 @@ export function RootLayout() {
       <header className="sticky top-0 z-50 bg-bg/80 backdrop-blur-md border-b border-border">
         <div className="container-calma">
           <nav className="flex items-center justify-between h-20">
-            <a href={siteConfig.urls.legacy} className="flex items-center gap-3">
+            {/* Las páginas públicas se abren SIEMPRE en pestaña nueva: si la
+                app está instalada (PWA), nada público debe reemplazarla. */}
+            <a href={siteConfig.urls.legacy} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
               <Logo size="md" />
               <span className="text-xl font-semibold text-text">SOMOS-CALMA</span>
             </a>
@@ -128,7 +130,7 @@ export function RootLayout() {
             <div>
               <h4 className="font-semibold mb-4">Enlaces</h4>
               <ul className="space-y-2 text-sm text-white/80">
-                <li><a href={siteConfig.urls.legacy} className="hover:text-white">Inicio</a></li>
+                <li><a href={siteConfig.urls.legacy} target="_blank" rel="noopener noreferrer" className="hover:text-white">Inicio (sitio público)</a></li>
                 <li><Link to="/register" className="hover:text-white">Crear cuenta</Link></li>
                 <li><Link to="/login" className="hover:text-white">Iniciar sesión</Link></li>
               </ul>
@@ -136,10 +138,10 @@ export function RootLayout() {
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-white/80">
-                <li><a href="/pages/aviso-privacidad.html" className="hover:text-white">Aviso de privacidad</a></li>
-                <li><a href="/pages/terminos.html" className="hover:text-white">Términos y condiciones</a></li>
-                <li><a href="/pages/cancelacion.html" className="hover:text-white">Cancelación y reembolsos</a></li>
-                <li><a href="/pages/crisis.html" className="hover:text-white">Líneas de emergencia</a></li>
+                <li><a href="/pages/aviso-privacidad.html" target="_blank" rel="noopener noreferrer" className="hover:text-white">Aviso de privacidad</a></li>
+                <li><a href="/pages/terminos.html" target="_blank" rel="noopener noreferrer" className="hover:text-white">Términos y condiciones</a></li>
+                <li><a href="/pages/cancelacion.html" target="_blank" rel="noopener noreferrer" className="hover:text-white">Cancelación y reembolsos</a></li>
+                <li><a href="/pages/crisis.html" target="_blank" rel="noopener noreferrer" className="hover:text-white">Líneas de emergencia</a></li>
               </ul>
             </div>
             <div>

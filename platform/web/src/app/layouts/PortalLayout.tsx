@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { QuickExitButton } from '@/components/QuickExitButton'
 import { NotificationBell } from '@/features/notifications/NotificationBell'
 import { APP_VERSION } from '@/lib/version'
+import { InstallAppButton } from '@/components/InstallAppButton'
 
 export interface PortalMenuItem {
   to: string
@@ -100,6 +101,9 @@ export function PortalLayout({ menuItems, quickNav = [], basePath, roleLabel, sh
             <p className="font-medium text-text text-sm">{user?.fullName}</p>
             <p className="text-xs text-text-light">{roleLabel}</p>
           </div>
+          <div className="mb-2">
+            <InstallAppButton />
+          </div>
           <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
             <LogOut size={18} />
             Cerrar sesión
@@ -169,6 +173,9 @@ export function PortalLayout({ menuItems, quickNav = [], basePath, roleLabel, sh
           <div className="mb-3 px-4">
             <p className="font-medium text-text text-sm">{user?.fullName}</p>
             <p className="text-xs text-text-light">{roleLabel}</p>
+          </div>
+          <div className="mb-2">
+            <InstallAppButton />
           </div>
           <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
             <LogOut size={18} />
