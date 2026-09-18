@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/useAuth'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { SkeletonCards } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
@@ -204,7 +205,7 @@ export function ProfessionalNotes() {
         <div className="mt-8 space-y-4">
           <h3 className="font-semibold text-text">Notas recientes</h3>
           {loading ? (
-            <p className="text-text-light">Cargando notas...</p>
+            <SkeletonCards count={2} />
           ) : notes.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center text-text-light">

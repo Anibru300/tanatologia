@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { SkeletonCards } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -329,7 +330,7 @@ export function AdminVerification() {
             <div className="mb-6">
               <h3 className="font-semibold text-text mb-3">Documentos</h3>
               {loadingDocs ? (
-                <p className="text-text-light text-sm">Cargando documentos...</p>
+                <SkeletonCards count={3} />
               ) : documents.length === 0 ? (
                 <p className="text-text-light text-sm">Este profesional aún no sube documentos.</p>
               ) : (
@@ -477,6 +478,8 @@ export function AdminVerification() {
                 src={preview.url}
                 alt={DOC_TYPE_LABELS[preview.doc.document_type]}
                 className="w-full max-h-[65vh] object-contain rounded-sm bg-bg-alt"
+                loading="lazy"
+                decoding="async"
               />
             ) : isPdfFile(preview.doc.file_name) ? (
               <iframe

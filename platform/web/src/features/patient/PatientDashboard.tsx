@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/useAuth'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -124,7 +125,7 @@ export function PatientDashboard() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-text-light text-sm">Cargando...</p>
+                <Skeleton className="h-16 w-full" />
               ) : nextAppointment ? (
                 <>
                   <div className="flex items-start gap-3 mb-4">
@@ -259,7 +260,7 @@ export function PatientDashboard() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-text-light text-sm">Cargando...</p>
+                <Skeleton className="h-16 w-full" />
               ) : upcomingAppointments.length === 0 ? (
                 <p className="text-sm text-text-light py-3">
                   No tienes citas próximas. Agenda una sesión cuando estés lista/o.

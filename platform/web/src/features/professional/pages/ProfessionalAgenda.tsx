@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { SkeletonCards } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -126,7 +127,7 @@ export function ProfessionalAgenda() {
           </div>
         </div>
 
-        {loading && <p className="text-text-light mb-4">Cargando citas...</p>}
+        {loading && <SkeletonCards count={3} />}
         {error && <Alert variant="error" className="mb-4">{error}</Alert>}
 
         {!loading && !error && (

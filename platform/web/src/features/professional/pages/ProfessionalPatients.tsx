@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/features/auth/useAuth'
 import { Card, CardContent } from '@/components/ui/Card'
+import { SkeletonRows } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'
 import { Search, Users, ChevronDown, ChevronUp, Star } from 'lucide-react'
@@ -149,7 +150,7 @@ export function ProfessionalPatients() {
         <Card>
           <CardContent className="p-0">
             {loading ? (
-              <p className="text-text-light p-6">Cargando pacientes...</p>
+              <SkeletonRows />
             ) : error ? null : filtered.length === 0 ? (
               <div className="text-center py-12 text-text-light">
                 <Users size={48} className="mx-auto mb-4 text-muted" />

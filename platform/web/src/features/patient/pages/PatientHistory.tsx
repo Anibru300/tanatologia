@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/useAuth'
 import { Card, CardContent } from '@/components/ui/Card'
+import { SkeletonCards } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Calendar, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -54,7 +55,7 @@ export function PatientHistory() {
 
         {error && <Alert variant="error" className="mb-4 p-3 rounded-sm">{error}</Alert>}
         {loading ? (
-          <p className="text-text-light">Cargando historial...</p>
+          <SkeletonCards count={3} />
         ) : error ? null : completed.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">

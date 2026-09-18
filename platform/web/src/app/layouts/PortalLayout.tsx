@@ -20,6 +20,8 @@ export interface PortalMenuItem {
 
 interface PortalLayoutProps {
   menuItems: PortalMenuItem[]
+  /** Accesos directos de la barra de navegación inferior móvil (máx. 4). */
+  quickNav?: PortalMenuItem[]
   /** Ruta base del portal (p.ej. '/paciente'); coincide solo de forma exacta. */
   basePath: string
   roleLabel: string
@@ -28,7 +30,7 @@ interface PortalLayoutProps {
 }
 
 /** Layout unificado de los 3 portales (sidebar + header móvil + campana). */
-export function PortalLayout({ menuItems, basePath, roleLabel, showQuickExit = false }: PortalLayoutProps) {
+export function PortalLayout({ menuItems, quickNav = [], basePath, roleLabel, showQuickExit = false }: PortalLayoutProps) {
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -119,7 +121,9 @@ export function PortalLayout({ menuItems, basePath, roleLabel, showQuickExit = f
           >
             <Menu size={24} />
           </button>
-          <span className="flex-1 font-semibold text-text">SOMOS-CALMA</span>
+          <span className="flex-1 font-semibold text-text truncate">
+            {activeItem?.label ?? 'SOMOS-CALMA'}
+          </span>
           <NotificationBell />
         </div>
       </div>
@@ -175,7 +179,7 @@ export function PortalLayout({ menuItems, basePath, roleLabel, showQuickExit = f
       </div>
 
       {/* Main content */}
-      <main className="flex-1 lg:ml-0 pt-16 lg:pt-0 leading-normal">
+      <main className={`flex-1 lg:ml-0 pt-16 lg:pt-0 leading-normal ${quickNav.length > 0 ? 'pb-24 lg:pb-0' : ''}`}>
         {/* Barra superior de escritorio: sección actual + notificaciones */}
         <div className="hidden lg:flex items-center justify-between px-6 py-2 border-b border-border bg-surface sticky top-0 z-40">
           <p className="text-sm text-text-light">
@@ -191,6 +195,42 @@ export function PortalLayout({ menuItems, basePath, roleLabel, showQuickExit = f
         </div>
         <Outlet />
       </main>
+
+      {/* Barra de navegación inferior móvil: accesos directos + botón Menú */}
+      {quickNav.length > 0 && (
+        <nav
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface border-t border-border"
+          aria-label="Accesos rápidos"
+        >
+          <div className="grid grid-cols-5">
+            {quickNav.slice(0, 4).map((item) => {
+              const active = isActive(item)
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
+                    active ? 'text-primary-dark' : 'text-text-light hover:text-text'
+                  }`}
+                >
+                  <item.icon size={22} aria-hidden />
+                  <span className="max-w-full truncate px-1">{item.label}</span>
+                </Link>
+              )
+            })}
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium text-text-light hover:text-text"
+              aria-label="Abrir menú completo"
+            >
+              <Menu size={22} aria-hidden />
+              <span>Menú</span>
+            </button>
+          </div>
+        </nav>
+      )}
 
       {showQuickExit && <QuickExitButton />}
     </div>

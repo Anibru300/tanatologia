@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { SkeletonCards } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -77,7 +78,7 @@ export function PatientPrograms() {
           <p className="text-text-light">Avance de tus procesos terapéuticos.</p>
         </div>
 
-        {loading && <p className="text-text-light">Cargando programas...</p>}
+        {loading && <SkeletonCards count={2} />}
         {error && <Alert variant="error" className="mb-4">{error}</Alert>}
 
         {!loading && !error && (

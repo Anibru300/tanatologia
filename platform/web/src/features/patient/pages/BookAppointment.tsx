@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Skeleton, SkeletonCards } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Stepper } from '@/components/ui/Stepper'
@@ -387,9 +388,7 @@ export function BookAppointment() {
               <CardDescription>Profesionales certificados disponibles para ti.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {loadingTherapists && (
-                <p className="text-text-light text-center py-8">Cargando terapeutas...</p>
-              )}
+              {loadingTherapists && <SkeletonCards count={2} />}
               {therapistsError && <Alert variant="error">{therapistsError}</Alert>}
               {!loadingTherapists && therapists.map((therapist) => (
                 <button
@@ -434,7 +433,7 @@ export function BookAppointment() {
             </CardHeader>
             <CardContent className="space-y-6">
               {slotsError && <Alert variant="error">{slotsError}</Alert>}
-              {loadingSlots && <p className="text-sm text-text-light">Cargando disponibilidad...</p>}
+              {loadingSlots && <Skeleton className="h-10 w-full" />}
               {!loadingSlots && !slotsError && freeSlots !== null && freeSlots.length === 0 && (
                 <div className="p-4 rounded-sm bg-bg-alt text-text-light text-sm">
                   Este profesional no tiene horarios disponibles en los próximos {BOOKING_WINDOW_DAYS} días.

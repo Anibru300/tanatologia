@@ -31,6 +31,11 @@ const menuItems: PortalMenuItem[] = [
   { to: '/paciente/configuracion', icon: Settings, label: 'Configuración' },
 ]
 
+// Accesos de la barra inferior móvil (seleccionados del menú, sin duplicar definiciones)
+const quickNav = menuItems.filter((i) => ['Dashboard', 'Mis citas', 'Mensajes', 'Mi perfil'].includes(i.label))
+
 export function PatientLayout() {
-  return <PortalLayout menuItems={menuItems} basePath="/paciente" roleLabel="Paciente" showQuickExit />
+  return (
+    <PortalLayout menuItems={menuItems} quickNav={quickNav} basePath="/paciente" roleLabel="Paciente" showQuickExit />
+  )
 }

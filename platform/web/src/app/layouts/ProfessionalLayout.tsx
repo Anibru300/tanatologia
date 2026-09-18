@@ -35,6 +35,11 @@ const menuItems: PortalMenuItem[] = [
   { to: '/profesional/ayuda', icon: HelpCircle, label: 'Ayuda' },
 ]
 
+// Accesos de la barra inferior móvil (seleccionados del menú, sin duplicar definiciones)
+const quickNav = menuItems.filter((i) => ['Dashboard', 'Agenda', 'Citas', 'Mensajes'].includes(i.label))
+
 export function ProfessionalLayout() {
-  return <PortalLayout menuItems={menuItems} basePath="/profesional" roleLabel="Profesional" />
+  return (
+    <PortalLayout menuItems={menuItems} quickNav={quickNav} basePath="/profesional" roleLabel="Profesional" />
+  )
 }
