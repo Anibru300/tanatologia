@@ -6,6 +6,7 @@ import { LogOut, Menu, X, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { QuickExitButton } from '@/components/QuickExitButton'
 import { NotificationBell } from '@/features/notifications/NotificationBell'
+import { APP_VERSION } from '@/lib/version'
 
 export interface PortalMenuItem {
   to: string
@@ -87,6 +88,7 @@ export function PortalLayout({ menuItems, basePath, roleLabel, showQuickExit = f
             <LogOut size={18} />
             Cerrar sesión
           </Button>
+          <p className="mt-3 px-4 text-[11px] text-text-light">v{APP_VERSION}</p>
         </div>
       </aside>
 
