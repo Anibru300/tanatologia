@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { DataTable } from '@/components/ui/DataTable'
@@ -67,7 +68,7 @@ export function AdminAudit() {
               Logs de actividad
             </CardTitle>
             <CardDescription>
-              {loading ? 'Cargando...' : `${logs.length} eventos recientes.`}
+              {loading ? <Skeleton className="h-4 w-24" /> : `${logs.length} eventos recientes.`}
             </CardDescription>
           </CardHeader>
           <CardContent>

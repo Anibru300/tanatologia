@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Skeleton, SkeletonCards } from '@/components/ui/Skeleton'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
@@ -43,7 +44,7 @@ function ReviewList({ professionalProfileId }: { professionalProfileId: string }
   }, [professionalProfileId])
 
   if (error) return <p className="text-sm text-text-light">{error}</p>
-  if (reviews === null) return <p className="text-sm text-text-light">Cargando reseñas...</p>
+  if (reviews === null) return <Skeleton className="h-4 w-24" />
   if (reviews.length === 0) return <p className="text-sm text-text-light">Aún no hay reseñas publicadas.</p>
 
   return (
@@ -120,8 +121,8 @@ export function TherapistDirectory() {
   if (loading) {
     return (
       <div className="section-calma">
-        <div className="container-calma text-center py-16">
-          <p className="text-text-light">Cargando profesionales...</p>
+        <div className="container-calma py-16">
+          <SkeletonCards count={4} />
         </div>
       </div>
     )

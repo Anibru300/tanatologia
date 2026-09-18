@@ -7,7 +7,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrFJA.ttf') format('truetype');
+  src: url('/app/fonts/poppins-400.woff2') format('woff2');
 }
 
 @font-face {
@@ -15,7 +15,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLGT9V1s.ttf') format('truetype');
+  src: url('/app/fonts/poppins-500.woff2') format('woff2');
 }
 
 @font-face {
@@ -23,7 +23,7 @@
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url('https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLEj6V1s.ttf') format('truetype');
+  src: url('/app/fonts/poppins-600.woff2') format('woff2');
 }
 
 @font-face {
@@ -31,7 +31,7 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url('https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLCz7V1s.ttf') format('truetype');
+  src: url('/app/fonts/poppins-700.woff2') format('woff2');
 }
 
 @layer base {

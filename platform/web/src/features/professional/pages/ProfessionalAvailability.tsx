@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -158,8 +159,8 @@ export function ProfessionalAvailability() {
   if (loading) {
     return (
       <div className="section-calma">
-        <div className="container-calma text-center py-16">
-          <p className="text-text-light">Cargando tu disponibilidad...</p>
+        <div className="container-calma py-16">
+          <Skeleton className="h-40 w-full" />
         </div>
       </div>
     )

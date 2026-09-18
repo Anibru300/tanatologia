@@ -3,6 +3,7 @@ import { useAuth } from '@/features/auth/useAuth'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { Badge } from '@/components/ui/Badge'
 import {
   Calendar,
@@ -189,7 +190,7 @@ export function ProfessionalDashboard() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-text-light">Cargando citas...</p>
+                <Skeleton className="h-16 w-full" />
               ) : upcomingAppointments.length === 0 ? (
                 <div className="text-center py-4">
                   <p className="text-text-light text-sm mb-3">No tienes citas confirmadas próximas.</p>

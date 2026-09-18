@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ComponentType } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import {
   Eye, Users, MonitorSmartphone, UserPlus, Globe,
@@ -499,7 +500,17 @@ export function AdminAnalytics() {
         </div>
 
         {error && <Alert variant="error" className="mb-6">{error}</Alert>}
-        {loading && <p className="text-text-light mb-6">Cargando datos...</p>}
+        {loading && (
+          <div className="mb-6 space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full" />
+            </div>
+            <Skeleton className="h-64 w-full" />
+          </div>
+        )}
 
         {stats && (
           <>

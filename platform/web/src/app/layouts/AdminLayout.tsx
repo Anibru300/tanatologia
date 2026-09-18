@@ -35,6 +35,9 @@ const menuItems: PortalMenuItem[] = [
   { to: '/admin/soporte', icon: Headphones, label: 'Soporte', soon: true },
 ]
 
+// Accesos de la barra inferior móvil (seleccionados del menú, sin duplicar definiciones)
+const quickNav = menuItems.filter((i) => ['Dashboard', 'Citas', 'Profesionales', 'Verificación'].includes(i.label))
+
 export function AdminLayout() {
-  return <PortalLayout menuItems={menuItems} basePath="/admin" roleLabel="Administrador" />
+  return <PortalLayout menuItems={menuItems} quickNav={quickNav} basePath="/admin" roleLabel="Administrador" />
 }

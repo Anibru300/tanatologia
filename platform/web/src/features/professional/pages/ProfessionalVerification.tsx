@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { SkeletonCards } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -190,7 +191,7 @@ export function ProfessionalVerification() {
         )}
 
         {loading ? (
-          <p className="text-text-light">Cargando...</p>
+          <SkeletonCards count={1} />
         ) : (
           <>
             {/* Estado actual y línea de tiempo */}

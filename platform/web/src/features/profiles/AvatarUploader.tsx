@@ -56,7 +56,7 @@ export function AvatarUploader({ avatarUrl, fullName, onUpload }: AvatarUploader
       <div className="relative">
         <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-2xl font-bold text-primary-dark overflow-hidden">
           {avatarUrl ? (
-            <img src={avatarUrl} alt={fullName} className="w-full h-full object-cover" />
+            <img src={avatarUrl} alt={fullName} className="w-full h-full object-cover" loading="lazy" decoding="async" />
           ) : (
             initials(fullName)
           )}

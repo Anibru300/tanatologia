@@ -11,7 +11,7 @@ export function QuickExitButton() {
     btn.setAttribute('aria-label', 'Salir rápido de este sitio')
     btn.setAttribute('type', 'button')
     btn.className =
-      'fixed bottom-6 right-6 z-[200] rounded-full bg-text px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-text/90 focus:outline-none focus:ring-2 focus:ring-text/40'
+      'fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-[200] rounded-full bg-text px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-text/90 focus:outline-none focus:ring-2 focus:ring-text/40'
 
     btn.addEventListener('click', () => {
       try {
