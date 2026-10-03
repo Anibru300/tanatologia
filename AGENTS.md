@@ -1,5 +1,7 @@
 # AGENTS.md — SOMOS-CALMA
 
+> 📋 **Para retomar contexto entre sesiones sin leer todo este archivo, lee primero `docs/mesa-de-trabajo.md`** (estado actual, última sesión, pendientes, datos rápidos). Este AGENTS.md es el registro detallado histórico.
+
 ## Contexto del proyecto
 Plataforma de acompañamiento emocional y tanatología en México. Actualmente en fase beta/MVP.
 
@@ -149,8 +151,15 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - **UI:** `src/features/messages/` (`ChatPage`, `ConversationThread`, `messagesService`). Acceso: menú "Mensajes" en ambos portales + botón "Mensaje" en `ProfessionalPatients`, `ProfessionalAppointments` y `PatientAppointments` (navega con `?with=<profile_id>`).
 - **Pruebas:** `scripts/test-chat.mjs` (28/28; requiere `ADMIN_EMAIL`/`ADMIN_PASSWORD`).
 
+19. ✅ **(2026-10-02, v1.4.0-beta.1) Precio por consulta $150–$350 MXN + fin del "gratis" (migración 025):** el profesional define su precio por sesión de 50 min en `/profesional/perfil` (validación entera 150–350; `session_price` en centavos, CHECK 15000–35000, default NULL). El paciente lo ve en directorio (cards+modal), `BookAppointment` y FAQs. El pago es **directo profesional→paciente** (la plataforma no procesa cobros ni menciona momento de pago — lo acuerdan entre ellos). "Gratis" eliminado del sitio estático (index, pacientes, profesionales, membresías, matching, bot, legales) y de la app (booking, dashboards, ayuda); quedan solo menciones de líneas de crisis. Helper `formatMXN` (`src/lib/format.ts`). Guía de monitoreo/diagnóstico: `docs/monitoreo-y-diagnostico.md`.
+19b. ✅ **(2026-10-02, migración 026) Disponibilidad y citas solo para profesionales verificados:** la RLS de `availability_slots` se separó en políticas granulares — INSERT exige `verification_status='verified'` (antes cualquier profesional, incluso rechazado, publicaba slots vía API; verificado empíricamente: pendiente → 403, verificado → 201). `ProfessionalAvailability` ahora muestra aviso + botón a verificación si no estás verificado. Política INSERT de `appointments` (paciente) exige además profesional verificado+visible. Slots de no verificados purgados. Regresión `test-security-negative.mjs` 22/22.
+
 ## Seguridad
 - **Fix crítico (migración 017)**: el trigger `handle_new_user()` aceptaba `role: 'admin'`/`'support'` desde el metadata del signup (escalación de privilegios vía API). Ahora el self-signup solo permite patient/professional; cualquier otro valor se degrada a patient. Los admins se crean solo desde el Dashboard de Supabase o SQL con service role.
+
+## Modelo de cobro por consulta (2026-10-02, migración 025, v1.4.0-beta.1)
+- `professional_profiles.session_price` (centavos MXN): CHECK `NULL OR 15000–35000` ($150–$350 por sesión de 50 min), default NULL. El profesional lo captura en `/profesional/perfil` (validación entera 150–350 en frontend + `friendlyError` para el CHECK); los pacientes lo ven en el directorio (cards + modal) y en `BookAppointment`. Helper `formatMXN()` en `src/lib/format.ts`.
+- **Pago directo profesional→paciente:** sin pasarela; el profesional comparte sus datos bancarios por el chat interno y el paciente transfiere. La plataforma no cobra ni procesa pagos (avisos en booking, perfil y FAQs). Textos de "gratis" eliminados del sitio estático y la app (quedan solo los de líneas de crisis); legales (términos §7, cancelación) reescritos a "sin cargos de plataforma".
 
 ## Funciones de la Beta 1.1 (2026-09-02) — recordatorios, encuesta de registro y reseñas
 - **Recordatorios de cita:** Edge Function `appointment-reminders` (pg_cron cada 10 min vía `net.http_post` con header `x-cron-secret`; secreto `CRON_SECRET` en vault). Envía email (Resend) 24 h y 15 min antes a paciente y profesional con botón de sala y enlace a Google Calendar, e inserta notificación in-app (`type=appointment_reminder`). Banderas `appointments.reminder_24h_sent`/`reminder_15m_sent` con claim atómico. **WhatsApp:** requiere WhatsApp Business API (Meta/Twilio, de pago) → pendiente de decisión del cliente (ver `docs/encuesta-matching-investigacion.md` §4).
