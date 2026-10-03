@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-CsLdoyK9.js";import{t}from"./ChatPage-BNrxUzCH.js";import{N as n}from"./index-Bcmc5zU8.js";var r=e();function i(){let[e]=n(),i=e.get(`with`);return(0,r.jsx)(t,{audience:`professional`,emptyActionTo:`/profesional/pacientes`,emptyActionLabel:`Ver mis pacientes`,initialCounterpartyId:i})}export{i as ProfessionalMessages};
