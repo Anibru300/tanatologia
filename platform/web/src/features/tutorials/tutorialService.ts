@@ -4,15 +4,16 @@ import type { Tutorial, TutorialFormData } from './types'
 type AudienceRole = 'patient' | 'professional'
 
 /** Tutoriales visibles para un rol: publicados y con audiencia propia o 'both'.
- *  La RLS de Supabase refuerza este filtro del lado servidor. */
+ *  La RLS de Supabase refuerza este filtro del lado servidor.
+ *  Orden: los más recientes primero (por fecha de publicación). */
 export async function listPublished(audience: AudienceRole): Promise<Tutorial[]> {
   const { data, error } = await supabase
     .from('tutorials')
     .select('*')
     .eq('status', 'published')
     .in('audience', [audience, 'both'])
+    .order('published_at', { ascending: false })
     .order('sort_order', { ascending: true })
-    .order('created_at', { ascending: true })
   if (error) throw error
   return (data ?? []) as Tutorial[]
 }
@@ -33,6 +34,20 @@ export async function getSignedUrl(path: string): Promise<string | null> {
   const { data, error } = await supabase.storage.from('tutorials').createSignedUrl(path, 3600)
   if (error || !data?.signedUrl) return null
   return data.signedUrl
+}
+
+/** Progreso propio de visualización (tutorial_id -> % visto).
+ *  La RLS (029) solo devuelve las filas de auth.uid(). */
+export async function getMyProgress(): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from('tutorial_views')
+    .select('tutorial_id, percent_watched')
+  if (error) return {}
+  const progress: Record<string, number> = {}
+  for (const row of data ?? []) {
+    progress[String(row.tutorial_id)] = Number(row.percent_watched ?? 0)
+  }
+  return progress
 }
 
 /** Registra el inicio de visualización. Si ya existe la fila (UNIQUE), se ignora. */
