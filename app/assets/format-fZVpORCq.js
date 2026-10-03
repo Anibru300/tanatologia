@@ -1,0 +1,1 @@
+function e(e){return e==null?``:`$${Math.round(e/100).toLocaleString(`es-MX`)} MXN`}export{e as t};
