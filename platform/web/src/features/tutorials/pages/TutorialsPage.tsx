@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { GraduationCap, Play, Sparkles } from 'lucide-react'
+import { CalendarDays, GraduationCap, Play, Sparkles } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { useAuth } from '@/features/auth/useAuth'
 import type { Tutorial } from '@/features/tutorials/types'
 import { AUDIENCE_LABELS } from '@/features/tutorials/types'
-import { getSignedUrl, listPublished, trackProgress, trackStart } from '@/features/tutorials/tutorialService'
+import { getMyProgress, getSignedUrl, listPublished, trackProgress, trackStart } from '@/features/tutorials/tutorialService'
 import { cn } from '@/lib/utils'
 
 function formatDuration(seconds: number | null): string {
@@ -22,10 +22,19 @@ function formatDuration(seconds: number | null): string {
   return `${h > 0 ? `${h}:` : ''}${mm}:${String(s).padStart(2, '0')}`
 }
 
+function formatDate(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 /** Ventana "Nuevo": los publicados dentro de estos días se resaltan en el listado. */
 const NEW_TUTORIAL_WINDOW_DAYS = 7
 
-function isNewTutorial(tutorial: Tutorial): boolean {
+/** Un tutorial es "Nuevo" si se publicó hace menos de 7 días Y el usuario
+ *  aún no lo ha terminado de ver (>= 90 %). */
+function isNewTutorial(tutorial: Tutorial, watchedPercent: number): boolean {
+  if ((watchedPercent ?? 0) >= 90) return false
   if (!tutorial.published_at) return false
   const published = new Date(tutorial.published_at).getTime()
   if (Number.isNaN(published)) return false
@@ -45,6 +54,8 @@ export function TutorialsPage({ audience }: TutorialsPageProps) {
   const [active, setActive] = useState<Tutorial | null>(null)
   const [videoUrl, setVideoUrl] = useState('')
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({})
+  // Progreso propio (tutorial_id -> % visto); al llegar a 90+ se quita el "Nuevo".
+  const [progress, setProgress] = useState<Record<string, number>>({})
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -52,12 +63,15 @@ export function TutorialsPage({ audience }: TutorialsPageProps) {
     try {
       const data = await listPublished(audience)
       setTutorials(data)
+      if (user) {
+        setProgress(await getMyProgress())
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudieron cargar los tutoriales.')
     } finally {
       setLoading(false)
     }
-  }, [audience])
+  }, [audience, user])
 
   useEffect(() => {
     load()
@@ -110,6 +124,13 @@ export function TutorialsPage({ audience }: TutorialsPageProps) {
     setActive(null)
     setVideoUrl('')
   }
+
+  // Al terminar de ver un tutorial (>= 90 %), se apaga su marca "Nuevo" en vivo.
+  const handleWatched = useCallback((tutorialId: string) => {
+    setProgress((prev) =>
+      (prev[tutorialId] ?? 0) >= 90 ? prev : { ...prev, [tutorialId]: 100 }
+    )
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -168,6 +189,7 @@ export function TutorialsPage({ audience }: TutorialsPageProps) {
               key={tutorial.id}
               tutorial={tutorial}
               thumbUrl={thumbUrls[tutorial.id]}
+              watchedPercent={progress[tutorial.id] ?? 0}
               onWatch={() => openTutorial(tutorial)}
             />
           ))}
@@ -187,6 +209,7 @@ export function TutorialsPage({ audience }: TutorialsPageProps) {
                 tutorial={active}
                 src={videoUrl}
                 role={user?.role ?? audience}
+                onWatched={() => handleWatched(active.id)}
               />
             ) : (
               <Skeleton className="w-full aspect-video rounded-md" />
@@ -196,7 +219,7 @@ export function TutorialsPage({ audience }: TutorialsPageProps) {
                 <Badge>{active.category}</Badge>
                 {active.duration_seconds && <Badge variant="info">{formatDuration(active.duration_seconds)}</Badge>}
                 <Badge variant="default">{AUDIENCE_LABELS[active.audience]}</Badge>
-                {isNewTutorial(active) && <Badge variant="success">Nuevo</Badge>}
+                {isNewTutorial(active, progress[active.id] ?? 0) && <Badge variant="success">Nuevo</Badge>}
               </div>
               {active.description && <p className="text-sm text-text-light">{active.description}</p>}
             </div>
@@ -228,13 +251,15 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
 function TutorialCard({
   tutorial,
   thumbUrl,
+  watchedPercent,
   onWatch,
 }: {
   tutorial: Tutorial
   thumbUrl?: string
+  watchedPercent: number
   onWatch: () => void
 }) {
-  const isNew = isNewTutorial(tutorial)
+  const isNew = isNewTutorial(tutorial, watchedPercent)
   return (
     <Card className={cn('overflow-hidden flex flex-col', isNew && 'ring-2 ring-primary shadow-lg')}>
       <div className="relative aspect-video bg-bg-alt flex items-center justify-center">
@@ -251,9 +276,9 @@ function TutorialCard({
           </span>
         )}
         {isNew && (
-          <span className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-sm flex items-center gap-1 shadow">
-            <Sparkles size={12} aria-hidden />
-            Nuevo
+          <span className="absolute top-2 left-2 bg-primary text-white text-sm font-bold px-2.5 py-1 rounded-sm flex items-center gap-1 shadow animate-pulse">
+            <Sparkles size={14} aria-hidden />
+            ¡Nuevo!
           </span>
         )}
         {tutorial.duration_seconds != null && tutorial.duration_seconds > 0 && (
@@ -265,6 +290,12 @@ function TutorialCard({
       <CardContent className="flex flex-col flex-1 gap-2 pt-4">
         <Badge className="self-start">{tutorial.category}</Badge>
         <h3 className="font-semibold text-text">{tutorial.title}</h3>
+        {(tutorial.published_at ?? tutorial.created_at) && (
+          <p className="text-xs text-text-light flex items-center gap-1">
+            <CalendarDays size={12} aria-hidden />
+            Subido el {formatDate(tutorial.published_at ?? tutorial.created_at)}
+          </p>
+        )}
         {tutorial.description && (
           <p className="text-sm text-text-light line-clamp-2">{tutorial.description}</p>
         )}
@@ -285,10 +316,12 @@ function TutorialPlayer({
   tutorial,
   src,
   role,
+  onWatched,
 }: {
   tutorial: Tutorial
   src: string
   role: string
+  onWatched: () => void
 }) {
   // Mayor porcentaje reportado (monotónico); la RLS exige avances no decrecientes.
   const maxSentRef = useRef(0)
@@ -298,8 +331,10 @@ function TutorialPlayer({
       if (percent <= maxSentRef.current) return
       maxSentRef.current = percent
       void trackProgress(tutorial.id, percent)
+      // Al llegar al 90 % se considera visto: se apaga la marca "Nuevo".
+      if (percent >= 90) onWatched()
     },
-    [tutorial.id]
+    [tutorial.id, onWatched]
   )
 
   return (
