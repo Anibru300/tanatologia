@@ -44,7 +44,7 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
   {
     q: '¿Tiene algún costo usar la plataforma?',
     c: 'Beta',
-    a: 'No. Durante la Beta todo es completamente gratuito para pacientes y profesionales: no pedimos tarjeta ni ningún dato de pago. Si en el futuro se integran pagos, te avisaremos con al menos 30 días de anticipación y tú decides si continuar.',
+    a: 'Usar la plataforma no tiene ningún cargo: no pedimos tarjeta ni datos de pago. Cada profesional define el precio de su consulta (entre $150 y $350 MXN por sesión de 50 minutos) y tú se lo pagas directamente; el cobro y la forma de pago los acuerdan entre ustedes.',
   },
   {
     q: '¿Olvidé mi contraseña, qué hago?',

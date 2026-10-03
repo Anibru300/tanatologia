@@ -118,8 +118,8 @@ const faqs: { q: string; c: Category; k: string; a: React.ReactNode }[] = [
   {
     q: '¿Tiene algún costo participar como profesional?',
     c: 'Beta',
-    a: 'No. Durante la Beta de Somos Calma tu acceso es completamente gratuito: no hay comisiones, membresías ni pagos de ningún tipo, y no te pediremos datos bancarios. Si en el futuro se integra algún modelo de pago, te avisaremos con al menos 30 días de anticipación y tú decides si continuar.',
-    k: 'costo gratis gratuito comisiones membresías pagos bancarios futuro aviso',
+    a: 'No hay costo de plataforma: no pagas comisiones, membresías ni cargos a Somos Calma, y no te pedimos datos bancarios. Tú defines en tu perfil el precio de tu consulta (entre $150 y $350 MXN por sesión de 50 minutos) y recibes el pago directamente del paciente; el cobro y la forma de pago los acuerdan entre ustedes. Si en el futuro cambia el modelo, te avisaremos con al menos 30 días de anticipación.',
+    k: 'costo precio consulta comisiones membresías pagos bancarios transferencia futuro aviso',
   },
   {
     q: '¿Olvidé mi contraseña o quiero cambiar mi correo?',

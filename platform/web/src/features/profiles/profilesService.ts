@@ -74,8 +74,9 @@ export type UpdateProfessionalProfileInput = {
   languages: string[]
   years_experience: number | null
   education: string | null
-  // RESERVADO fase monetización — opcionales durante la Beta gratuita
+  // Precio por consulta (50 min) en centavos MXN; rango 15000–35000 validado en DB (migración 025)
   session_price?: number | null // centavos
+  // RESERVADO fase monetización (sin uso en UI durante la Beta)
   program_4_price?: number | null // centavos
   program_6_price?: number | null // centavos
 }
@@ -87,6 +88,9 @@ function friendlyError(error: { message?: string } | null, fallback: string): Er
   }
   if (msg.includes('duplicate key')) {
     return new Error('Este valor ya está en uso por otra cuenta.')
+  }
+  if (msg.includes('professional_profiles_session_price_check')) {
+    return new Error('El precio por consulta debe estar entre $150 y $350 MXN.')
   }
   return new Error(fallback)
 }

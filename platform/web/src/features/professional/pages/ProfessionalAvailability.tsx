@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Alert } from '@/components/ui/Alert'
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Clock, Plus, Trash2, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import { useAuth } from '@/features/auth/useAuth'
+import { getMyProfile } from '@/features/profiles/profilesService'
 import {
   getMyAvailability,
   addSlot,
@@ -52,6 +54,7 @@ export function ProfessionalAvailability() {
   const [confirmDelete, setConfirmDelete] = useState<AvailabilitySlot | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [verificationStatus, setVerificationStatus] = useState<string | null>(null)
 
   const today = startOfToday()
   const [viewMonth, setViewMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
@@ -74,6 +77,11 @@ export function ProfessionalAvailability() {
 
   useEffect(() => {
     if (!user) return
+    getMyProfile(user.id)
+      .then(({ professionalProfile }) => {
+        setVerificationStatus(professionalProfile?.verification_status ?? null)
+      })
+      .catch(() => {})
     getMyAvailability(user.id)
       .then((data) => {
         setSlots(data)
@@ -161,6 +169,26 @@ export function ProfessionalAvailability() {
       <div className="section-calma">
         <div className="container-calma py-16">
           <Skeleton className="h-40 w-full" />
+        </div>
+      </div>
+    )
+  }
+
+  // Solo profesionales verificados publican horarios (misma regla que la RLS de DB).
+  if (verificationStatus !== 'verified') {
+    return (
+      <div className="section-calma">
+        <div className="container-calma max-w-2xl">
+          <Alert variant="warning">
+            Primero completa tu verificación profesional. Los pacientes solo pueden ver y agendar
+            con profesionales verificados, y al verificarte podrás publicar tus horarios
+            disponibles.
+          </Alert>
+          <div className="mt-4">
+            <Link to="/profesional/verificacion">
+              <Button>Ir a verificación</Button>
+            </Link>
+          </div>
         </div>
       </div>
     )

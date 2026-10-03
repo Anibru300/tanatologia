@@ -45,7 +45,7 @@
             ]
         },
         precios: {
-            message: 'Somos Calma está en Beta y el acceso es completamente gratuito: ni pacientes ni profesionistas pagan durante esta etapa. Puedes registrarte, agendar y recibir acompañamiento sin costo.',
+            message: 'La plataforma no cobra cargos durante la Beta. Cada profesional define el precio de su consulta (entre $150 y $350 MXN) y tú se lo pagas directamente.',
             options: [
                 { id: 'agendar', label: 'Quiero comenzar ahora', primary: true },
                 { id: 'programas', label: 'Cuéntame más de los programas' },
@@ -75,7 +75,7 @@
             ]
         },
         profesional: {
-            message: 'Qué gusto que quieras ser parte. El acceso para profesionistas es gratuito durante la Beta e incluye:\n\n• Perfil en nuestro directorio.\n• Acceso a conferencias magistrales grabadas.\n• Biblioteca con recursos profesionales.\n• Flexibilidad de horarios y flujo de pacientes.',
+            message: 'Qué gusto que quieras ser parte. La plataforma está disponible en la Beta e incluye:\n\n• Perfil en nuestro directorio.\n• Acceso a conferencias magistrales grabadas.\n• Biblioteca con recursos profesionales.\n• Flexibilidad de horarios y flujo de pacientes.',
             options: [
                 { id: 'requisitos', label: '¿Cuáles son los requisitos?' },
                 { id: 'portal', label: 'Ir a la plataforma' },

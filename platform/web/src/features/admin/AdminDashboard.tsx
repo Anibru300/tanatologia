@@ -129,12 +129,14 @@ export function AdminDashboard() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Heart size={20} className="text-warning" />
-                Beta gratuita
+                Beta
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-text">Activa</p>
-              <p className="text-text-light text-sm">Todo el acceso de la Beta es gratuito</p>
+              <p className="text-text-light text-sm">
+                La plataforma no cobra cargos; cada profesional define su precio ($150–$350 MXN)
+              </p>
             </CardContent>
           </Card>
         </div>
