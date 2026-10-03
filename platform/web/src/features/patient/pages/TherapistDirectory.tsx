@@ -12,6 +12,7 @@ import { getMyIntake } from '@/features/intake/intakeService'
 import { suggestedSpecialties } from '@/features/intake/intakeContent'
 import { getProfessionalReviewsPublic, type ProfessionalReviewPublic } from '@/features/reviews/reviewsService'
 import { StarRating } from '@/features/reviews/StarRating'
+import { formatMXN } from '@/lib/format'
 
 const specialtyOptions = ['Todas', 'Duelo', 'Ansiedad', 'Estrés', 'Depresión', 'Pérdida', 'Familias']
 
@@ -215,7 +216,8 @@ export function TherapistDirectory() {
             </div>
             <h3 className="text-lg font-semibold text-text mb-1">Pronto tendremos profesionales disponibles</h3>
             <p className="text-text-light max-w-md mx-auto mb-6">
-              Estamos verificando a los primeros especialistas. Vuelve pronto: durante la Beta el acompañamiento es gratuito.
+              Estamos verificando a los primeros especialistas. Vuelve pronto: seguimos sumando
+              profesionales para acompañarte.
             </p>
             <Link to="/paciente">
               <Button>Volver a mi espacio</Button>
@@ -255,7 +257,10 @@ export function TherapistDirectory() {
                       ))}
                     </div>
                     <div className="flex flex-col items-start mt-auto gap-3">
-                      <span className="text-lg font-bold text-success-dark">Gratis en la Beta</span>
+                      <span className="text-lg font-bold text-primary-dark">
+                        {t.session_price !== null ? formatMXN(t.session_price) : 'Precio por definir'}
+                      </span>
+                      <span className="text-xs text-text-light">por sesión de 50 min</span>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => setSelected(t)}>
                           Ver perfil
@@ -385,9 +390,17 @@ export function TherapistDirectory() {
               <ReviewList professionalProfileId={selected.id} />
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-primary/5 rounded-sm">
-              <span className="text-text">Costo durante la Beta</span>
-              <span className="text-2xl font-bold text-success-dark">Gratuito</span>
+            <div className="p-4 bg-primary/5 rounded-sm space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-text">Precio por sesión (50 min)</span>
+                <span className="text-2xl font-bold text-primary-dark">
+                  {selected.session_price !== null ? formatMXN(selected.session_price) : 'Por definir'}
+                </span>
+              </div>
+              <p className="text-xs text-text-light">
+                Pago directo a tu profesional: el cobro y la forma de pago los acuerdan entre
+                ustedes. La plataforma no cobra ningún cargo.
+              </p>
             </div>
 
             <div className="flex gap-3">

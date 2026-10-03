@@ -75,6 +75,7 @@ export function ProfessionalProfile() {
   const [languages, setLanguages] = useState<string[]>([])
   const [yearsExperience, setYearsExperience] = useState('')
   const [education, setEducation] = useState('')
+  const [sessionPrice, setSessionPrice] = useState('')
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('pending')
 
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
@@ -105,6 +106,9 @@ export function ProfessionalProfile() {
             professionalProfile.years_experience !== null ? String(professionalProfile.years_experience) : ''
           )
           setEducation(professionalProfile.education || '')
+          setSessionPrice(
+            professionalProfile.session_price !== null ? String(professionalProfile.session_price / 100) : ''
+          )
           setVerificationStatus(professionalProfile.verification_status || 'pending')
         }
       })
@@ -139,6 +143,13 @@ export function ProfessionalProfile() {
       return
     }
 
+    const price = sessionPrice.trim() ? Number(sessionPrice) : null
+    if (price !== null && (!Number.isInteger(price) || price < 150 || price > 350)) {
+      setSaveStatus('error')
+      setSaveMessage('El precio por consulta debe ser un número entero entre $150 y $350 MXN.')
+      return
+    }
+
     try {
       await updateProfile(user.id, {
         full_name: fullName.trim(),
@@ -155,6 +166,7 @@ export function ProfessionalProfile() {
         languages,
         years_experience: years,
         education: education.trim() || null,
+        session_price: price !== null ? price * 100 : null,
       })
       setSaveStatus('success')
       setSaveMessage('Tus cambios se guardaron correctamente.')
@@ -305,12 +317,31 @@ export function ProfessionalProfile() {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Beta gratuita</CardTitle>
+            <CardTitle>Precio por consulta</CardTitle>
             <CardDescription>
-              Durante la Beta de Somos Calma no se cobra nada a pacientes ni profesionales.
-              Las tarifas se definirán en una fase posterior.
+              Define cuánto cobras por cada sesión de 50 minutos. Los pacientes lo verán en tu
+              perfil público y al agendar contigo.
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <div className="max-w-xs">
+              <Input
+                label="Precio por sesión (MXN)"
+                type="number"
+                min={150}
+                max={350}
+                step={1}
+                placeholder="Ej. 250"
+                value={sessionPrice}
+                onChange={(e) => setSessionPrice(e.target.value)}
+              />
+              <p className="text-xs text-muted mt-1">
+                Rango permitido: $150 – $350 MXN. Durante la Beta la plataforma no cobra
+                comisiones: recibes el pago completo directamente del paciente. El cobro y la
+                forma de pago los acuerdan entre ustedes.
+              </p>
+            </div>
+          </CardContent>
         </Card>
 
         {saveMessage && (

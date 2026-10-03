@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (resultList) {
             resultList.innerHTML = matchedTherapists.map(t => `
-                <a href="/app/#/register?role=patient" class="therapist-card therapist-card--link" title="Crear cuenta gratis y agendar con ${t.name}">
+                <a href="/app/#/register?role=patient" class="therapist-card therapist-card--link" title="Crear cuenta y agendar con ${t.name}">
                     <img src="${t.photo}" alt="Foto de ${t.name}" class="therapist-card__photo">
                     <div class="therapist-card__info">
                         <h4>${t.name}</h4>
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="therapist-card__tags">
                             ${t.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                         </div>
-                        <span class="therapist-card__cta">Elegir y crear mi cuenta gratis →</span>
+                        <span class="therapist-card__cta">Elegir y crear mi cuenta →</span>
                     </div>
                 </a>
             `).join('');

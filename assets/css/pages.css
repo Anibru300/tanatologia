@@ -227,7 +227,7 @@
     box-shadow: var(--shadow-sm);
 }
 
-/* Tarjeta clicable hacia el registro gratuito */
+/* Tarjeta clicable hacia el registro */
 a.therapist-card--link {
     text-decoration: none;
     color: inherit;

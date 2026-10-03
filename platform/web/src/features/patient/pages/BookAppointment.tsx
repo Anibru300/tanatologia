@@ -21,6 +21,7 @@ import {
 } from '@/features/availability/availabilityService'
 import { sendEmail } from '@/lib/email'
 import { brandedEmail, emailDetailRow, emailDetailsTable } from '@/lib/emailTemplate'
+import { formatMXN } from '@/lib/format'
 
 const BOOKING_WINDOW_DAYS = 60
 
@@ -323,7 +324,7 @@ export function BookAppointment() {
                 </Button>
               </div>
               <p className="text-xs text-text-light mt-6">
-                Puedes cancelar sin costo con al menos 24 horas de anticipación desde "Mis citas".
+                Puedes cancelar con al menos 24 horas de anticipación desde "Mis citas".
               </p>
             </CardContent>
           </Card>
@@ -371,8 +372,8 @@ export function BookAppointment() {
                       </p>
                     </div>
                     <span className="text-right whitespace-nowrap">
-                      <span className="block text-xl font-bold text-success-dark">Gratis</span>
-                      <span className="text-xs text-text-light">durante la Beta</span>
+                      <span className="block text-sm font-semibold text-primary-dark">$150–$350 MXN</span>
+                      <span className="text-xs text-text-light">por sesión, según tu terapeuta</span>
                     </span>
                   </div>
                 </button>
@@ -411,9 +412,11 @@ export function BookAppointment() {
                       <span className="text-sm font-medium">Perfil verificado</span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="block font-bold text-success-dark">Gratis</span>
-                    <span className="text-xs text-text-light">en la Beta</span>
+                  <div className="text-right shrink-0">
+                    <span className="block font-bold text-primary-dark">
+                      {therapist.session_price !== null ? formatMXN(therapist.session_price) : 'Precio por definir'}
+                    </span>
+                    <span className="text-xs text-text-light">por sesión de 50 min</span>
                   </div>
                 </button>
               ))}
@@ -573,9 +576,17 @@ export function BookAppointment() {
                 <SummaryRow icon={Video} label="Modalidad" value="Videollamada privada" />
               </div>
               <div className="flex items-center justify-between p-4 bg-primary/5 rounded-sm">
-                <span className="text-text">Costo durante la Beta</span>
-                <span className="text-xl font-bold text-success-dark">Gratuito</span>
+                <span className="text-text">Costo de la sesión (50 min)</span>
+                <span className="text-xl font-bold text-primary-dark">
+                  {selectedTherapistData?.session_price != null
+                    ? formatMXN(selectedTherapistData.session_price)
+                    : 'Por definir con tu terapeuta'}
+                </span>
               </div>
+              <Alert variant="info">
+                El pago se realiza directamente entre tú y tu profesional, fuera de la plataforma.
+                Somos Calma no cobra ningún cargo por agendar.
+              </Alert>
               {submitError && <Alert variant="error">{submitError}</Alert>}
             </CardContent>
           </Card>
