@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { GraduationCap, Play } from 'lucide-react'
+import { GraduationCap, Play, Sparkles } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -20,6 +20,16 @@ function formatDuration(seconds: number | null): string {
   const s = Math.round(seconds % 60)
   const mm = h > 0 ? String(m).padStart(2, '0') : String(m)
   return `${h > 0 ? `${h}:` : ''}${mm}:${String(s).padStart(2, '0')}`
+}
+
+/** Ventana "Nuevo": los publicados dentro de estos días se resaltan en el listado. */
+const NEW_TUTORIAL_WINDOW_DAYS = 7
+
+function isNewTutorial(tutorial: Tutorial): boolean {
+  if (!tutorial.published_at) return false
+  const published = new Date(tutorial.published_at).getTime()
+  if (Number.isNaN(published)) return false
+  return Date.now() - published < NEW_TUTORIAL_WINDOW_DAYS * 24 * 60 * 60 * 1000
 }
 
 interface TutorialsPageProps {
@@ -186,6 +196,7 @@ export function TutorialsPage({ audience }: TutorialsPageProps) {
                 <Badge>{active.category}</Badge>
                 {active.duration_seconds && <Badge variant="info">{formatDuration(active.duration_seconds)}</Badge>}
                 <Badge variant="default">{AUDIENCE_LABELS[active.audience]}</Badge>
+                {isNewTutorial(active) && <Badge variant="success">Nuevo</Badge>}
               </div>
               {active.description && <p className="text-sm text-text-light">{active.description}</p>}
             </div>
@@ -223,8 +234,9 @@ function TutorialCard({
   thumbUrl?: string
   onWatch: () => void
 }) {
+  const isNew = isNewTutorial(tutorial)
   return (
-    <Card className="overflow-hidden flex flex-col">
+    <Card className={cn('overflow-hidden flex flex-col', isNew && 'ring-2 ring-primary shadow-lg')}>
       <div className="relative aspect-video bg-bg-alt flex items-center justify-center">
         {thumbUrl ? (
           <img
@@ -236,6 +248,12 @@ function TutorialCard({
         ) : (
           <span className="text-4xl font-bold text-primary/40" aria-hidden>
             {tutorial.title.trim().charAt(0).toUpperCase()}
+          </span>
+        )}
+        {isNew && (
+          <span className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-sm flex items-center gap-1 shadow">
+            <Sparkles size={12} aria-hidden />
+            Nuevo
           </span>
         )}
         {tutorial.duration_seconds != null && tutorial.duration_seconds > 0 && (
