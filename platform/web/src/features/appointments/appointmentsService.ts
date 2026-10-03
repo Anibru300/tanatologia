@@ -22,6 +22,8 @@ export type ProfessionalProfile = {
   languages?: string[]
   years_experience?: number | null
   approach?: string
+  /** Foto de perfil (bucket público `avatars`); viene de la RPC get_professional_avatars (027). */
+  avatar_url?: string | null
 }
 
 export type Appointment = {
@@ -53,7 +55,10 @@ export async function getProfessionalProfiles(): Promise<ProfessionalProfile[]> 
     throw new Error(error.message)
   }
 
-  return (data || []).map((row: Record<string, unknown>) => {
+  const profiles = (data || []) as { profile_id: string }[]
+  const avatarMap = await getProfessionalAvatarMap(profiles.map((p) => p.profile_id))
+
+  return (profiles as Record<string, unknown>[]).map((row) => {
     return {
       id: String(row.id),
       profile_id: String(row.profile_id),
@@ -73,8 +78,31 @@ export async function getProfessionalProfiles(): Promise<ProfessionalProfile[]> 
       languages: (row.languages as string[]) || [],
       years_experience: row.years_experience !== null && row.years_experience !== undefined ? Number(row.years_experience) : null,
       approach: row.approach ? String(row.approach) : undefined,
+      avatar_url: avatarMap.get(String(row.profile_id)) ?? null,
     }
   })
+}
+
+// Avatar de los profesionales vía RPC SECURITY DEFINER (migración 027): la RLS
+// de `profiles` no deja leer perfiles ajenos, así que el avatar se expone con
+// esta función que solo devuelve (profile_id, avatar_url) de profesionales
+// verificados y visibles. Falla silenciosa → sin foto, se muestran iniciales.
+async function getProfessionalAvatarMap(profileIds: string[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>()
+  const unique = [...new Set(profileIds)]
+  if (unique.length === 0) return map
+
+  const { data, error } = await supabase.rpc('get_professional_avatars', {
+    p_profile_ids: unique,
+  })
+  if (error) {
+    console.error('get_professional_avatars:', error.message)
+    return map
+  }
+  for (const row of (data ?? []) as { profile_id: string; avatar_url: string }[]) {
+    if (row.avatar_url) map.set(row.profile_id, row.avatar_url)
+  }
+  return map
 }
 
 export async function getPatientProfileId(profileId: string): Promise<string | null> {

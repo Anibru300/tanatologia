@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-02)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-03)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,11 +6,11 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.4.1-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
+- **Versión:** `1.5.0-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02):** cada profesional define su precio por consulta (sesión de 50 min) en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
-- **Supabase Cloud:** proyecto `qjwebikgrqtotqfipeqt`. Migración más reciente: **026**. Ninguna pendiente por aplicar.
+- **Supabase Cloud:** proyecto `qjwebikgrqtotqfipeqt`. Migración más reciente: **028**. Ninguna pendiente por aplicar.
 - **Deploy:** push a `main` → workflow compila `platform/web` y copia a `/app/`. Secrets ya configurados en GitHub Actions.
 
 ## 2. Qué existe (mapa funcional resumido)
@@ -23,10 +23,19 @@
 - **Correos:** Resend (SMTP + Edge Functions `send-email`, `contact-form`, `user-emails`, `send-broadcast`, `appointment-reminders`, `support-request`, `admin-contact`). Buzón hola@somos-calma.com en Hostinger (MX/SPF/DKIM/DMARC OK; DKIM de Resend en subdominio `send`).
 - **Analíticas first-party:** Edge Function `track-view` → tabla `page_views` + panel `/admin/analiticas`. GA4 como complemento.
 - **Intake/encuesta:** `patient_profiles.intake` (JSONB) filtra directorio; PHQ-9/GAD-7 opcionales.
+- **Directorio paciente:** cards + modal con foto de perfil del profesional (RPC `get_professional_avatars`, migración 027 — la RLS de `profiles` no se relaja), precio por sesión, bio, formación, reseñas.
+- **Notificaciones in-app masivas (admin):** página `/admin/notificaciones` (migración 028 + Edge Function `send-notification-broadcast`) — audiencia todos/pacientes/profesionales, dry_run de prueba, historial con contadores; llegan en vivo por Realtime a la campana (type `admin_broadcast`).
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-02, COMPLETA y desplegada) — Precio por consulta + fin del "gratis" + seguridad de verificación
+## 3. Última sesión (2026-10-03, COMPLETA, falta deploy) — Foto del profesional en el directorio + Notificaciones masivas in-app
+
+**Commits:** pendientes de commit/push (verificación local completa: lint 0 errores, tests 31/31, build ✓, migraciones 027/028 aplicadas en Cloud, función `send-notification-broadcast` desplegada, pruebas E2E 8/8 en superficie negativa + RPC de avatares verificada como paciente/anónimo).
+
+1. **Foto de perfil del profesional visible para el paciente (bug, migración 027).** El directorio solo dibujaba iniciales y la RLS de `profiles` (solo mi propia fila) impedía obtener `avatar_url` ajeno. Fix sin relajar RLS: RPC `get_professional_avatars(uuid[])` STABLE SECURITY DEFINER que devuelve SOLO (profile_id, avatar_url) de profesionales **verificados y visibles** (grant EXECUTE a authenticated, revocado a anon). Frontend: `getProfessionalProfiles()` ahora llama la RPC y agrega `avatar_url`; nuevo componente `Avatar` (`src/components/ui/Avatar.tsx`, foto + fallback a iniciales con onError) usado en cards y modal de `TherapistDirectory`. Bucket `avatars` ya era público — no requirió signed URLs. Verificado en Cloud: 4 profesionales con foto; paciente autenticado → 200 con avatares; anónimo → 401; RLS de profiles intacta. **Nota:** el chat interno tiene el mismo bug de avatares (join roto por RLS, `messagesService`) — pendiente si se quiere arreglar también.
+2. **Notificaciones masivas in-app (migración 028 + Edge Function `send-notification-broadcast`).** Mismo patrón que Comunicados/correos pero insertando en `notifications` (type `admin_broadcast`) con service role; llegan en vivo por Realtime a la campana de cada usuario. Tabla `notification_broadcasts` (audiencia/título/cuerpo/link/status/contadores, RLS solo admin, igual que `email_broadcasts`). Función: valida admin por JWT, soporta `dry_run` (prueba solo para el admin) y `only_emails` (filtro para pruebas controladas); idempotente (409 si ya fue enviado). UI: página `/admin/notificaciones` (menú "Notificaciones", icono Bell) — audiencia, contador de destinatarios, título (200), mensaje (500), enlace interno opcional, vista previa estilo campana, "Enviarme una prueba", ConfirmDialog y historial con contadores. Test `scripts/test-notification-broadcast.mjs`: sin credenciales admin corre CORS/401/403/405/RLS (8/8); con `ADMIN_EMAIL`/`ADMIN_PASSWORD` corre además dry_run, envío real filtrado, recepción, contadores e idempotencia.
+
+## 3b. Sesión 2026-10-02 — Precio por consulta + fin del "gratis" + seguridad de verificación
 
 **Commits:** `74e0815` (precio/gratis, v1.4.0) → `04d9a2d` (seguridad verificados, migración 026) → `2d3140a` (docs) → `b1df5cf` (selector visibilidad admin, v1.4.1). Todo en verde en GitHub Actions; producción verificada (sitio sin "gratis", app 1.4.1 con precios en vivo).
 
@@ -38,7 +47,7 @@ Verificado el día: lint 0 errores, tests 31/31, builds ✓, chequeo de salud co
 
 **Nota operativa:** el remoto avanza seguido por Dependabot — antes de push hacer siempre `git pull --rebase origin main`.
 
-## 3b. Sesión 2026-09-17 — PWA + UX móvil
+## 3c. Sesión 2026-09-17 — PWA + UX móvil
 
 Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav, woff2, skeletons, v1.2.0) → `dfaaec9` (botón instalar, v1.3.0) → `9679c46` (banner instalación login + íconos marca). Reporte: `docs/reporte-pwa-2026-09-17.md`. Todo probado (lint/test 31-31/build) y ya desplegado.
 
@@ -50,6 +59,9 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 
 | # | Qué | Detalle | Estado |
 |---|-----|---------|--------|
+| P1 | Deploy 1.5.0 (foto profesional + notificaciones) | Commit + push a `main` después de `git pull --rebase`; luego probar con paciente real que vea la foto en el directorio y enviar una notificación de prueba desde `/admin/notificaciones` | Pendiente (deploy) |
+| P2 | Prueba completa notificaciones masivas | `ADMIN_EMAIL=... ADMIN_PASSWORD=... node scripts/test-notification-broadcast.mjs` (flujo de envío real) | Pendiente |
+| P2 | Avatares en el chat | Mismo bug de RLS que el directorio: `messagesService` hace join a `profiles.avatar_url` que siempre da null; reusar `get_professional_avatars` | Pendiente |
 | P0 | Publicar tutoriales | Esperar **visto bueno del dueño**; luego cambiar estado a `published` en `/admin/tutoriales` | Bloqueado por cliente |
 | P1 | Horarios de Carlos Urbina | Avisarle que vuelva a capturar su Disponibilidad (slots purgados mientras era invisible) | Pendiente (usuario) |
 | P1 | Instalación/actualización PWA en dispositivos reales | Ver ítems de sección 3b | Pendiente |
@@ -65,9 +77,9 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 - **Supabase:** ref `qjwebikgrqtotqfipeqt` (CLI vinculada: `supabase db query --linked -f <sql>`; `supabase functions deploy <fn>`).
 - **Credenciales:** `.env` en `platform/web/` (nunca subir service role key). Secrets en vault de Supabase: `CRON_SECRET` (y otros en Edge Function secrets: Resend, JAAS_*, DAILY_API_KEY).
 - **Comandos:** `cd platform/web && npm run dev|build|test|lint`. Build debe pasar siempre antes de push.
-- **Edge Functions activas:** `send-email`, `contact-form`, `user-emails`, `send-broadcast`, `appointment-reminders`, `support-request`, `admin-contact`, `jaas-token`, `daily-test-room`, `track-view`.
+- **Edge Functions activas:** `send-email`, `contact-form`, `user-emails`, `send-broadcast`, `send-notification-broadcast`, `appointment-reminders`, `support-request`, `admin-contact`, `jaas-token`, `daily-test-room`, `track-view`.
 - **Buckets Storage:** `avatars`, `professional-documents` (privados), `chat-attachments`, `tutorials`.
-- **Tests de regresión** (`platform/web/scripts/`): `test-auth-flow.mjs` (15), `test-core-flows.mjs` (22, necesita cuentas e2e), `test-chat.mjs` (28), `test-jaas.mjs` (22), `test-daily.mjs` (6), `test-analytics.mjs` (13, usa `ADMIN_PASSWORD`).
+- **Tests de regresión** (`platform/web/scripts/`): `test-auth-flow.mjs` (15), `test-core-flows.mjs` (22, necesita cuentas e2e), `test-chat.mjs` (28), `test-jaas.mjs` (22), `test-daily.mjs` (6), `test-analytics.mjs` (13, usa `ADMIN_PASSWORD`), `test-notification-broadcast.mjs` (8 sin admin / 13 con `ADMIN_EMAIL`+`ADMIN_PASSWORD`).
 - **¿Algo falla? → `docs/monitoreo-y-diagnostico.md`** (semáforo de salud, tabla de síntomas, baterías y fuentes de logs).
 - **Reglas de código:** ver `AGENTS.md` §Convenciones (prohibidos alert/confirm/prompt; usar componentes UI de `src/components/ui/`; errores siempre con `Alert`).
 - **Videos originales** (fuera del sitio): `VIDEOS TUTORIALES/`, `recursos/`. `.tools/` tiene ffmpeg (gitignored).

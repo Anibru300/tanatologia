@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { Star, Search, Filter, Calendar, Award, CheckCircle, GraduationCap, Languages, Briefcase, Sparkles, MessageSquareQuote } from 'lucide-react'
+import { Avatar } from '@/components/ui/Avatar'
 import { getProfessionalProfiles, type ProfessionalProfile } from '@/features/appointments/appointmentsService'
 import { useAuth } from '@/features/auth/useAuth'
 import { getMyIntake } from '@/features/intake/intakeService'
@@ -15,16 +16,6 @@ import { StarRating } from '@/features/reviews/StarRating'
 import { formatMXN } from '@/lib/format'
 
 const specialtyOptions = ['Todas', 'Duelo', 'Ansiedad', 'Estrés', 'Depresión', 'Pérdida', 'Familias']
-
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
-}
 
 function ReviewList({ professionalProfileId }: { professionalProfileId: string }) {
   const [reviews, setReviews] = useState<ProfessionalReviewPublic[] | null>(null)
@@ -230,9 +221,7 @@ export function TherapistDirectory() {
                 <Card key={t.id} className="flex flex-col hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between mb-4">
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary-dark font-bold text-xl">
-                        {getInitials(t.full_name)}
-                      </div>
+                      <Avatar src={t.avatar_url} name={t.full_name} size="md" />
                       {Number(t.rating || 0) > 0 && (
                         <div className="flex items-center gap-1">
                           <Star size={16} className="text-warning fill-warning" />
@@ -298,9 +287,7 @@ export function TherapistDirectory() {
         {selected && (
           <div className="space-y-6">
             <div className="flex items-center gap-4 -mt-2">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary-dark font-bold text-2xl">
-                {getInitials(selected.full_name)}
-              </div>
+              <Avatar src={selected.avatar_url} name={selected.full_name} size="lg" />
               <div>
                 <p className="text-text-light">
                   {selected.professional_title ? `${selected.professional_title} · ` : ''}
