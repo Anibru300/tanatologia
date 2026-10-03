@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.4.0-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
+- **Versión:** `1.4.1-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02):** cada profesional define su precio por consulta (sesión de 50 min) en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
@@ -26,14 +26,17 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-02) — Precio por consulta + eliminación de "gratis"
+## 3. Última sesión (2026-10-02, COMPLETA y desplegada) — Precio por consulta + fin del "gratis" + seguridad de verificación
 
-Modelo de pago directo profesional→paciente. Migración 025 aplicada en Cloud (constraint 15000–35000 centavos, default NULL; los defaults viejos de $400 se purgaron a NULL). App: `ProfessionalProfile` captura precio (validación 150–350, helper `src/lib/format.ts` → `formatMXN`), directorio y `BookAppointment` muestran el precio y aviso de pago directo, dashboards y FAQs actualizados. Sitio estático: "gratis" sustituido en index, pacientes, profesionales, membresías, matching, bot, legales (términos §7 y cancelación reescritos a "sin cargos de plataforma", pagos directos). Migración 026 (misma sesión): INSERT de `availability_slots` y de citas exige profesional **verificado** (cierra hueco donde un no-verificado publicaba horarios vía API; probado: pendiente→403, verificado→201; regresión seguridad 22/22) y `ProfessionalAvailability` muestra aviso si no hay verificación. **Selector Sí/No de visibilidad** en `/admin/profesionales` (antes solo lectura; conecta `updateProfessionalVerification`, v1.4.1-beta.1). Incidente resuelto: Carlos Urbina quedó `verified` pero `is_visible=false` (verificación hecha por SQL sin encender visibilidad) → se corrigió y documentado el camino correcto (aprobar desde el panel). Version bump 1.4.0-beta.1 → el SW precachéa solo y los usuarios con la app instalada verán el banner "Nueva versión disponible" (la instalación del update requiere un toque en "Actualizar", no puede ser 100% automática por restricción de los navegadores). Verificado: lint 0 errores, tests 31/31, build ✓, **commit+push hechos 2026-10-02**.
+**Commits:** `74e0815` (precio/gratis, v1.4.0) → `04d9a2d` (seguridad verificados, migración 026) → `2d3140a` (docs) → `b1df5cf` (selector visibilidad admin, v1.4.1). Todo en verde en GitHub Actions; producción verificada (sitio sin "gratis", app 1.4.1 con precios en vivo).
 
-**Chequeo de salud (mismo día, post-cambios):** sitio y /app 200, 10/10 Edge Functions responden CORS, DB con 40 usuarios/4 citas/11 verificados, últimos deploys en verde, regresión `test-auth-flow.mjs` 15/15 (cuentas de prueba borradas). Guía de monitoreo/diagnóstico creada: `docs/monitoreo-y-diagnostico.md` (semáforo de 2 min, tabla síntoma→diagnóstico, cuándo correr cada batería).
+Modelo de pago directo profesional→paciente. Migración 025 aplicada en Cloud (constraint 15000–35000 centavos, default NULL). App: `ProfessionalProfile` captura precio (validación 150–350, helper `src/lib/format.ts` → `formatMXN`), directorio y `BookAppointment` muestran el precio y aviso de pago directo, dashboards y FAQs actualizados. Sitio estático: "gratis" sustituido en index, pacientes, profesionales, membresías, matching, bot y legales. Migración 026: INSERT de `availability_slots` y de citas exige profesional **verificado** (hueco real cerrado: un no-verificado publicaba horarios vía API; probado pendiente→403, verificado→201; regresión seguridad 22/22); `ProfessionalAvailability` muestra aviso si no hay verificación. **Selector Sí/No de visibilidad** en `/admin/profesionales` (conecta `updateProfessionalVerification`, que existía sin uso). Regla del día: el directorio exige `verified` **y** `is_visible`.
 
-**Pendiente de esa sesión:**
-1. Prueba en dispositivo real de la actualización PWA (banner aparece al abrir la app tras el deploy).
+**Incidente resuelto:** Carlos Urbina quedó `verified` + `is_visible=false` (su verificación se hizo por SQL sin encender visibilidad; era el único en ese estado). Corregido a visible; su precio ($300) intacto. **Pendiente de él: volver a capturar sus horarios en Disponibilidad** (sus slots se purgaron al estar invisible, migración 026/024).
+
+Verificado el día: lint 0 errores, tests 31/31, builds ✓, chequeo de salud completo (sitio/app 200, 10/10 Edge Functions CORS, DB activa 40 usuarios/4 citas/11 verificados, auth-flow 15/15). Guía creada: `docs/monitoreo-y-diagnostico.md`.
+
+**Nota operativa:** el remoto avanza seguido por Dependabot — antes de push hacer siempre `git pull --rebase origin main`.
 
 ## 3b. Sesión 2026-09-17 — PWA + UX móvil
 
@@ -48,10 +51,10 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 | # | Qué | Detalle | Estado |
 |---|-----|---------|--------|
 | P0 | Publicar tutoriales | Esperar **visto bueno del dueño**; luego cambiar estado a `published` en `/admin/tutoriales` | Bloqueado por cliente |
-| P1 | Flujo de pago paciente | RESUELTO 2026-10-02: sin mención de momento de pago; el acuerdo es entre profesional y paciente | Cerrado |
+| P1 | Horarios de Carlos Urbina | Avisarle que vuelva a capturar su Disponibilidad (slots purgados mientras era invisible) | Pendiente (usuario) |
+| P1 | Instalación/actualización PWA en dispositivos reales | Ver ítems de sección 3b | Pendiente |
 | P0 | Prueba real de videollamada JaaS | Verificar con cliente que `JAAS_KID` no esté truncado; hacer llamada real de 2 dispositivos | Pendiente |
 | P1 | Re-grabar v1 y v5 | v1 tiene PII propia y de tercero; v5 muestra flujo que falló y explorador personal (aunque ambos fueron aprobados por decisión expresa del dueño, conviene re-grabar) | Decisión del cliente |
-| P1 | Instalación PWA en dispositivos reales | Ver ítems de sección 3 | Pendiente |
 | P2 | Decisión proveedor de video | Comparación JaaS vs Daily.co en `/admin/prueba-videollamada`; JaaS gratis hasta 25 MAU, después $99/300 MAU; plan futuro: Jitsi propio | Decisión del cliente |
 | P2 | Pagos | Solo cuando haya tracción. Requisito: tarjeta + PayPal + SPEI (Openpay cubre tarjeta+SPEI; PayPal aparte). El sitio ya lo anuncia como "próximamente" | Diferido |
 | P3 | WhatsApp recordatorios | Requiere WhatsApp Business API (de pago) | Decisión del cliente |
@@ -73,7 +76,7 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 
 1. Ningún video se publica automáticamente — flujo explícito de aprobación.
 2. La app instalada solo contiene login + portales; páginas públicas SIEMPRE en pestaña nueva.
-3. Sin precios ni cobros visibles durante la Beta.
+3. **Cobro (vigente desde 2026-10-02):** la plataforma NO cobra ni procesa pagos; cada profesional pone su precio ($150–$350 MXN, solo ese rango) y el paciente le paga directo. Los textos **no mencionan cuándo ni cómo se paga** — lo acuerdan entre ellos.
 4. Correo único de contacto: hola@somos-calma.com.
 5. Legales actualizados a persona física (domicilio genérico "Ciudad de México, México").
-6. Precio por consulta siempre dentro de $150–$350 MXN (cambio de rango solo vía migración; el profesional pone su precio, el paciente paga directo).
+6. Cambio del rango de precios ($150–$350) solo vía migración — nunca hardcodear otro rango.
