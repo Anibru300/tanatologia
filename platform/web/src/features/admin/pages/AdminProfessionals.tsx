@@ -5,11 +5,12 @@ import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { Modal } from '@/components/ui/Modal'
 import { DataTable } from '@/components/ui/DataTable'
 import { Search, FileText, Mail, Send } from 'lucide-react'
-import { getAdminProfessionals, type AdminProfessional } from '@/features/admin/adminService'
+import { getAdminProfessionals, updateProfessionalVerification, type AdminProfessional } from '@/features/admin/adminService'
 import { supabase } from '@/lib/supabase'
 
 const statusLabels: Record<string, string> = {
@@ -37,6 +38,7 @@ export function AdminProfessionals() {
   const [sending, setSending] = useState(false)
   const [contactError, setContactError] = useState('')
   const [notice, setNotice] = useState('')
+  const [visibilityUpdating, setVisibilityUpdating] = useState<string | null>(null)
 
   useEffect(() => {
     load()
@@ -59,6 +61,25 @@ export function AdminProfessionals() {
     setSubject('')
     setMessage('')
     setContactError('')
+  }
+
+  async function handleVisibilityChange(p: AdminProfessional, visible: boolean) {
+    if (visibilityUpdating) return
+    setVisibilityUpdating(p.id)
+    setError('')
+    try {
+      await updateProfessionalVerification(p.id, p.verification_status, visible)
+      setProfessionals((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_visible: visible } : x)))
+      setNotice(
+        visible
+          ? `${p.full_name} ahora es visible en el directorio.`
+          : `${p.full_name} ya no es visible en el directorio.`
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo cambiar la visibilidad.')
+    } finally {
+      setVisibilityUpdating(null)
+    }
   }
 
   async function handleContactSubmit(e: React.FormEvent) {
@@ -150,7 +171,20 @@ export function AdminProfessionals() {
                 },
                 {
                   header: 'Visible',
-                  render: (p) => <span className="text-text-light">{p.is_visible ? 'Sí' : 'No'}</span>,
+                  render: (p) => (
+                    <div className="w-24">
+                      <Select
+                        aria-label={`Visibilidad de ${p.full_name} en el directorio`}
+                        options={[
+                          { value: 'true', label: 'Sí' },
+                          { value: 'false', label: 'No' },
+                        ]}
+                        value={p.is_visible ? 'true' : 'false'}
+                        disabled={visibilityUpdating === p.id}
+                        onChange={(e) => handleVisibilityChange(p, e.target.value === 'true')}
+                      />
+                    </div>
+                  ),
                 },
                 {
                   header: 'Acciones',
