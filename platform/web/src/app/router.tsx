@@ -154,6 +154,9 @@ const AdminAnalytics = lazy(() =>
 const AdminBroadcasts = lazy(() =>
   import('@/features/admin/pages/AdminBroadcasts').then((m) => ({ default: m.AdminBroadcasts }))
 )
+const AdminNotificationBroadcasts = lazy(() =>
+  import('@/features/admin/pages/AdminNotificationBroadcasts').then((m) => ({ default: m.AdminNotificationBroadcasts }))
+)
 const AdminTutorials = lazy(() =>
   import('@/features/admin/pages/AdminTutorials').then((m) => ({ default: m.AdminTutorials }))
 )
@@ -307,6 +310,7 @@ export function AppRouter() {
         <Route path="feedback" element={<AdminFeedback />} />
         <Route path="analiticas" element={<AdminAnalytics />} />
         <Route path="comunicados" element={<AdminBroadcasts />} />
+        <Route path="notificaciones" element={<AdminNotificationBroadcasts />} />
         <Route path="tutoriales" element={<AdminTutorials />} />
         <Route path="chats" element={<AdminChats />} />
         <Route path="prueba-videollamada" element={<AdminVideoTest />} />

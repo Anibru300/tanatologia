@@ -475,6 +475,15 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/send-broadcast/index.ts"
 
+[functions.send-notification-broadcast]
+enabled = true
+# Notificaciones in-app masivas desde el panel admin (audiencia: pacientes/
+# profesionales/todos). Requiere sesión de admin; la función valida el JWT
+# internamente e inserta en `notifications` con service role (mismo patrón
+# que send-broadcast). Soporta dry_run (prueba solo para el admin).
+verify_jwt = false
+entrypoint = "./functions/send-notification-broadcast/index.ts"
+
 [functions.jaas-token]
 enabled = true
 # Firma JWT de JaaS (8x8.vc) para la sala de una cita. Requiere sesión del
