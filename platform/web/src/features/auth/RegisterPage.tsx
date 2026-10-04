@@ -195,8 +195,9 @@ export function RegisterPage() {
                     className="text-primary hover:underline"
                   >
                     Términos y Condiciones
-                  </a>
-                  .
+                  </a>{' '}
+                  y consiento de manera expresa el tratamiento de mis datos personales sensibles
+                  (incluidos datos de salud) descritos en el Aviso de Privacidad.
                 </span>
               </label>
 

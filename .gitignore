@@ -28,3 +28,6 @@ build/
 .env
 .env.local
 .tools/
+
+# Config local de agentes (ECC para Kimi Code — se reinstala con npx ecc-universal)
+.kimi-code/
