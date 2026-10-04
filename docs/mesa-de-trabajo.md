@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.5.2-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
+- **Versión:** `1.5.3-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02):** cada profesional define su precio por consulta (sesión de 50 min) en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
@@ -28,7 +28,17 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-03, COMPLETA y desplegada) — Foto del profesional en el directorio + Notificaciones masivas in-app + Tutorial v6 publicado
+## 3. Última sesión (2026-10-03 tarde, COMPLETA y desplegada) — ECC instalado + skills oficiales Vercel/Supabase + Aviso de privacidad alineado a LFPDPPP 2025
+
+**Commit:** `9f96a1d` (legal, v1.5.3) — push a main; deploy del sitio (Pages, inmediato) y de la app (workflow, ~5 min). Build verificado local antes de push.
+
+1. **ECC (Everything Claude Code) instalado a nivel proyecto para Kimi Code** — `npx ecc-universal@2.2.3 install --profile core --target kimi --no-hooks`. 477 archivos en `./.kimi-code/` (68 agentes, skills TDD/security-review, comandos, reglas por lenguaje; hooks-runtime saltado). `.kimi-code/` añadido a `.gitignore` (reinstalable; desinstalar con `npx ecc-universal@2.2.3 uninstall`). Detalle en `AGENTS.md` ítem 20.
+2. **Skills oficiales añadidos a `.kimi-code/skills/`** (puros markdown, MIT, sin scripts): `vercel-react-best-practices` (repo `vercel-labs/agent-skills`, 70 reglas de rendimiento React) y `supabase-postgres-best-practices` + `supabase-official` (repo `supabase/agent-skills`, reglas Postgres/RLS del equipo de Supabase). Para actualizarlos: re-clonar y re-copiar.
+3. **Auditoría y corrección del aviso de privacidad vs LFPDPPP (reforma 2025):** hallazgos → (a) INAI extinto: sección final citaba al INAI y faltaba la vía de quejas → nueva **sección 12 “Presentación de quejas ante la autoridad”** (Secretaría Anticorrupción y Buen Gobierno, gob.mx/anticorrupcion) y nota final reescrita; (b) consentimiento para datos sensibles era tácito → **checkbox del registro reforzado** (`RegisterPage.tsx`: “…consiento de manera expresa el tratamiento de mis datos personales sensibles…”) y sección 11 del aviso actualizada a consentimiento expreso; (c) sobre-promesa “videollamadas encriptadas de extremo a extremo” → “cifrado en tránsito (TLS)” (secciones 4 y 7); fecha de actualización → 3 oct 2026. Todo en commit `9f96a1d`.
+
+**Contexto:** hoy también se investigó si había más repos útiles → los skills de Vercel/Supabase fueron la conclusión (ver 3a). Quedó propuesto (sin hacer): `web-design-guidelines` de Vercel, revisión en securityheaders.com, y guardar aceptaciones del aviso en la tabla `legal_acceptances` (existe desde migración 007 pero el registro no la usa — evidencia legal).
+
+## 3a. Sesión 2026-10-03 (mañana) — Foto del profesional en el directorio + Notificaciones masivas in-app + Tutorial v6 publicado
 
 **Commits:** `be909b9` (1.5.0: avatar directorio + notificaciones masivas) → `e36a2d3` (docs sesión) → `7ca159a` (1.5.1: marca "Nuevo") → `f068dc2` (1.5.2: orden por fecha + Nuevo que se apaga al verlo + migración 029). Todo en verde en GitHub Actions; producción verificada sirviendo 1.5.2 (`index-C4_YWt-F.js`). Detalle de la verificación del día: lint 0 errores, tests 31/31, builds ✓, migraciones 027/028/029 aplicadas en Cloud, función `send-notification-broadcast` desplegada, pruebas E2E 8/8 en superficie negativa, RPC de avatares y acceso al tutorial v6 verificados con usuarios de prueba (paciente/profesional/anónimo).
 
@@ -72,6 +82,9 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 | P2 | Decisión proveedor de video | Comparación JaaS vs Daily.co en `/admin/prueba-videollamada`; JaaS gratis hasta 25 MAU, después $99/300 MAU; plan futuro: Jitsi propio | Decisión del cliente |
 | P2 | Pagos | Solo cuando haya tracción. Requisito: tarjeta + PayPal + SPEI (Openpay cubre tarjeta+SPEI; PayPal aparte). El sitio ya lo anuncia como "próximamente" | Diferido |
 | P3 | WhatsApp recordatorios | Requiere WhatsApp Business API (de pago) | Decisión del cliente |
+| P2 | **Guardar aceptación del aviso en `legal_acceptances`** | Tabla existe (migración 007) pero el registro no la usa; guardar qué versión del aviso aceptó cada usuario = evidencia legal. ~1 h | Pendiente |
+| P3 | Revisión securityheaders.com | Pegar https://somos-calma.com y ver calificación de headers de seguridad (5 min, gratis) | Pendiente |
+| P3 | Skill `web-design-guidelines` de Vercel | Ya está en `.tmp` del repo clonado; copiar a `.kimi-code/skills/` si se quiere | Opcional |
 | P3 | Activar CI completo | Copiar `docs/deploy-app.propuesto.yml` sobre `.github/workflows/deploy-app.yml` (necesita token con permiso `workflow`) | Técnico, fácil |
 
 ## 5. Datos rápidos de consulta
@@ -84,6 +97,7 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 - **Tests de regresión** (`platform/web/scripts/`): `test-auth-flow.mjs` (15), `test-core-flows.mjs` (22, necesita cuentas e2e), `test-chat.mjs` (28), `test-jaas.mjs` (22), `test-daily.mjs` (6), `test-analytics.mjs` (13, usa `ADMIN_PASSWORD`), `test-notification-broadcast.mjs` (8 sin admin / 13 con `ADMIN_EMAIL`+`ADMIN_PASSWORD`).
 - **¿Algo falla? → `docs/monitoreo-y-diagnostico.md`** (semáforo de salud, tabla de síntomas, baterías y fuentes de logs).
 - **Reglas de código:** ver `AGENTS.md` §Convenciones (prohibidos alert/confirm/prompt; usar componentes UI de `src/components/ui/`; errores siempre con `Alert`).
+- **Herramientas de agente (2026-10-03):** ECC + skills oficiales Vercel/Supabase en `./.kimi-code/` (gitignored). Kimi los descubre automáticamente en cada sesión.
 - **Videos originales** (fuera del sitio): `VIDEOS TUTORIALES/`, `recursos/`. `.tools/` tiene ffmpeg (gitignored).
 
 ## 6. Reglas del cliente (memoria)
