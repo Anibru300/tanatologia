@@ -17,8 +17,8 @@ export const siteConfig = {
     companyName: 'SOMOS-CALMA (operada por la Dra. Lupita Muñoz Campuzano, persona física)',
     // Sin domicilio fiscal por ahora
     address: 'Ciudad de México, México',
-    // Teléfono oficial de la Dra. Lupita Muñoz Campuzano
-    phone: '477 254 1540',
+    // Teléfono oficial de SOMOS-CALMA
+    phone: '477 125 0075',
     country: 'México',
   },
 
@@ -31,7 +31,7 @@ export const siteConfig = {
     support: 'hola@somos-calma.com',
     crisis: 'hola@somos-calma.com',
     whatsapp: {
-      number: '5214772541540',
+      number: '5214771250075',
       label: 'WhatsApp',
       hours: 'Lunes a sábado, 9:00 a 20:00 hrs (CDMX)',
       message:
