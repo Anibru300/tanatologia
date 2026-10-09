@@ -1,5 +1,5 @@
 /**
- * Componentes reutilizables: header, footer y boton de salida rapida.
+ * Componentes reutilizables: header y footer.
  * Detecta automaticamente si la pagina esta en /pages/ para ajustar rutas.
  */
 (function () {
@@ -111,36 +111,10 @@
         }
     }
 
-    function injectQuickExit() {
-        const existing = document.getElementById('quick-exit-btn');
-        if (existing) return;
-
-        const btn = document.createElement('button');
-        btn.id = 'quick-exit-btn';
-        btn.className = 'quick-exit';
-        btn.textContent = 'Salir rápido';
-        btn.setAttribute('aria-label', 'Salir rápido de este sitio');
-        btn.setAttribute('type', 'button');
-        btn.addEventListener('click', function () {
-            // Reemplaza la página actual por un sitio neutro y común.
-            // Esto ayuda a quienes comparten dispositivo o están en situación de riesgo.
-            try {
-                window.location.replace('https://www.google.com');
-            } catch (e) {
-                window.location.href = 'https://www.google.com';
-            }
-        });
-        document.body.appendChild(btn);
-    }
-
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () {
-            injectComponents();
-            injectQuickExit();
-        });
+        document.addEventListener('DOMContentLoaded', injectComponents);
     } else {
         injectComponents();
-        injectQuickExit();
     }
 
     // Cargar configuración centralizada
