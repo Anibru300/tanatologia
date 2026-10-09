@@ -1552,6 +1552,57 @@ body.page-with-bg::after {
     border-color: var(--color-primary-dark);
 }
 
+/* === BOTÓN FLOTANTE DE FACEBOOK === */
+.facebook-float {
+    position: fixed;
+    bottom: calc(1.5rem + 64px);
+    right: 1.5rem;
+    z-index: 240;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: #1877F2;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(24, 119, 242, 0.35);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.facebook-float svg {
+    width: 28px;
+    height: 28px;
+}
+
+.facebook-float:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 10px 30px rgba(24, 119, 242, 0.45);
+}
+
+.facebook-float__tooltip {
+    position: absolute;
+    right: 110%;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--color-text);
+    color: #ffffff;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition), visibility var(--transition);
+    pointer-events: none;
+}
+
+.facebook-float:hover .facebook-float__tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* === BOTÓN FLOTANTE DE WHATSAPP === */
 .whatsapp-float {
     position: fixed;
@@ -1618,6 +1669,22 @@ body.page-with-bg::after {
         bottom: 70px;
         right: 0;
         width: calc(100vw - 2rem);
+    }
+
+    .facebook-float {
+        bottom: calc(1rem + 60px);
+        right: 1rem;
+        width: 48px;
+        height: 48px;
+    }
+
+    .facebook-float svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .facebook-float__tooltip {
+        display: none;
     }
 
     .whatsapp-float {
@@ -2461,35 +2528,3 @@ body.page-with-bg::after {
 }
 
 
-/* === BOTÓN DE SALIDA RÁPIDA === */
-.quick-exit {
-    position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    z-index: 200;
-    background-color: var(--color-text);
-    color: #ffffff;
-    border: none;
-    border-radius: 50px;
-    padding: 0.85rem 1.5rem;
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-}
-
-.quick-exit:hover {
-    background-color: #2a2826;
-    transform: translateY(-2px);
-}
-
-@media (max-width: 768px) {
-    .quick-exit {
-        bottom: 1rem;
-        right: 1rem;
-        padding: 0.7rem 1.1rem;
-        font-size: 0.8rem;
-    }
-}
