@@ -8,7 +8,7 @@
     const urls = cfg.urls || {};
     const whatsapp = contact.whatsapp || {};
 
-    const WHATSAPP_NUMBER = whatsapp.number || '5214772541540';
+    const WHATSAPP_NUMBER = whatsapp.number || '5214771250075';
     const WHATSAPP_MESSAGE = encodeURIComponent(
         whatsapp.message ||
         'Hola, tengo una pregunta sobre Somos Calma. ¿Me pueden ayudar?'

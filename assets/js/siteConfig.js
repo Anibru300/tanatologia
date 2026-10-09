@@ -13,7 +13,7 @@
     legal: {
       companyName: 'SOMOS-CALMA (plataforma operada por la Dra. Lupita Muñoz Campuzano, persona física; en proceso de constitución como persona moral)',
       address: 'Ciudad de México, México',
-      phone: '477 254 1540',
+      phone: '477 125 0075',
       country: 'México',
     },
 
@@ -24,7 +24,7 @@
       support: 'hola@somos-calma.com',
       crisis: 'hola@somos-calma.com',
       whatsapp: {
-        number: '5214772541540',
+        number: '5214771250075',
         label: 'WhatsApp',
         hours: 'Lunes a sábado, 9:00 a 20:00 hrs (CDMX)',
         message:
