@@ -37,10 +37,9 @@ export const siteConfig = {
       message:
         'Hola, estoy interesado/a en los servicios de SOMOS-CALMA. ¿Podrían orientarme?',
     },
-    // PENDIENTE: Agregar redes sociales reales
     social: {
       instagram: '',
-      facebook: '',
+      facebook: 'https://www.facebook.com/profile.php?id=61594989341298',
       linkedin: '',
     },
   },

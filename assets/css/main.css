@@ -908,6 +908,72 @@ body.page-with-bg::after {
     color: rgba(255, 255, 255, 0.55);
 }
 
+.footer__social {
+    margin-top: 1.25rem;
+}
+
+.footer__social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.1rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.footer__social-link:hover {
+    background-color: #1877F2;
+    border-color: #1877F2;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* === CONTACTO DIRECTO (index) === */
+.contact-direct {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 2rem auto 0;
+    max-width: 640px;
+}
+
+.contact-direct__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+    background-color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.contact-direct__item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.contact-direct__item--facebook {
+    background-color: #1877F2;
+    border-color: #1877F2;
+    color: #ffffff;
+}
+
+.contact-direct__item--facebook:hover {
+    background-color: #1668d6;
+    color: #ffffff;
+}
+
 /* === ANIMACIONES SUAVES === */
 .fade-in {
     opacity: 0;
