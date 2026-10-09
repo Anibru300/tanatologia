@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-03)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-08)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -10,6 +10,8 @@
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02):** cada profesional define su precio por consulta (sesión de 50 min) en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
+- **Redes (2026-10-08):** página de Facebook activa: `https://www.facebook.com/profile.php?id=61594989341298` — enlazada en footer, sección de contacto del index y botón flotante (arriba de WhatsApp). URL central en `siteConfig.ts` → `contact.social.facebook`. Instagram/Linkedin aún vacíos.
+- **Teléfono oficial (2026-10-08):** 477 125 0075 · WhatsApp `5214771250075` (reemplazó al 477 254 1540 en sitio + app). El "Salir rápido" ya NO existe en el sitio estático (sí en el portal paciente de la app).
 - **Supabase Cloud:** proyecto `qjwebikgrqtotqfipeqt`. Migración más reciente: **029**. Ninguna pendiente por aplicar.
 - **Deploy:** push a `main` → workflow compila `platform/web` y copia a `/app/`. Secrets ya configurados en GitHub Actions.
 
@@ -28,7 +30,22 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-03 tarde, COMPLETA y desplegada) — ECC instalado + skills oficiales Vercel/Supabase + Aviso de privacidad alineado a LFPDPPP 2025
+## 3. Última sesión (2026-10-08 — Página de Facebook + teléfono oficial nuevo + ajustes de flotantes) COMPLETA y desplegada
+
+**Commits:** `bfb3695` (Facebook en footer + contacto + siteConfig) → `56b4a57` (flotante Facebook + quitar salida rápida del sitio) → `d6071db` (teléfono nuevo). Deploy de sitio (Pages, inmediato) y de la app (workflow, automático por tocar `platform/web`). El remoto traía un commit ajeno (`bbfb69d` build automático / dependabot) → push con `git pull --rebase` (regla vigente).
+
+1. **Página de Facebook creada por el cliente:** https://www.facebook.com/profile.php?id=61594989341298 (categoría sugerida "Centro de salud mental", bio y primer post redactados por el agente — el post quedó fijado arriba en la página).
+2. **Facebook enlazado en el sitio estático** (3 puntos, mismos estilos en `main.css`):
+   - Footer (inyectado por `assets/js/components.js`, aparece en las 16 páginas): píldora "Facebook" bajo la descripción de marca.
+   - Sección Contacto del `index.html`: píldora `✉️ hola@somos-calma.com` (mailto) + botón azul "Síguenos en Facebook" (clase `.contact-direct`).
+   - **Botón flotante circular azul (#1877F2) arriba del flotante de WhatsApp**, ambos abajo a la derecha (`assets/js/chatbot.js` + `.facebook-float` en main.css; tooltip al hover).
+   - URL registrada también en `platform/web/src/lib/siteConfig.ts` → `contact.social.facebook`.
+3. **Botón "Salir rápido" eliminado del SITIO ESTÁTICO** (pedido del cliente: "no se ocupa"): fuera `injectQuickExit()` de `components.js` y estilos `.quick-exit` de `main.css` y `pages.css`. **OJO: el `QuickExitButton` de la APP (portal paciente) sigue activo** — medida de seguridad para dispositivos compartidos; quitarlo de la app NO se ha pedido ni hecho.
+4. **Teléfono oficial cambiado a 477 125 0075** (WhatsApp `5214771250075`), reemplazando al viejo 477 254 1540 en: `assets/js/siteConfig.js` (legal.phone + whatsapp.number), defaults de `chatbot.js`/`atencion-bot.js`, páginas legales (terminos, cancelacion, aviso-privacidad ×2) y `platform/web/src/lib/siteConfig.ts` (comentario ya no dice "de la Dra."). Build de app verificado ✓. Docs históricos (`docs/contexto-sesion-2026-06-24`, `sesion-2026-07-12`) conservan el número viejo como registro — no editar.
+
+**Quedó pendiente del lado del cliente:** (a) actualizar el teléfono viejo en la info de la página de Facebook (Página → Editar información → Teléfono); (b) confirmar que el 477 125 0075 tiene WhatsApp activo (el flotante abre chat directo); (c) publicar el primer post si aún no lo hizo (texto entregado, ver abajo "Reglas/memoria" no aplica — está en el chat de la sesión).
+
+## 3a. Sesión 2026-10-03 (tarde) — ECC instalado + skills oficiales Vercel/Supabase + Aviso de privacidad alineado a LFPDPPP 2025
 
 **Commit:** `9f96a1d` (legal, v1.5.3) — push a main; deploy del sitio (Pages, inmediato) y de la app (workflow, ~5 min). Build verificado local antes de push.
 
@@ -38,7 +55,7 @@
 
 **Contexto:** hoy también se investigó si había más repos útiles → los skills de Vercel/Supabase fueron la conclusión (ver 3a). Quedó propuesto (sin hacer): `web-design-guidelines` de Vercel, revisión en securityheaders.com, y guardar aceptaciones del aviso en la tabla `legal_acceptances` (existe desde migración 007 pero el registro no la usa — evidencia legal).
 
-## 3a. Sesión 2026-10-03 (mañana) — Foto del profesional en el directorio + Notificaciones masivas in-app + Tutorial v6 publicado
+## 3b. Sesión 2026-10-03 (mañana) — Foto del profesional en el directorio + Notificaciones masivas in-app + Tutorial v6 publicado
 
 **Commits:** `be909b9` (1.5.0: avatar directorio + notificaciones masivas) → `e36a2d3` (docs sesión) → `7ca159a` (1.5.1: marca "Nuevo") → `f068dc2` (1.5.2: orden por fecha + Nuevo que se apaga al verlo + migración 029). Todo en verde en GitHub Actions; producción verificada sirviendo 1.5.2 (`index-C4_YWt-F.js`). Detalle de la verificación del día: lint 0 errores, tests 31/31, builds ✓, migraciones 027/028/029 aplicadas en Cloud, función `send-notification-broadcast` desplegada, pruebas E2E 8/8 en superficie negativa, RPC de avatares y acceso al tutorial v6 verificados con usuarios de prueba (paciente/profesional/anónimo).
 
@@ -49,7 +66,7 @@
 
 4. **Tutoriales: "Nuevo" por usuario + orden por fecha (2026-10-03, v1.5.1 → v1.5.2).** Petición del dueño tras publicar v6: el video nuevo debe verse PRIMERO y destacado, y la marca debe quitarse cuando cada profesional lo termine de ver. Migración 029: RLS SELECT de `tutorial_views` para que cada usuario lea su propio progreso (antes solo admin). Cambios en `TutorialsPage`/`tutorialService`: listado ordenado por `published_at` DESC (los más recientes primero), fecha "Subido el …" en cada tarjeta, insignia "¡Nuevo!" más llamativa (animate-pulse, borde resaltado) para videos de <7 días, y la marca desaparece para ese usuario al llegar a ≥90 % visto (en vivo, vía `getMyProgress` + callback del player). Aplica a pacientes y profesionales (misma página compartida).
 
-## 3b. Sesión 2026-10-02 — Precio por consulta + fin del "gratis" + seguridad de verificación
+## 3c. Sesión 2026-10-02 — Precio por consulta + fin del "gratis" + seguridad de verificación
 
 **Commits:** `74e0815` (precio/gratis, v1.4.0) → `04d9a2d` (seguridad verificados, migración 026) → `2d3140a` (docs) → `b1df5cf` (selector visibilidad admin, v1.4.1). Todo en verde en GitHub Actions; producción verificada (sitio sin "gratis", app 1.4.1 con precios en vivo).
 
@@ -61,7 +78,7 @@ Verificado el día: lint 0 errores, tests 31/31, builds ✓, chequeo de salud co
 
 **Nota operativa:** el remoto avanza seguido por Dependabot — antes de push hacer siempre `git pull --rebase origin main`.
 
-## 3c. Sesión 2026-09-17 — PWA + UX móvil
+## 3d. Sesión 2026-09-17 — PWA + UX móvil
 
 Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav, woff2, skeletons, v1.2.0) → `dfaaec9` (botón instalar, v1.3.0) → `9679c46` (banner instalación login + íconos marca). Reporte: `docs/reporte-pwa-2026-09-17.md`. Todo probado (lint/test 31-31/build) y ya desplegado.
 
@@ -73,7 +90,9 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 
 | # | Qué | Detalle | Estado |
 |---|-----|---------|--------|
-| P1 | **Rotar contraseña del admin** | Las credenciales de `admin@demo.com` pasaron por el chat el 2026-10-03 (subida del tutorial v6). No están en ningún archivo, pero conviene cambiarla: Supabase Dashboard → Authentication → Users, o pedirle al dueño que la actualice desde su perfil | Pendiente (seguridad) |
+| P1 | Rotar contraseña del admin | Las credenciales de `admin@demo.com` pasaron por el chat el 2026-10-03 (subida del tutorial v6). No están en ningún archivo, pero conviene cambiarla: Supabase Dashboard → Authentication → Users, o pedirle al dueño que la actualice desde su perfil | Pendiente (seguridad) |
+| P1 | **Facebook: actualizar teléfono en la página** | La página lleva el viejo 477 254 1540; debe cambiarse a 477 125 0075 (Página → Editar información → Teléfono). Del lado del cliente | Pendiente (cliente) |
+| P1 | **Confirmar WhatsApp del 477 125 0075** | El flotante del sitio abre chat directo a ese número; si no tiene WhatsApp habilitado el enlace falla. Probar enviándose un mensaje | Pendiente (cliente) |
 | P2 | Prueba completa notificaciones masivas | `ADMIN_EMAIL=... ADMIN_PASSWORD=... node scripts/test-notification-broadcast.mjs` (flujo de envío real) | Pendiente |
 | P2 | Avatares en el chat | Mismo bug de RLS que el directorio: `messagesService` hace join a `profiles.avatar_url` que siempre da null; reusar `get_professional_avatars` | Pendiente |
 | P1 | Instalación/actualización PWA en dispositivos reales | Ver ítems de sección 3b | Pendiente |
@@ -95,6 +114,7 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 - **Edge Functions activas:** `send-email`, `contact-form`, `user-emails`, `send-broadcast`, `send-notification-broadcast`, `appointment-reminders`, `support-request`, `admin-contact`, `jaas-token`, `daily-test-room`, `track-view`.
 - **Buckets Storage:** `avatars`, `professional-documents` (privados), `chat-attachments`, `tutorials`.
 - **Tests de regresión** (`platform/web/scripts/`): `test-auth-flow.mjs` (15), `test-core-flows.mjs` (22, necesita cuentas e2e), `test-chat.mjs` (28), `test-jaas.mjs` (22), `test-daily.mjs` (6), `test-analytics.mjs` (13, usa `ADMIN_PASSWORD`), `test-notification-broadcast.mjs` (8 sin admin / 13 con `ADMIN_EMAIL`+`ADMIN_PASSWORD`).
+- **Contacto oficial:** correo hola@somos-calma.com · teléfono/WhatsApp **477 125 0075** (`5214771250075`) · Facebook `facebook.com/profile.php?id=61594989341298`.
 - **¿Algo falla? → `docs/monitoreo-y-diagnostico.md`** (semáforo de salud, tabla de síntomas, baterías y fuentes de logs).
 - **Reglas de código:** ver `AGENTS.md` §Convenciones (prohibidos alert/confirm/prompt; usar componentes UI de `src/components/ui/`; errores siempre con `Alert`).
 - **Herramientas de agente (2026-10-03):** ECC + skills oficiales Vercel/Supabase en `./.kimi-code/` (gitignored). Kimi los descubre automáticamente en cada sesión.
@@ -106,5 +126,6 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 2. La app instalada solo contiene login + portales; páginas públicas SIEMPRE en pestaña nueva.
 3. **Cobro (vigente desde 2026-10-02):** la plataforma NO cobra ni procesa pagos; cada profesional pone su precio ($150–$350 MXN, solo ese rango) y el paciente le paga directo. Los textos **no mencionan cuándo ni cómo se paga** — lo acuerdan entre ellos.
 4. Correo único de contacto: hola@somos-calma.com.
-5. Legales actualizados a persona física (domicilio genérico "Ciudad de México, México").
+5. Teléfono oficial: 477 125 0075 (desde 2026-10-08; el anterior 477 254 1540 quedó fuera).
+6. Legales actualizados a persona física (domicilio genérico "Ciudad de México, México").
 6. Cambio del rango de precios ($150–$350) solo vía migración — nunca hardcodear otro rango.
