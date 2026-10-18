@@ -179,6 +179,52 @@ export async function getAdminQuotes(): Promise<AdminQuote[]> {
   }))
 }
 
+export type AdminCallFact = {
+  participants: number
+  duration_minutes: number | null
+  room_destroyed: boolean
+}
+
+/**
+ * Hechos reales de la videollamada de cada cita (tabla video_call_events,
+ * poblada por el webhook de JaaS, migración 032). Devuelve participantes
+ * distintos que entraron, duración real (primer ingreso → último evento) y
+ * si la sala llegó a cerrarse.
+ */
+export async function getCallFacts(appointmentIds: string[]): Promise<Map<string, AdminCallFact>> {
+  const map = new Map<string, AdminCallFact>()
+  if (appointmentIds.length === 0) return map
+
+  const { data, error } = await supabase
+    .from('video_call_events')
+    .select('appointment_id, event_type, participant_jid, occurred_at')
+    .in('appointment_id', appointmentIds)
+    .order('occurred_at', { ascending: true })
+
+  if (error) throw new Error(error.message)
+
+  const grouped = new Map<string, { joined: Set<string>; first: string | null; last: string | null; destroyed: boolean }>()
+  for (const row of (data || []) as Record<string, unknown>[]) {
+    const id = String(row.appointment_id)
+    const g = grouped.get(id) || { joined: new Set<string>(), first: null, last: null, destroyed: false }
+    const at = String(row.occurred_at)
+    if (row.event_type === 'PARTICIPANT_JOINED' && row.participant_jid) {
+      g.joined.add(String(row.participant_jid))
+      if (!g.first || at < g.first) g.first = at
+    }
+    if (!g.last || at > g.last) g.last = at
+    if (row.event_type === 'ROOM_DESTROYED') g.destroyed = true
+    grouped.set(id, g)
+  }
+
+  for (const [id, g] of grouped) {
+    const duration =
+      g.first && g.last ? Math.max(0, Math.round((new Date(g.last).getTime() - new Date(g.first).getTime()) / 60000)) : null
+    map.set(id, { participants: g.joined.size, duration_minutes: duration, room_destroyed: g.destroyed })
+  }
+  return map
+}
+
 export async function updateProfessionalVerification(id: string, status: string, isVisible: boolean) {
   const { error } = await supabase
     .from('professional_profiles')

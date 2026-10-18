@@ -492,6 +492,17 @@ enabled = true
 verify_jwt = true
 entrypoint = "./functions/jaas-token/index.ts"
 
+[functions.jaas-webhook]
+enabled = true
+# Webhook de JaaS (8x8.vc): eventos de sala (PARTICIPANT_JOINED/LEFT,
+# ROOM_CREATED/DESTROYED). JaaS firma cada evento con HMAC-SHA256 y el secreto
+# del endpoint (JAAS_WEBHOOK_SECRET); la función verifica la firma y no usa
+# JWT propio. Registra en video_call_events (ground-truth de la videollamada)
+# y marca no_show si la sala cierra sin ≥2 participantes. Sin el secret
+# responde 503 y el sistema sigue con la señal de colgar + cron (031).
+verify_jwt = false
+entrypoint = "./functions/jaas-webhook/index.ts"
+
 [functions.daily-test-room]
 enabled = true
 # Crea una sala de prueba en Daily.co solo para admin (comparación de calidad

@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { DataTable } from '@/components/ui/DataTable'
-import { Calendar } from 'lucide-react'
-import { getAdminAppointments, type AdminAppointment } from '@/features/admin/adminService'
+import { Calendar, Video } from 'lucide-react'
+import { getAdminAppointments, getCallFacts, type AdminAppointment, type AdminCallFact } from '@/features/admin/adminService'
 
 const sessionTypeLabels: Record<string, string> = {
   single: 'Consulta aislada',
@@ -30,6 +30,7 @@ const statusVariants: Record<string, 'default' | 'success' | 'warning' | 'error'
 
 export function AdminAppointments() {
   const [appointments, setAppointments] = useState<AdminAppointment[]>([])
+  const [callFacts, setCallFacts] = useState<Map<string, AdminCallFact>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -42,6 +43,7 @@ export function AdminAppointments() {
     try {
       const data = await getAdminAppointments()
       setAppointments(data)
+      setCallFacts(await getCallFacts(data.map((a) => a.id)))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar')
     } finally {
@@ -92,6 +94,30 @@ export function AdminAppointments() {
                 {
                   header: 'Tipo',
                   render: (a) => <span className="text-text-light">{sessionTypeLabels[a.session_type] || a.session_type}</span>,
+                },
+                {
+                  header: 'Videollamada',
+                  render: (a) => {
+                    const fact = callFacts.get(a.id)
+                    if (!fact) {
+                      return (
+                        <span className="text-text-light text-xs inline-flex items-center gap-1">
+                          <Video size={14} /> Sin datos
+                        </span>
+                      )
+                    }
+                    const label = `${fact.participants} participante${fact.participants === 1 ? '' : 's'}` +
+                      (fact.duration_minutes != null && fact.duration_minutes > 0
+                        ? ` · ${fact.duration_minutes} min`
+                        : '')
+                    if (fact.participants >= 2 && fact.duration_minutes != null && fact.duration_minutes > 0) {
+                      return <Badge variant="success">{label}</Badge>
+                    }
+                    if (fact.room_destroyed) {
+                      return <Badge variant="warning">{label} · no se conectaron</Badge>
+                    }
+                    return <Badge variant="info">{label} · sin cerrar</Badge>
+                  },
                 },
                 {
                   header: 'Estado',
