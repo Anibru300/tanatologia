@@ -179,7 +179,9 @@ La migración está diseñada para aprovechar las garantías ACID de PostgreSQL:
 - El `role` de cada feedback lo fija el trigger `set_feedback_role()` desde `profiles` — nunca desde el cliente.
 
 ## Verificación de profesionistas (Fase 1)
-- El profesional captura su cédula y sube documentos (cédula, título, INE, comprobante) desde `/profesional/verificacion`; los archivos van al bucket privado `professional-documents` (carpeta por `profile_id`).
+- El profesional captura su cédula y sube documentos (cédula, título, INE, comprobante, constancia fiscal opcional) desde `/profesional/verificacion`; los archivos van al bucket privado `professional-documents` (carpeta por `profile_id`).
+- **`verified` NO bloquea la subida de documentos (fix 2026-10-18, v1.5.4):** el botón "Subir" solo se deshabilita mientras otra subida está en curso — un verificado puede agregar documentos adicionales (p. ej. constancia fiscal) que el admin revisa en `/admin/verificacion`. Lo que SÍ queda congelado en `verified` es la cédula y el "Enviar a revisión" (`canEdit`; `submit_for_review` rechaza perfiles verificados).
 - `submit_for_review()` (RPC) valida requisitos mínimos y pasa el perfil a `in_review`.
 - El admin revisa en `/admin/verificacion` con URLs firmadas, consulta manualmente la cédula en https://cedulaprofesional.sep.gob.mx/ y aprueba (`verified` + visible en directorio) o rechaza con motivo.
+- **Disponibilidad admin (v1.5.4):** `/admin/disponibilidad` lista por profesionista sus `availability_slots` futuros con estado Libre/Ocupado (KPIs + filtro; `getAdminSlots()` en `adminService.ts`, sin migración — RLS admin ya cubre).
 - La investigación completa (benchmark, pagos, legal, roadmap) está en `docs/investigacion-plataforma-2026-07-27.md`.

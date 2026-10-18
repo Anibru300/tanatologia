@@ -315,7 +315,7 @@ export function ProfessionalVerification() {
                             size="sm"
                             variant="outline"
                             className="gap-2"
-                            disabled={status === 'verified' || uploadingType !== null}
+                            disabled={uploadingType !== null}
                             onClick={() => fileInputs.current[dt.type]?.click()}
                           >
                             <Upload size={16} />
@@ -395,7 +395,11 @@ export function ProfessionalVerification() {
                   </p>
                 )}
                 {status === 'verified' && (
-                  <p className="text-sm text-text-light mt-3">Tu perfil ya está verificado.</p>
+                  <p className="text-sm text-text-light mt-3">
+                    Tu perfil ya está verificado. Puedes seguir subiendo documentos adicionales arriba (por ejemplo,
+                    tu constancia de situación fiscal para facturación); no afectan tu verificación y el equipo los
+                    podrá revisar.
+                  </p>
                 )}
               </CardContent>
             </Card>

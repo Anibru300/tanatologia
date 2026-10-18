@@ -107,6 +107,62 @@ export async function getAdminAppointments(): Promise<AdminAppointment[]> {
   })
 }
 
+export type AdminSlot = {
+  id: string
+  professional_profile_id: string
+  slot_start: string
+  slot_end: string
+  booked: boolean
+}
+
+/**
+ * Slots futuros de TODOS los profesionales (RLS admin = acceso total).
+ * `booked` indica si el slot traslapa una cita pending/confirmed (misma
+ * lógica de solapamiento que get_booked_slots del booking).
+ */
+export async function getAdminSlots(): Promise<AdminSlot[]> {
+  const now = new Date()
+
+  const [{ data: slotsData, error }, { data: apptsData, error: apptsError }] = await Promise.all([
+    supabase
+      .from('availability_slots')
+      .select('id, professional_profile_id, slot_start, slot_end')
+      .gte('slot_start', now.toISOString())
+      .order('slot_start', { ascending: true }),
+    supabase
+      .from('appointments')
+      .select('professional_profile_id, scheduled_at, duration_minutes')
+      .in('status', ['pending', 'confirmed'])
+      .gte('scheduled_at', now.toISOString()),
+  ])
+
+  if (error) throw new Error(error.message)
+  if (apptsError) throw new Error(apptsError.message)
+
+  const busyByProfessional = new Map<string, { start: Date; end: Date }[]>()
+  for (const row of (apptsData || []) as Record<string, unknown>[]) {
+    const profId = String(row.professional_profile_id)
+    const start = new Date(String(row.scheduled_at))
+    const end = new Date(start.getTime() + Number(row.duration_minutes ?? 50) * 60 * 1000)
+    const list = busyByProfessional.get(profId) || []
+    list.push({ start, end })
+    busyByProfessional.set(profId, list)
+  }
+
+  return ((slotsData || []) as Record<string, unknown>[]).map((row) => {
+    const start = new Date(String(row.slot_start))
+    const end = new Date(String(row.slot_end))
+    const busy = busyByProfessional.get(String(row.professional_profile_id)) || []
+    return {
+      id: String(row.id),
+      professional_profile_id: String(row.professional_profile_id),
+      slot_start: String(row.slot_start),
+      slot_end: String(row.slot_end),
+      booked: busy.some((appt) => start < appt.end && appt.start < end),
+    }
+  })
+}
+
 export async function getAdminQuotes(): Promise<AdminQuote[]> {
   const { data, error } = await supabase.from('quotes').select('*').order('created_at', { ascending: false })
 

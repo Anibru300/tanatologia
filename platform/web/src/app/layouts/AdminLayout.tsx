@@ -16,6 +16,7 @@ import {
   GraduationCap,
   MessagesSquare,
   Video,
+  CalendarClock,
 } from 'lucide-react'
 
 const menuItems: PortalMenuItem[] = [
@@ -24,6 +25,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/admin/verificacion', icon: ShieldCheck, label: 'Verificación' },
   { to: '/admin/pacientes', icon: Users, label: 'Pacientes' },
   { to: '/admin/citas', icon: Calendar, label: 'Citas' },
+  { to: '/admin/disponibilidad', icon: CalendarClock, label: 'Disponibilidad' },
   { to: '/admin/configuracion', icon: Settings, label: 'Configuración' },
   { to: '/admin/cms', icon: FileText, label: 'Contenidos', soon: true },
   { to: '/admin/auditoria', icon: Shield, label: 'Auditoría' },

@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-08)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-18)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.5.3-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
+- **Versión:** `1.5.4-beta.1` (`platform/web/package.json` — bump obligatorio en cada release). Local compilada; **pendiente de push/deploy**.
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02):** cada profesional define su precio por consulta (sesión de 50 min) en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
@@ -27,10 +27,20 @@
 - **Intake/encuesta:** `patient_profiles.intake` (JSONB) filtra directorio; PHQ-9/GAD-7 opcionales.
 - **Directorio paciente:** cards + modal con foto de perfil del profesional (RPC `get_professional_avatars`, migración 027 — la RLS de `profiles` no se relaja), precio por sesión, bio, formación, reseñas.
 - **Notificaciones in-app masivas (admin):** página `/admin/notificaciones` (migración 028 + Edge Function `send-notification-broadcast`) — audiencia todos/pacientes/profesionales, dry_run de prueba, historial con contadores; llegan en vivo por Realtime a la campana (type `admin_broadcast`).
+- **Disponibilidad admin (v1.5.4):** página `/admin/disponibilidad` (menú "Disponibilidad") — KPIs (registrados / con horarios / horarios futuros / libres), filtro por profesionista y tabla con slots futuros de cada uno marcados Libre/Ocupado (solapamiento vs citas pending/confirmed, misma lógica que `get_booked_slots`; RLS admin ya daba acceso total, sin migración).
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-08 — Página de Facebook + teléfono oficial nuevo + ajustes de flotantes) COMPLETA y desplegada
+## 3. Última sesión (2026-10-18 — Fix subida de documentos en verificados + página admin Disponibilidad + diagnóstico general)
+
+**Estado:** cambios locales compilados (lint 0 errores, tests 31/31, build ✓, auth-flow 15/15, diagnóstico en verde). **Deploy pendiente de confirmación de push.**
+
+1. **Fix reportado por profesionista verificado:** no podía subir su constancia de situación fiscal. Causa: `ProfessionalVerification.tsx` deshabilitaba el botón "Subir" cuando `status === 'verified'` (solo frontend; RLS y Storage policies nunca filtraron por verification_status — verificado en migraciones 005/006/007). Fix: se quitó esa condición del `disabled` (sigue bloqueado mientras otra subida está en curso) y el texto de perfil verificado ahora explica que puede seguir subiendo documentos adicionales que el equipo podrá revisar. Cédula y "Enviar a revisión" siguen congelados en verificado (`canEdit` intacto; `submit_for_review` sigue rechazando verificados — correcto).
+2. **Nueva página admin `/admin/disponibilidad`** (menú "Disponibilidad", ícono CalendarClock): responde al pedido del dueño de saber qué profesionistas han puesto horarios. KPIs (registrados / con horarios publicados / horarios futuros / libres), filtro por profesionista, y tabla con verificación, visibilidad, total de slots, próximo horario y badges de los próximos 6 slots (Libre/Ocupado, "+N más"). Datos: `getAdminSlots()` nuevo en `adminService.ts` (slots futuros de todos + JOIN en memoria contra citas pending/confirmed; sin migración — la política admin FOR ALL de 008/026 ya cubre). Ruta lazy en `router.tsx`.
+3. **Diagnóstico general (todo verde):** sitio+app+sw+manifest 200; 11 Edge Functions CORS 200; DB viva (49 usuarios: 34 profesionales/14 pacientes; 12 verificados; 5 citas, 0 futuras; 12 slots futuros entre solo 3 profesionales; 0 slots vencidos = purga cron 024 operativa); único feedback de usuarios es positivo (5★, sep-03); últimos runs de Actions en verde; producción sirviendo 1.5.3.
+4. **Hallazgos operativos (no errores):** (a) 22 de 34 profesionales están `pending` — se registraron pero jamás enviaron expediente (ninguno `in_review`/`rejected`); (b) solo 3 de 12 verificados tienen horarios futuros publicados → el directorio se percibe vacío para pacientes y hay 0 citas futuras; conviene campaña a profesionistas para que publiquen disponibilidad.
+
+## 3a. Sesión 2026-10-08 (Facebook + teléfono oficial nuevo + ajustes de flotantes) COMPLETA y desplegada
 
 **Commits:** `bfb3695` (Facebook en footer + contacto + siteConfig) → `56b4a57` (flotante Facebook + quitar salida rápida del sitio) → `d6071db` (teléfono nuevo). Deploy de sitio (Pages, inmediato) y de la app (workflow, automático por tocar `platform/web`). El remoto traía un commit ajeno (`bbfb69d` build automático / dependabot) → push con `git pull --rebase` (regla vigente).
 
@@ -45,7 +55,7 @@
 
 **Quedó pendiente del lado del cliente:** (a) actualizar el teléfono viejo en la info de la página de Facebook (Página → Editar información → Teléfono); (b) confirmar que el 477 125 0075 tiene WhatsApp activo (el flotante abre chat directo); (c) publicar el primer post si aún no lo hizo (texto entregado, ver abajo "Reglas/memoria" no aplica — está en el chat de la sesión).
 
-## 3a. Sesión 2026-10-03 (tarde) — ECC instalado + skills oficiales Vercel/Supabase + Aviso de privacidad alineado a LFPDPPP 2025
+## 3b. Sesión 2026-10-03 (tarde) — ECC instalado + skills oficiales Vercel/Supabase + Aviso de privacidad alineado a LFPDPPP 2025
 
 **Commit:** `9f96a1d` (legal, v1.5.3) — push a main; deploy del sitio (Pages, inmediato) y de la app (workflow, ~5 min). Build verificado local antes de push.
 
@@ -55,7 +65,7 @@
 
 **Contexto:** hoy también se investigó si había más repos útiles → los skills de Vercel/Supabase fueron la conclusión (ver 3a). Quedó propuesto (sin hacer): `web-design-guidelines` de Vercel, revisión en securityheaders.com, y guardar aceptaciones del aviso en la tabla `legal_acceptances` (existe desde migración 007 pero el registro no la usa — evidencia legal).
 
-## 3b. Sesión 2026-10-03 (mañana) — Foto del profesional en el directorio + Notificaciones masivas in-app + Tutorial v6 publicado
+## 3c. Sesión 2026-10-03 (mañana) — Foto del profesional en el directorio + Notificaciones masivas in-app + Tutorial v6 publicado
 
 **Commits:** `be909b9` (1.5.0: avatar directorio + notificaciones masivas) → `e36a2d3` (docs sesión) → `7ca159a` (1.5.1: marca "Nuevo") → `f068dc2` (1.5.2: orden por fecha + Nuevo que se apaga al verlo + migración 029). Todo en verde en GitHub Actions; producción verificada sirviendo 1.5.2 (`index-C4_YWt-F.js`). Detalle de la verificación del día: lint 0 errores, tests 31/31, builds ✓, migraciones 027/028/029 aplicadas en Cloud, función `send-notification-broadcast` desplegada, pruebas E2E 8/8 en superficie negativa, RPC de avatares y acceso al tutorial v6 verificados con usuarios de prueba (paciente/profesional/anónimo).
 
@@ -66,7 +76,7 @@
 
 4. **Tutoriales: "Nuevo" por usuario + orden por fecha (2026-10-03, v1.5.1 → v1.5.2).** Petición del dueño tras publicar v6: el video nuevo debe verse PRIMERO y destacado, y la marca debe quitarse cuando cada profesional lo termine de ver. Migración 029: RLS SELECT de `tutorial_views` para que cada usuario lea su propio progreso (antes solo admin). Cambios en `TutorialsPage`/`tutorialService`: listado ordenado por `published_at` DESC (los más recientes primero), fecha "Subido el …" en cada tarjeta, insignia "¡Nuevo!" más llamativa (animate-pulse, borde resaltado) para videos de <7 días, y la marca desaparece para ese usuario al llegar a ≥90 % visto (en vivo, vía `getMyProgress` + callback del player). Aplica a pacientes y profesionales (misma página compartida).
 
-## 3c. Sesión 2026-10-02 — Precio por consulta + fin del "gratis" + seguridad de verificación
+## 3d. Sesión 2026-10-02 — Precio por consulta + fin del "gratis" + seguridad de verificación
 
 **Commits:** `74e0815` (precio/gratis, v1.4.0) → `04d9a2d` (seguridad verificados, migración 026) → `2d3140a` (docs) → `b1df5cf` (selector visibilidad admin, v1.4.1). Todo en verde en GitHub Actions; producción verificada (sitio sin "gratis", app 1.4.1 con precios en vivo).
 
@@ -78,7 +88,7 @@ Verificado el día: lint 0 errores, tests 31/31, builds ✓, chequeo de salud co
 
 **Nota operativa:** el remoto avanza seguido por Dependabot — antes de push hacer siempre `git pull --rebase origin main`.
 
-## 3d. Sesión 2026-09-17 — PWA + UX móvil
+## 3e. Sesión 2026-09-17 — PWA + UX móvil
 
 Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav, woff2, skeletons, v1.2.0) → `dfaaec9` (botón instalar, v1.3.0) → `9679c46` (banner instalación login + íconos marca). Reporte: `docs/reporte-pwa-2026-09-17.md`. Todo probado (lint/test 31-31/build) y ya desplegado.
 

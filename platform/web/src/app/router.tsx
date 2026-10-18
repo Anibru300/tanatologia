@@ -133,6 +133,9 @@ const AdminPatients = lazy(() =>
 const AdminAppointments = lazy(() =>
   import('@/features/admin/pages/AdminAppointments').then((m) => ({ default: m.AdminAppointments }))
 )
+const AdminAvailability = lazy(() =>
+  import('@/features/admin/pages/AdminAvailability').then((m) => ({ default: m.AdminAvailability }))
+)
 const AdminConfig = lazy(() =>
   import('@/features/admin/pages/AdminConfig').then((m) => ({ default: m.AdminConfig }))
 )
@@ -303,6 +306,7 @@ export function AppRouter() {
         <Route path="verificacion" element={<AdminVerification />} />
         <Route path="pacientes" element={<AdminPatients />} />
         <Route path="citas" element={<AdminAppointments />} />
+        <Route path="disponibilidad" element={<AdminAvailability />} />
         <Route path="configuracion" element={<AdminConfig />} />
         <Route path="cms" element={<AdminCMS />} />
         <Route path="auditoria" element={<AdminAudit />} />
