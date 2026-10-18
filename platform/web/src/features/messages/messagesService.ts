@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { filterUpcomingSessions, type SessionStatus } from '@/lib/videoSession'
 import type { ChatAttachment, ChatMessage, ConversationSummary } from './types'
 import { ALLOWED_ATTACHMENT_TYPES, MAX_ATTACHMENT_SIZE } from './types'
 
@@ -114,6 +115,7 @@ export async function listConversations(myRole: 'patient' | 'professional'): Pro
       created_at: String(r.created_at),
       other: {
         profile_id: other ? String(other.profile_id) : '',
+        subprofile_id: other ? String(other.id) : '',
         full_name: other ? String(other.full_name) : 'Usuario',
         avatar_url: other ? avatarById.get(String(other.profile_id)) ?? null : null,
       },
@@ -137,6 +139,56 @@ export async function listMessages(conversationId: string, limit = 50, before?: 
   const { data, error } = await query
   if (error) throw new Error(error.message)
   return ((data || []) as Record<string, unknown>[]).map(mapMessage)
+}
+
+/** Cita con sala del par (yo ↔ el otro), dentro o cerca de su ventana de acceso. */
+export type ChatVideoSession = {
+  id: string
+  video_link: string | null
+  scheduled_at: string
+  duration_minutes: number
+  status: SessionStatus
+}
+
+/**
+ * Próxima sesión con videollamada entre los dos participantes (la más cercana
+ * que no haya superado su tolerancia final). La RLS de `appointments` ya limita
+ * la lectura a las citas propias. Falla silenciosa: el chat nunca se rompe
+ * por un problema de este agregado.
+ */
+export async function findChatVideoSession(
+  myRole: 'patient' | 'professional',
+  mySubprofileId: string,
+  otherSubprofileId: string
+): Promise<ChatVideoSession | null> {
+  if (!mySubprofileId || !otherSubprofileId) return null
+
+  const myColumn = myRole === 'patient' ? 'patient_profile_id' : 'professional_profile_id'
+  const otherColumn = myRole === 'patient' ? 'professional_profile_id' : 'patient_profile_id'
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('id, video_link, scheduled_at, duration_minutes, status')
+    .eq(myColumn, mySubprofileId)
+    .eq(otherColumn, otherSubprofileId)
+    .in('status', ['pending', 'confirmed'])
+    .order('scheduled_at', { ascending: true })
+    .limit(20)
+
+  if (error) {
+    console.error('findChatVideoSession:', error.message)
+    return null
+  }
+
+  const sessions = ((data || []) as Record<string, unknown>[]).map((row) => ({
+    id: String(row.id),
+    video_link: row.video_link ? String(row.video_link) : null,
+    scheduled_at: String(row.scheduled_at),
+    duration_minutes: Number(row.duration_minutes ?? 50),
+    status: String(row.status) as SessionStatus,
+  }))
+
+  return filterUpcomingSessions(sessions, new Date(), 1)[0] ?? null
 }
 
 /** profiles.id del dueño de un subperfil (para abrir chat con él). */

@@ -1,22 +1,32 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Download, FileText, Image as ImageIcon, Paperclip, Send, X } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState, lazy, Suspense } from 'react'
+import { ArrowLeft, Download, FileText, Image as ImageIcon, Paperclip, Send, Video, X } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { useAuth } from '@/features/auth/useAuth'
 import {
+  findChatVideoSession,
   getAttachmentUrl,
   listMessages,
   markConversationRead,
   sendMessage,
   subscribeToConversation,
   uploadAttachment,
+  type ChatVideoSession,
 } from './messagesService'
 import type { ChatAttachment, ChatMessage, ConversationSummary } from './types'
 import { isImageMime } from './types'
+import { formatTimeUntilStart, getJoinWindowState, minutesUntilStart } from '@/lib/videoSession'
+
+const VideoCallExperience = lazy(() =>
+  import('@/components/video/VideoCallExperience').then((m) => ({ default: m.VideoCallExperience }))
+)
 
 interface ConversationThreadProps {
   conversation: ConversationSummary
   myUserId: string
+  myRole: 'patient' | 'professional'
+  mySubprofileId: string
   onBack?: () => void
   onMessageSent?: () => void
 }
@@ -100,7 +110,8 @@ function AttachmentView({ attachment, mine }: { attachment: ChatAttachment; mine
   )
 }
 
-export function ConversationThread({ conversation, myUserId, onBack, onMessageSent }: ConversationThreadProps) {
+export function ConversationThread({ conversation, myUserId, myRole, mySubprofileId, onBack, onMessageSent }: ConversationThreadProps) {
+  const { user } = useAuth()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -109,9 +120,42 @@ export function ConversationThread({ conversation, myUserId, onBack, onMessageSe
   const [sending, setSending] = useState(false)
   const [hasMore, setHasMore] = useState(false)
 
+  // Sesión con videollamada del par (para el acceso directo a la sala)
+  const [videoSession, setVideoSession] = useState<ChatVideoSession | null>(null)
+  const [now, setNow] = useState(() => new Date())
+  const [inCall, setInCall] = useState(false)
+
   const bottomRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const conversationId = conversation.id
+  const otherSubprofileId = conversation.other.subprofile_id
+
+  // Consulta la cita del par y la reevalúa cada 30 s para abrir/cerrar la
+  // ventana de acceso sin recargar el chat.
+  useEffect(() => {
+    let cancelled = false
+    const check = async () => {
+      const session = await findChatVideoSession(myRole, mySubprofileId, otherSubprofileId)
+      if (!cancelled) {
+        setVideoSession(session)
+        setNow(new Date())
+      }
+    }
+    check()
+    const timer = setInterval(check, 30_000)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+    }
+  }, [myRole, mySubprofileId, otherSubprofileId])
+
+  const videoWindow = videoSession ? getJoinWindowState(videoSession, now) : null
+  // Aviso de "próxima sesión" solo si empieza dentro de 24 h (evita ruido constante)
+  const showSessionBanner =
+    Boolean(videoSession?.video_link) &&
+    videoWindow !== null &&
+    videoWindow !== 'ended' &&
+    (videoWindow === 'joinable' || minutesUntilStart(videoSession!, now) <= 24 * 60)
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'auto' })
@@ -247,6 +291,39 @@ export function ConversationThread({ conversation, myUserId, onBack, onMessageSe
         </div>
       </div>
 
+      {/* Acceso a la videollamada: el chat es donde ambos se encuentran antes
+          de la sesión; aquí tiene que haber una puerta a la sala. */}
+      {showSessionBanner && videoSession && (
+        <div
+          className={`flex items-center gap-3 px-4 py-2.5 border-b ${
+            videoWindow === 'joinable'
+              ? 'bg-success/10 border-success/30'
+              : 'bg-primary/5 border-primary/15'
+          }`}
+        >
+          <Video
+            size={18}
+            className={`shrink-0 ${videoWindow === 'joinable' ? 'text-success-dark animate-pulse' : 'text-primary-dark'}`}
+          />
+          <p className="text-sm text-text min-w-0 flex-1">
+            {videoWindow === 'joinable' ? (
+              <>Tu sesión está en curso — <strong>{conversation.other.full_name}</strong> te espera en la sala.</>
+            ) : (
+              <>
+                Tu sesión {formatTimeUntilStart(videoSession, now)} ({' '}
+                {new Date(videoSession.scheduled_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}). El
+                acceso se abre 15 min antes.
+              </>
+            )}
+          </p>
+          {videoWindow === 'joinable' && (
+            <Button size="sm" className="gap-1 shrink-0" onClick={() => setInCall(true)}>
+              <Video size={16} /> Entrar
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Mensajes */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-bg-alt/40">
         {loading ? (
@@ -376,6 +453,27 @@ export function ConversationThread({ conversation, myUserId, onBack, onMessageSe
         </div>
         <p className="text-[11px] text-text-light/70 mt-1.5">Fotos y PDF de máx. 10 MB. No compartas contraseñas ni datos bancarios.</p>
       </div>
+
+      {/* Sala de videollamada a pantalla completa; al colgar regresas al chat */}
+      {inCall && videoSession?.video_link && (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-[60] bg-bg flex items-center justify-center">
+              <p className="text-text-light">Cargando videollamada...</p>
+            </div>
+          }
+        >
+          <VideoCallExperience
+            roomName={videoSession.video_link}
+            displayName={user?.fullName || (myRole === 'professional' ? 'Profesional' : 'Paciente')}
+            title="Tu sesión"
+            subtitle={`${conversation.other.full_name} · ${new Date(videoSession.scheduled_at).toLocaleString('es-MX')}`}
+            preJoinTip="Busca un lugar tranquilo y privado. Al colgar regresarás a esta conversación."
+            appointmentId={videoSession.id}
+            onExit={() => setInCall(false)}
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

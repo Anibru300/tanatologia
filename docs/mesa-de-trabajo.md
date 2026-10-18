@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-18, víspera de noche)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-18, noche)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.5.6-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
+- **Versión:** `1.5.7-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02):** cada profesional define su precio por consulta (sesión de 50 min) en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
@@ -42,8 +42,9 @@
 4. **(Tarde, v1.5.5) Fix avatares en el chat (migración 030).** Pendiente desde el 2026-10-03: la lista de conversaciones consultaba `profiles.avatar_url` ajeno y la RLS devolvía null siempre (iniciales). Nueva RPC `get_chat_avatars(uuid[])` (STABLE SECURITY DEFINER, solo authenticated): devuelve SOLO (profile_id, avatar_url) de perfiles que **comparten conversación** con quien la ejecuta (paciente o profesional; NO exige verified+visible — el chat ya exige cita previa, y un verificado temporalmente invisible sigue chateando). Aplicada en Cloud (verificada en `pg_proc`, prosecdef=true); `messagesService.listConversations` ahora usa la RPC con fallback silencioso a iniciales (mismo patrón que el directorio 027).
 
 5. **(Noche, v1.5.6) Filtros de verificación en Disponibilidad admin + directorio solo-agendables.** Pedido del dueño: (a) `/admin/disponibilidad` ahora filtra también por estado de verificación (verificados/pendientes/en revisión/rechazados); (b) el paciente SOLO ve en el directorio profesionistas verificados+visibles **y con ≥1 horario futuro publicado** (`getProfessionalProfiles` filtra por `availability_slots` futuros; sin migración — la RLS de slots ya permite lectura a autenticados para verificados).
+6. **(Noche, v1.5.7) Acceso a la videollamada desde el chat (incidente Lidia Vera).** Investigación de la cita del 16/10 con Héctor Palma: la paciente (registrada el mismo día, 2 h antes de su 1ª sesión) quedó en el chat escribiendo *"no se como entrar"* a las 17:07 — el chat era el único lugar sin puerta a la sala (la entrada solo estaba en Mis citas; el profesional incluso la había sacado a WhatsApp 40 min antes). Fix: `ConversationThread` muestra una barra "Tu sesión está en curso / Tu sesión en X h" (reevaluada cada 30 s con la misma `getJoinWindowState`) y botón **Entrar** que abre `VideoCallExperience` en overlay a pantalla completa sin salir del chat. Nuevo `findChatVideoSession()` en `messagesService` (cita del par con `video_link`, falla silenciosa). Aviso de próxima sesión solo si falta ≤24 h. Tipo `ConversationSummary.other` ganó `subprofile_id`; `ChatPage` pasa rol + subperfil propio.
 
-**Hallazgos operativos (no errores):** (a) 22 de 34 profesionales están `pending` — se registraron pero jamás enviaron expediente (ninguno `in_review`/`rejected`); (b) solo 3 de 12 verificados tienen horarios futuros publicados → el directorio se percibe vacío para pacientes y hay 0 citas futuras; conviene campaña a profesionistas para que publiquen disponibilidad.
+**Hallazgos operativos (no errores):** (a) 22 de 34 profesionales están `pending` — se registraron pero jamás enviaron expediente (ninguno `in_review`/`rejected`); (b) solo 3 de 12 verificados tienen horarios futuros publicados → el directorio se percibe vacío para pacientes y hay 0 citas futuras; conviene campaña a profesionistas para que publiquen disponibilidad. **Incidente 16/10 (Lidia Vera × Héctor Palma):** videollamada NO se completó en plataforma — paciente nueva no encontró la entrada a la sala desde el chat; motiva el acceso desde chat de v1.5.7. Ojo: el profesional compartió su WhatsApp personal por el chat (sesión probablemente movida fuera de la plataforma).
 
 ## 3a. Sesión 2026-10-08 (Facebook + teléfono oficial nuevo + ajustes de flotantes) COMPLETA y desplegada
 

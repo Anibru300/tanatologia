@@ -37,6 +37,7 @@ export function ChatPage({ audience, emptyActionTo, emptyActionLabel, initialCou
   const [error, setError] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
   const [startingDirect, setStartingDirect] = useState(false)
+  const [mySubprofileId, setMySubprofileId] = useState<string | null>(null)
 
   const refreshList = useCallback(async () => {
     if (!user) return
@@ -93,6 +94,7 @@ export function ChatPage({ audience, emptyActionTo, emptyActionLabel, initialCou
     getMySubprofileId(audience)
       .then((subId) => {
         if (cancelled) return
+        setMySubprofileId(subId)
         unsubscribe = subscribeToConversations(audience, subId, () => {
           refreshList()
         })
@@ -204,10 +206,12 @@ export function ChatPage({ audience, emptyActionTo, emptyActionLabel, initialCou
 
             {/* Hilo activo */}
             <div className={`flex-1 flex flex-col ${active ? 'flex' : 'hidden sm:flex'}`}>
-              {active && user ? (
+              {active && user && mySubprofileId ? (
                 <ConversationThread
                   conversation={active}
                   myUserId={user.id}
+                  myRole={audience}
+                  mySubprofileId={mySubprofileId}
                   onBack={() => setActiveId(null)}
                   onMessageSent={refreshList}
                 />

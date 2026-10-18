@@ -23,6 +23,8 @@ export type ConversationSummary = {
   /** Perfil del otro participante */
   other: {
     profile_id: string
+    /** Subperfil del otro (patient_profiles.id o professional_profiles.id) */
+    subprofile_id: string
     full_name: string
     avatar_url: string | null
   }
