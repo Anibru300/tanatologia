@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-18, noche 2)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-18, cierre de día)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -18,7 +18,9 @@
 ## 2. Qué existe (mapa funcional resumido)
 
 - **3 portales** (paciente / profesional / admin) con `PortalLayout` unificado: drawer móvil izq. + bottom nav (quickNav máx. 4) + campana de notificaciones.
-- **Citas:** slots de 50 min (`availability_slots`, EXCLUDE anti-traslape), booking con RPC `get_booked_slots`, constraint anti doble-reserva (migración 009), purga horaria de vencidos (024).
+- **Citas:** slots de **60 min** (antes 50; `SLOT_DURATION_MINUTES` en `availabilityService.ts` es la única fuente — cambio 2026-10-18, slots futuros extendidos vía SQL one-off), booking con RPC `get_booked_slots`, constraint anti doble-reserva (009), purga horaria de vencidos (024).
+- **Cierre de citas (031, v1.6.0):** al colgar, el PROFESIONAL marca la cita 'completed' (prop `onHangup` de `VideoCallExperience`; el paciente que sale antes no cierra la sesión); cron horario `auto-complete-past-appointments` cierra las que la señal no alcance; trigger `validate_appointment_completion` impide completar antes de la hora. El cierre notifica al paciente y desbloquea la reseña.
+- **Ground-truth de videollamadas (032, v1.6.1, webhook JaaS ACTIVO):** JaaS avisa en tiempo real quién entró/salió de cada sala (eventos en `video_call_events`; firma HMAC verificada en la Edge Function `jaas-webhook`); sala cerrada con <2 participantes → cita `no_show` automático. Panel admin `/admin/citas` muestra columna **Videollamada** (participantes + duración real).
 - **Videollamadas:** **JaaS (8x8.vc)** vía Edge Function `jaas-token` (JWT por cita); fallback automático a meet.jit.si (5 min) con Alert visible si ocurre. Admin tiene `/admin/prueba-videollamada` (sala de prueba JaaS + comparador Daily.co).
 - **Chat paciente↔profesional** (023): solo si hay cita no cancelada; escritura solo por RPCs; adjuntos bucket privado `chat-attachments`; supervisión silenciosa admin en `/admin/chats`.
 - **Tutoriales** (022): 6 videos publicados (5 originales editados/auditados PII + v6 "Nueva actualización del portal profesional" de 2026-10-03, solo profesionales). Bucket privado `tutorials`. Gestión admin en `/admin/tutoriales`. **Listado:** ordenados por fecha de publicación (el más nuevo primero), cada tarjeta muestra "Subido el …", y los videos de <7 días llevan insignia "¡Nuevo!" que **se apaga por usuario al llegar a ≥90 % visto** (migración 029 dio SELECT de `tutorial_views` al propio usuario). La miniatura NO debe capturarse del frame de login (muestra el correo del dueño) — usar un frame interior sin PII.
@@ -32,9 +34,9 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-18 — Fix subida de documentos en verificados + página admin Disponibilidad + diagnóstico general)
+## 3. Última sesión (2026-10-18 — Jornada completa: 7 versiones, 3 migraciones, webhook JaaS activado)
 
-**Estado:** cambios locales compilados (lint 0 errores, tests 31/31, build ✓, auth-flow 15/15, diagnóstico en verde). **Deploy pendiente de confirmación de push.**
+**Estado: TODO COMPLETO Y VERIFICADO.** Deploys: 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9 → 1.6.0 → **1.6.1** en producción (bundle `index-BDz_-sbW.js`). Verificación final del día (todo verde): git limpio (0 pendientes), Actions en verde, sitio+app+sw 200, **12 Edge Functions CORS 200** (incl. `jaas-webhook`: 401 sin firma = secreto real configurado), 3 crons activos (recordatorios 10 min, purga slots 23, auto-cierre citas 53), auth-flow 15/15 (cuentas de prueba eliminadas), 0 citas abiertas colgadas, tabla `video_call_events` limpia (sin residuos de prueba). Migraciones 030/031/032 aplicadas en Cloud. Ojo: Dependabot tiene PR abierto de Vite 8.2→8.3 (checks verdes; mergear es decisión del dueño).
 
 1. **Fix reportado por profesionista verificado:** no podía subir su constancia de situación fiscal. Causa: `ProfessionalVerification.tsx` deshabilitaba el botón "Subir" cuando `status === 'verified'` (solo frontend; RLS y Storage policies nunca filtraron por verification_status — verificado en migraciones 005/006/007). Fix: se quitó esa condición del `disabled` (sigue bloqueado mientras otra subida está en curso) y el texto de perfil verificado ahora explica que puede seguir subiendo documentos adicionales que el equipo podrá revisar. Cédula y "Enviar a revisión" siguen congelados en verificado (`canEdit` intacto; `submit_for_review` sigue rechazando verificados — correcto).
 2. **Nueva página admin `/admin/disponibilidad`** (menú "Disponibilidad", ícono CalendarClock): responde al pedido del dueño de saber qué profesionistas han puesto horarios. KPIs (registrados / con horarios publicados / horarios futuros / libres), filtro por profesionista, y tabla con verificación, visibilidad, total de slots, próximo horario y badges de los próximos 6 slots (Libre/Ocupado, "+N más"). Datos: `getAdminSlots()` nuevo en `adminService.ts` (slots futuros de todos + JOIN en memoria contra citas pending/confirmed; sin migración — la política admin FOR ALL de 008/026 ya cubre). Ruta lazy en `router.tsx`.
@@ -119,7 +121,8 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 | P1 | **Confirmar WhatsApp del 477 125 0075** | El flotante del sitio abre chat directo a ese número; si no tiene WhatsApp habilitado el enlace falla. Probar enviándose un mensaje | Pendiente (cliente) |
 | P2 | Prueba completa notificaciones masivas | `ADMIN_EMAIL=... ADMIN_PASSWORD=... node scripts/test-notification-broadcast.mjs` (flujo de envío real) | Pendiente |
 | P1 | Instalación/actualización PWA en dispositivos reales | Ver ítems de sección 3b | Pendiente |
-| P0 | Prueba real de videollamada JaaS | Verificar con cliente que `JAAS_KID` no esté truncado; hacer llamada real de 2 dispositivos | Pendiente |
+| P0 | **Prueba final del webhook JaaS (1 min, dueño)** | Entrar a `/admin/prueba-videollamada` → abrir la sala JaaS y salir → en la consola de JaaS (Webhooks) el contador "Attempts → Successful" debe subir. Con eso el tubo queda confirmado con tráfico real; la primera cita real mostrará participantes/duración en `/admin/citas` | Pendiente (cliente) |
+| P0 | **Campaña a profesionistas (textos ya redactados)** | Comunicados: "Solo profesionales verificados" (12) con el correo de publicar horarios; "Solo profesionales pendientes de verificar" (22) con el de subir documentos. Ambos textos están en el chat de la sesión 2026-10-18 y los filtros nuevos en `/admin/comunicados` (v1.5.8) | Pendiente (cliente) |
 | P1 | Re-grabar v1 y v5 | v1 tiene PII propia y de tercero; v5 muestra flujo que falló y explorador personal (aunque ambos fueron aprobados por decisión expresa del dueño, conviene re-grabar) | Decisión del cliente |
 | P2 | Decisión proveedor de video | Comparación JaaS vs Daily.co en `/admin/prueba-videollamada`; JaaS gratis hasta 25 MAU, después $99/300 MAU; plan futuro: Jitsi propio | Decisión del cliente |
 | P2 | Pagos | Solo cuando haya tracción. Requisito: tarjeta + PayPal + SPEI (Openpay cubre tarjeta+SPEI; PayPal aparte). El sitio ya lo anuncia como "próximamente" | Diferido |
@@ -134,9 +137,10 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 - **Supabase:** ref `qjwebikgrqtotqfipeqt` (CLI vinculada: `supabase db query --linked -f <sql>`; `supabase functions deploy <fn>`).
 - **Credenciales:** `.env` en `platform/web/` (nunca subir service role key). Secrets en vault de Supabase: `CRON_SECRET` (y otros en Edge Function secrets: Resend, JAAS_*, DAILY_API_KEY).
 - **Comandos:** `cd platform/web && npm run dev|build|test|lint`. Build debe pasar siempre antes de push.
-- **Edge Functions activas:** `send-email`, `contact-form`, `user-emails`, `send-broadcast`, `send-notification-broadcast`, `appointment-reminders`, `support-request`, `admin-contact`, `jaas-token`, `daily-test-room`, `track-view`.
+- **Edge Functions activas:** `send-email`, `contact-form`, `user-emails`, `send-broadcast`, `send-notification-broadcast`, `appointment-reminders`, `support-request`, `admin-contact`, `jaas-token`, `jaas-webhook`, `daily-test-room`, `track-view`.
+- **Crons pg_cron activos (3):** `appointment-reminders` (cada 10 min), `purge-expired-availability-slots` (min 23), `auto-complete-past-appointments` (min 53).
 - **Buckets Storage:** `avatars`, `professional-documents` (privados), `chat-attachments`, `tutorials`.
-- **Tests de regresión** (`platform/web/scripts/`): `test-auth-flow.mjs` (15), `test-core-flows.mjs` (22, necesita cuentas e2e), `test-chat.mjs` (28), `test-jaas.mjs` (22), `test-daily.mjs` (6), `test-analytics.mjs` (13, usa `ADMIN_PASSWORD`), `test-notification-broadcast.mjs` (8 sin admin / 13 con `ADMIN_EMAIL`+`ADMIN_PASSWORD`).
+- **Tests de regresión** (`platform/web/scripts/`): `test-auth-flow.mjs` (15), `test-core-flows.mjs` (22, necesita cuentas e2e), `test-chat.mjs` (28), `test-jaas.mjs` (22), `test-jaas-webhook.mjs` (5 + cadena con room, usa `JAAS_TEST_SECRET`), `test-daily.mjs` (6), `test-analytics.mjs` (13, usa `ADMIN_PASSWORD`), `test-notification-broadcast.mjs` (8 sin admin / 13 con `ADMIN_EMAIL`+`ADMIN_PASSWORD`).
 - **Contacto oficial:** correo hola@somos-calma.com · teléfono/WhatsApp **477 125 0075** (`5214771250075`) · Facebook `facebook.com/profile.php?id=61594989341298`.
 - **¿Algo falla? → `docs/monitoreo-y-diagnostico.md`** (semáforo de salud, tabla de síntomas, baterías y fuentes de logs).
 - **Reglas de código:** ver `AGENTS.md` §Convenciones (prohibidos alert/confirm/prompt; usar componentes UI de `src/components/ui/`; errores siempre con `Alert`).
@@ -151,4 +155,5 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 4. Correo único de contacto: hola@somos-calma.com.
 5. Teléfono oficial: 477 125 0075 (desde 2026-10-08; el anterior 477 254 1540 quedó fuera).
 6. Legales actualizados a persona física (domicilio genérico "Ciudad de México, México").
-6. Cambio del rango de precios ($150–$350) solo vía migración — nunca hardcodear otro rango.
+7. Cambio del rango de precios ($150–$350) solo vía migración — nunca hardcodear otro rango.
+8. **Duración de sesión: 60 minutos (desde 2026-10-18; antes 50).** Se gobierna con `SLOT_DURATION_MINUTES` en `availabilityService.ts` (única fuente); al cambiarla, actualizar textos de UI y extender slots futuros en BD con SQL one-off con guarda anti-traslape (ejemplo aplicado el 2026-10-18).
