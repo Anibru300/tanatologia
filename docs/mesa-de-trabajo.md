@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-18)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-18, tarde)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,13 +6,13 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.5.4-beta.1` (`platform/web/package.json` — bump obligatorio en cada release). Local compilada; **pendiente de push/deploy**.
+- **Versión:** `1.5.5-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02):** cada profesional define su precio por consulta (sesión de 50 min) en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
 - **Redes (2026-10-08):** página de Facebook activa: `https://www.facebook.com/profile.php?id=61594989341298` — enlazada en footer, sección de contacto del index y botón flotante (arriba de WhatsApp). URL central en `siteConfig.ts` → `contact.social.facebook`. Instagram/Linkedin aún vacíos.
 - **Teléfono oficial (2026-10-08):** 477 125 0075 · WhatsApp `5214771250075` (reemplazó al 477 254 1540 en sitio + app). El "Salir rápido" ya NO existe en el sitio estático (sí en el portal paciente de la app).
-- **Supabase Cloud:** proyecto `qjwebikgrqtotqfipeqt`. Migración más reciente: **029**. Ninguna pendiente por aplicar.
+- **Supabase Cloud:** proyecto `qjwebikgrqtotqfipeqt`. Migración más reciente: **030**. Ninguna pendiente por aplicar.
 - **Deploy:** push a `main` → workflow compila `platform/web` y copia a `/app/`. Secrets ya configurados en GitHub Actions.
 
 ## 2. Qué existe (mapa funcional resumido)
@@ -38,7 +38,9 @@
 1. **Fix reportado por profesionista verificado:** no podía subir su constancia de situación fiscal. Causa: `ProfessionalVerification.tsx` deshabilitaba el botón "Subir" cuando `status === 'verified'` (solo frontend; RLS y Storage policies nunca filtraron por verification_status — verificado en migraciones 005/006/007). Fix: se quitó esa condición del `disabled` (sigue bloqueado mientras otra subida está en curso) y el texto de perfil verificado ahora explica que puede seguir subiendo documentos adicionales que el equipo podrá revisar. Cédula y "Enviar a revisión" siguen congelados en verificado (`canEdit` intacto; `submit_for_review` sigue rechazando verificados — correcto).
 2. **Nueva página admin `/admin/disponibilidad`** (menú "Disponibilidad", ícono CalendarClock): responde al pedido del dueño de saber qué profesionistas han puesto horarios. KPIs (registrados / con horarios publicados / horarios futuros / libres), filtro por profesionista, y tabla con verificación, visibilidad, total de slots, próximo horario y badges de los próximos 6 slots (Libre/Ocupado, "+N más"). Datos: `getAdminSlots()` nuevo en `adminService.ts` (slots futuros de todos + JOIN en memoria contra citas pending/confirmed; sin migración — la política admin FOR ALL de 008/026 ya cubre). Ruta lazy en `router.tsx`.
 3. **Diagnóstico general (todo verde):** sitio+app+sw+manifest 200; 11 Edge Functions CORS 200; DB viva (49 usuarios: 34 profesionales/14 pacientes; 12 verificados; 5 citas, 0 futuras; 12 slots futuros entre solo 3 profesionales; 0 slots vencidos = purga cron 024 operativa); único feedback de usuarios es positivo (5★, sep-03); últimos runs de Actions en verde; producción sirviendo 1.5.3.
-4. **Hallazgos operativos (no errores):** (a) 22 de 34 profesionales están `pending` — se registraron pero jamás enviaron expediente (ninguno `in_review`/`rejected`); (b) solo 3 de 12 verificados tienen horarios futuros publicados → el directorio se percibe vacío para pacientes y hay 0 citas futuras; conviene campaña a profesionistas para que publiquen disponibilidad.
+4. **(Tarde, v1.5.5) Fix avatares en el chat (migración 030).** Pendiente desde el 2026-10-03: la lista de conversaciones consultaba `profiles.avatar_url` ajeno y la RLS devolvía null siempre (iniciales). Nueva RPC `get_chat_avatars(uuid[])` (STABLE SECURITY DEFINER, solo authenticated): devuelve SOLO (profile_id, avatar_url) de perfiles que **comparten conversación** con quien la ejecuta (paciente o profesional; NO exige verified+visible — el chat ya exige cita previa, y un verificado temporalmente invisible sigue chateando). Aplicada en Cloud (verificada en `pg_proc`, prosecdef=true); `messagesService.listConversations` ahora usa la RPC con fallback silencioso a iniciales (mismo patrón que el directorio 027).
+
+**Hallazgos operativos (no errores):** (a) 22 de 34 profesionales están `pending` — se registraron pero jamás enviaron expediente (ninguno `in_review`/`rejected`); (b) solo 3 de 12 verificados tienen horarios futuros publicados → el directorio se percibe vacío para pacientes y hay 0 citas futuras; conviene campaña a profesionistas para que publiquen disponibilidad.
 
 ## 3a. Sesión 2026-10-08 (Facebook + teléfono oficial nuevo + ajustes de flotantes) COMPLETA y desplegada
 
@@ -104,7 +106,6 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 | P1 | **Facebook: actualizar teléfono en la página** | La página lleva el viejo 477 254 1540; debe cambiarse a 477 125 0075 (Página → Editar información → Teléfono). Del lado del cliente | Pendiente (cliente) |
 | P1 | **Confirmar WhatsApp del 477 125 0075** | El flotante del sitio abre chat directo a ese número; si no tiene WhatsApp habilitado el enlace falla. Probar enviándose un mensaje | Pendiente (cliente) |
 | P2 | Prueba completa notificaciones masivas | `ADMIN_EMAIL=... ADMIN_PASSWORD=... node scripts/test-notification-broadcast.mjs` (flujo de envío real) | Pendiente |
-| P2 | Avatares en el chat | Mismo bug de RLS que el directorio: `messagesService` hace join a `profiles.avatar_url` que siempre da null; reusar `get_professional_avatars` | Pendiente |
 | P1 | Instalación/actualización PWA en dispositivos reales | Ver ítems de sección 3b | Pendiente |
 | P0 | Prueba real de videollamada JaaS | Verificar con cliente que `JAAS_KID` no esté truncado; hacer llamada real de 2 dispositivos | Pendiente |
 | P1 | Re-grabar v1 y v5 | v1 tiene PII propia y de tercero; v5 muestra flujo que falló y explorador personal (aunque ambos fueron aprobados por decisión expresa del dueño, conviene re-grabar) | Decisión del cliente |

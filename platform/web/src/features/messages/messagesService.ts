@@ -59,12 +59,19 @@ export async function listConversations(myRole: 'patient' | 'professional'): Pro
   if (othersError) throw new Error(othersError.message)
 
   const otherProfileIds = [...new Set((others || []).map((o) => String(o.profile_id)))]
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('id, avatar_url')
-    .in('id', otherProfileIds)
 
-  const avatarById = new Map((profiles || []).map((p) => [String(p.id), p.avatar_url ? String(p.avatar_url) : null]))
+  // La RLS de `profiles` no deja leer el avatar ajeno; la RPC 030 solo devuelve
+  // (profile_id, avatar_url) de perfiles que comparten conversación conmigo.
+  // Falla silenciosa → sin foto, se muestran iniciales.
+  const avatarById = new Map<string, string>()
+  if (otherProfileIds.length > 0) {
+    const { data: avatars } = await supabase.rpc('get_chat_avatars', {
+      p_profile_ids: otherProfileIds,
+    })
+    for (const row of (avatars ?? []) as { profile_id: string; avatar_url: string }[]) {
+      avatarById.set(String(row.profile_id), String(row.avatar_url))
+    }
+  }
 
   const myUserId = (await supabase.auth.getUser()).data.user?.id ?? ''
   const convIds = rows.map((r) => String(r.id))
