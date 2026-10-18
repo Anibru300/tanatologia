@@ -207,8 +207,8 @@ export function TherapistDirectory() {
             </div>
             <h3 className="text-lg font-semibold text-text mb-1">Pronto tendremos profesionales disponibles</h3>
             <p className="text-text-light max-w-md mx-auto mb-6">
-              Estamos verificando a los primeros especialistas. Vuelve pronto: seguimos sumando
-              profesionales para acompañarte.
+              Los profesionales que aparecen aquí son verificados y tienen horarios publicados para agendar.
+              Vuelve pronto: seguimos sumando especialistas y disponibilidad para acompañarte.
             </p>
             <Link to="/paciente">
               <Button>Volver a mi espacio</Button>

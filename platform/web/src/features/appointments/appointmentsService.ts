@@ -55,8 +55,26 @@ export async function getProfessionalProfiles(): Promise<ProfessionalProfile[]> 
     throw new Error(error.message)
   }
 
-  const profiles = (data || []) as { profile_id: string }[]
-  const avatarMap = await getProfessionalAvatarMap(profiles.map((p) => p.profile_id))
+  // El paciente solo debe ver profesionistas que SÍ se pueden agendar:
+  // verificados + visibles (filtro de arriba) y con al menos un horario
+  // futuro publicado. La RLS de availability_slots ya permite a cualquier
+  // usuario autenticado leer slots de profesionales verificados (008/026).
+  const allProfiles = (data || []) as Record<string, unknown>[]
+  if (allProfiles.length === 0) return []
+
+  const { data: slotsData, error: slotsError } = await supabase
+    .from('availability_slots')
+    .select('professional_profile_id')
+    .in('professional_profile_id', allProfiles.map((p) => String(p.id)))
+    .gte('slot_start', new Date().toISOString())
+
+  if (slotsError) {
+    throw new Error(slotsError.message)
+  }
+
+  const withFutureSlots = new Set((slotsData || []).map((s) => String(s.professional_profile_id)))
+  const profiles = allProfiles.filter((p) => withFutureSlots.has(String(p.id)))
+  const avatarMap = await getProfessionalAvatarMap(profiles.map((p) => String(p.profile_id)))
 
   return (profiles as Record<string, unknown>[]).map((row) => {
     return {

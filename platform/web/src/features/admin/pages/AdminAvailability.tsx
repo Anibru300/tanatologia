@@ -45,6 +45,7 @@ export function AdminAvailability() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
 
   useEffect(() => {
     load()
@@ -75,7 +76,11 @@ export function AdminAvailability() {
   }, [slots])
 
   const rows = useMemo<Row[]>(() => {
-    const filtered = filter === 'all' ? professionals : professionals.filter((p) => p.id === filter)
+    const filtered = professionals.filter(
+      (p) =>
+        (filter === 'all' || p.id === filter) &&
+        (statusFilter === 'all' || p.verification_status === statusFilter)
+    )
     return filtered
       .map((professional) => ({
         professional,
@@ -87,7 +92,7 @@ export function AdminAvailability() {
         const bNext = b.slots[0] ? new Date(b.slots[0].slot_start).getTime() : Number.POSITIVE_INFINITY
         return aNext - bNext
       })
-  }, [professionals, slotsByProfessional, filter])
+  }, [professionals, slotsByProfessional, filter, statusFilter])
 
   const withSlots = professionals.filter((p) => (slotsByProfessional.get(p.id) || []).length > 0).length
   const freeSlots = slots.filter((s) => !s.booked).length
@@ -138,12 +143,24 @@ export function AdminAvailability() {
 
         <Card className="mb-6">
           <CardContent className="p-4">
-            <div className="max-w-md">
+            <div className="grid sm:grid-cols-2 gap-4 max-w-2xl">
               <Select
                 label="Filtrar por profesionista"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 options={filterOptions}
+              />
+              <Select
+                label="Filtrar por estado de verificación"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                options={[
+                  { value: 'all', label: 'Todos los estados' },
+                  { value: 'verified', label: 'Verificados' },
+                  { value: 'pending', label: 'Pendientes (sin expediente)' },
+                  { value: 'in_review', label: 'En revisión' },
+                  { value: 'rejected', label: 'Rechazados' },
+                ]}
               />
             </div>
           </CardContent>

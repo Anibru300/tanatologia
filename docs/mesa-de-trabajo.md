@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-18, tarde)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-18, víspera de noche)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.5.5-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
+- **Versión:** `1.5.6-beta.1` (`platform/web/package.json` — bump obligatorio en cada release).
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02):** cada profesional define su precio por consulta (sesión de 50 min) en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
@@ -27,7 +27,8 @@
 - **Intake/encuesta:** `patient_profiles.intake` (JSONB) filtra directorio; PHQ-9/GAD-7 opcionales.
 - **Directorio paciente:** cards + modal con foto de perfil del profesional (RPC `get_professional_avatars`, migración 027 — la RLS de `profiles` no se relaja), precio por sesión, bio, formación, reseñas.
 - **Notificaciones in-app masivas (admin):** página `/admin/notificaciones` (migración 028 + Edge Function `send-notification-broadcast`) — audiencia todos/pacientes/profesionales, dry_run de prueba, historial con contadores; llegan en vivo por Realtime a la campana (type `admin_broadcast`).
-- **Disponibilidad admin (v1.5.4):** página `/admin/disponibilidad` (menú "Disponibilidad") — KPIs (registrados / con horarios / horarios futuros / libres), filtro por profesionista y tabla con slots futuros de cada uno marcados Libre/Ocupado (solapamiento vs citas pending/confirmed, misma lógica que `get_booked_slots`; RLS admin ya daba acceso total, sin migración).
+- **Disponibilidad admin (v1.5.4; filtros de verificación en 1.5.6):** página `/admin/disponibilidad` (menú "Disponibilidad") — KPIs (registrados / con horarios / horarios futuros / libres), filtros por profesionista y por estado de verificación (verificados / pendientes / en revisión / rechazados) y tabla con slots futuros de cada uno marcados Libre/Ocupado (solapamiento vs citas pending/confirmed, misma lógica que `get_booked_slots`; RLS admin ya daba acceso total, sin migración).
+- **Directorio paciente solo con agendables (1.5.6):** `getProfessionalProfiles()` ahora filtra además a profesionistas con ≥1 `availability_slot` futuro — el paciente solo ve verificados + visibles + **con disponibilidad publicada** (antes veía verificados sin horarios, directorio "fantasma"). Aplica al directorio y al selector de `BookAppointment` (mismo consumidor). Texto de directorio vacío actualizado.
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
@@ -39,6 +40,8 @@
 2. **Nueva página admin `/admin/disponibilidad`** (menú "Disponibilidad", ícono CalendarClock): responde al pedido del dueño de saber qué profesionistas han puesto horarios. KPIs (registrados / con horarios publicados / horarios futuros / libres), filtro por profesionista, y tabla con verificación, visibilidad, total de slots, próximo horario y badges de los próximos 6 slots (Libre/Ocupado, "+N más"). Datos: `getAdminSlots()` nuevo en `adminService.ts` (slots futuros de todos + JOIN en memoria contra citas pending/confirmed; sin migración — la política admin FOR ALL de 008/026 ya cubre). Ruta lazy en `router.tsx`.
 3. **Diagnóstico general (todo verde):** sitio+app+sw+manifest 200; 11 Edge Functions CORS 200; DB viva (49 usuarios: 34 profesionales/14 pacientes; 12 verificados; 5 citas, 0 futuras; 12 slots futuros entre solo 3 profesionales; 0 slots vencidos = purga cron 024 operativa); único feedback de usuarios es positivo (5★, sep-03); últimos runs de Actions en verde; producción sirviendo 1.5.3.
 4. **(Tarde, v1.5.5) Fix avatares en el chat (migración 030).** Pendiente desde el 2026-10-03: la lista de conversaciones consultaba `profiles.avatar_url` ajeno y la RLS devolvía null siempre (iniciales). Nueva RPC `get_chat_avatars(uuid[])` (STABLE SECURITY DEFINER, solo authenticated): devuelve SOLO (profile_id, avatar_url) de perfiles que **comparten conversación** con quien la ejecuta (paciente o profesional; NO exige verified+visible — el chat ya exige cita previa, y un verificado temporalmente invisible sigue chateando). Aplicada en Cloud (verificada en `pg_proc`, prosecdef=true); `messagesService.listConversations` ahora usa la RPC con fallback silencioso a iniciales (mismo patrón que el directorio 027).
+
+5. **(Noche, v1.5.6) Filtros de verificación en Disponibilidad admin + directorio solo-agendables.** Pedido del dueño: (a) `/admin/disponibilidad` ahora filtra también por estado de verificación (verificados/pendientes/en revisión/rechazados); (b) el paciente SOLO ve en el directorio profesionistas verificados+visibles **y con ≥1 horario futuro publicado** (`getProfessionalProfiles` filtra por `availability_slots` futuros; sin migración — la RLS de slots ya permite lectura a autenticados para verificados).
 
 **Hallazgos operativos (no errores):** (a) 22 de 34 profesionales están `pending` — se registraron pero jamás enviaron expediente (ninguno `in_review`/`rejected`); (b) solo 3 de 12 verificados tienen horarios futuros publicados → el directorio se percibe vacío para pacientes y hay 0 citas futuras; conviene campaña a profesionistas para que publiquen disponibilidad.
 
