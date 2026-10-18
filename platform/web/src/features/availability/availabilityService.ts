@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { getProfessionalProfileId } from '@/features/appointments/appointmentsService'
 
-export const SLOT_DURATION_MINUTES = 50
+export const SLOT_DURATION_MINUTES = 60
 
 export type AvailabilitySlot = {
   id: string

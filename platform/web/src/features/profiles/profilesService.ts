@@ -74,7 +74,7 @@ export type UpdateProfessionalProfileInput = {
   languages: string[]
   years_experience: number | null
   education: string | null
-  // Precio por consulta (50 min) en centavos MXN; rango 15000–35000 validado en DB (migración 025)
+  // Precio por consulta (60 min) en centavos MXN; rango 15000–35000 validado en DB (migración 025)
   session_price?: number | null // centavos
   // RESERVADO fase monetización (sin uso en UI durante la Beta)
   program_4_price?: number | null // centavos

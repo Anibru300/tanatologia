@@ -25,13 +25,13 @@ const faqs: { q: string; c: Category; k: string; a: React.ReactNode }[] = [
     a: (
       <>
         Ve a <Link to="/profesional/disponibilidad" className={linkStyle}>Disponibilidad</Link> y crea bloques de fecha y
-        hora específicos desde el calendario. Cada bloque equivale a una sesión de 50 minutos: el sistema evita que dos
+        hora específicos desde el calendario. Cada bloque equivale a una sesión de 60 minutos: el sistema evita que dos
         citas se traslapen y los pacientes solo pueden agendar sobre horarios que ya publicaste. Puedes editar o eliminar
         bloques futuros en cualquier momento; los que ya tienen cita confirmada no se pueden mover. En el video tutorial de
         Agenda te lo mostramos paso a paso.
       </>
     ),
-    k: 'disponibilidad horarios bloques calendario 50 minutos sesión publicar editar eliminar',
+    k: 'disponibilidad horarios bloques calendario 60 minutos sesión publicar editar eliminar',
   },
   {
     q: '¿Cómo me verifico para aparecer en el directorio?',
@@ -118,7 +118,7 @@ const faqs: { q: string; c: Category; k: string; a: React.ReactNode }[] = [
   {
     q: '¿Tiene algún costo participar como profesional?',
     c: 'Beta',
-    a: 'No hay costo de plataforma: no pagas comisiones, membresías ni cargos a Somos Calma, y no te pedimos datos bancarios. Tú defines en tu perfil el precio de tu consulta (entre $150 y $350 MXN por sesión de 50 minutos) y recibes el pago directamente del paciente; el cobro y la forma de pago los acuerdan entre ustedes. Si en el futuro cambia el modelo, te avisaremos con al menos 30 días de anticipación.',
+    a: 'No hay costo de plataforma: no pagas comisiones, membresías ni cargos a Somos Calma, y no te pedimos datos bancarios. Tú defines en tu perfil el precio de tu consulta (entre $150 y $350 MXN por sesión de 60 minutos) y recibes el pago directamente del paciente; el cobro y la forma de pago los acuerdan entre ustedes. Si en el futuro cambia el modelo, te avisaremos con al menos 30 días de anticipación.',
     k: 'costo precio consulta comisiones membresías pagos bancarios transferencia futuro aviso',
   },
   {

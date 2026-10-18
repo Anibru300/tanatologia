@@ -24,7 +24,7 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
   {
     q: '¿Cómo funciona mi videollamada?',
     c: 'Citas',
-    a: 'El día de tu sesión entra a "Mis citas" y presiona "Unirse a la sala". La sala se abre 15 minutos antes de tu horario para que pruebes tu cámara y micrófono con calma. Las sesiones duran 50 minutos y el enlace también llega a tu correo. Te recomendamos usar un lugar tranquilo y una conexión estable.',
+    a: 'El día de tu sesión entra a "Mis citas" y presiona "Unirse a la sala". La sala se abre 15 minutos antes de tu horario para que pruebes tu cámara y micrófono con calma. Las sesiones duran 60 minutos y el enlace también llega a tu correo. Te recomendamos usar un lugar tranquilo y una conexión estable.',
   },
   {
     q: '¿Puedo cancelar o reprogramar mi cita?',
@@ -44,7 +44,7 @@ const faqs: { q: string; c: Category; a: React.ReactNode }[] = [
   {
     q: '¿Tiene algún costo usar la plataforma?',
     c: 'Beta',
-    a: 'Usar la plataforma no tiene ningún cargo: no pedimos tarjeta ni datos de pago. Cada profesional define el precio de su consulta (entre $150 y $350 MXN por sesión de 50 minutos) y tú se lo pagas directamente; el cobro y la forma de pago los acuerdan entre ustedes.',
+    a: 'Usar la plataforma no tiene ningún cargo: no pedimos tarjeta ni datos de pago. Cada profesional define el precio de su consulta (entre $150 y $350 MXN por sesión de 60 minutos) y tú se lo pagas directamente; el cobro y la forma de pago los acuerdan entre ustedes.',
   },
   {
     q: '¿Olvidé mi contraseña, qué hago?',

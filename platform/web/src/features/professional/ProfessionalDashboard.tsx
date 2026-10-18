@@ -155,7 +155,7 @@ export function ProfessionalDashboard() {
             <CardContent>
               <p className="text-3xl font-bold text-text">$150–350</p>
               <p className="text-text-light text-sm">
-                MXN por sesión de 50 min: lo defines tú en tu perfil y recibes el pago directo,
+                MXN por sesión de 60 min: lo defines tú en tu perfil y recibes el pago directo,
                 sin comisiones de plataforma en la Beta
               </p>
             </CardContent>

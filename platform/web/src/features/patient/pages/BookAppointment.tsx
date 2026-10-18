@@ -31,7 +31,7 @@ const services = [
   {
     id: 'single' as SessionType,
     name: 'Consulta aislada',
-    duration: '50 min',
+    duration: '60 min',
     description: 'Una sesión para hablar de lo que necesites sin compromiso de continuidad.',
   },
   {
@@ -416,7 +416,7 @@ export function BookAppointment() {
                     <span className="block font-bold text-primary-dark">
                       {therapist.session_price !== null ? formatMXN(therapist.session_price) : 'Precio por definir'}
                     </span>
-                    <span className="text-xs text-text-light">por sesión de 50 min</span>
+                    <span className="text-xs text-text-light">por sesión de 60 min</span>
                   </div>
                 </button>
               ))}
@@ -576,7 +576,7 @@ export function BookAppointment() {
                 <SummaryRow icon={Video} label="Modalidad" value="Videollamada privada" />
               </div>
               <div className="flex items-center justify-between p-4 bg-primary/5 rounded-sm">
-                <span className="text-text">Costo de la sesión (50 min)</span>
+                <span className="text-text">Costo de la sesión (60 min)</span>
                 <span className="text-xl font-bold text-primary-dark">
                   {selectedTherapistData?.session_price != null
                     ? formatMXN(selectedTherapistData.session_price)

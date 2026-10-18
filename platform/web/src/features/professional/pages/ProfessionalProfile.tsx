@@ -319,7 +319,7 @@ export function ProfessionalProfile() {
           <CardHeader>
             <CardTitle>Precio por consulta</CardTitle>
             <CardDescription>
-              Define cuánto cobras por cada sesión de 50 minutos. Los pacientes lo verán en tu
+              Define cuánto cobras por cada sesión de 60 minutos. Los pacientes lo verán en tu
               perfil público y al agendar contigo.
             </CardDescription>
           </CardHeader>

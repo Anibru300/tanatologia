@@ -249,7 +249,7 @@ export function TherapistDirectory() {
                       <span className="text-lg font-bold text-primary-dark">
                         {t.session_price !== null ? formatMXN(t.session_price) : 'Precio por definir'}
                       </span>
-                      <span className="text-xs text-text-light">por sesión de 50 min</span>
+                      <span className="text-xs text-text-light">por sesión de 60 min</span>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => setSelected(t)}>
                           Ver perfil
@@ -379,7 +379,7 @@ export function TherapistDirectory() {
 
             <div className="p-4 bg-primary/5 rounded-sm space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-text">Precio por sesión (50 min)</span>
+                <span className="text-text">Precio por sesión (60 min)</span>
                 <span className="text-2xl font-bold text-primary-dark">
                   {selected.session_price !== null ? formatMXN(selected.session_price) : 'Por definir'}
                 </span>
