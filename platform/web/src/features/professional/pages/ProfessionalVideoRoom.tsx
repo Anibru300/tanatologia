@@ -11,6 +11,7 @@ import {
   getAppointmentById,
   getAppointmentsForProfessional,
   getProfessionalProfileId,
+  updateAppointmentStatus,
   type Appointment,
 } from '@/features/appointments/appointmentsService'
 import { useAuth } from '@/features/auth/useAuth'
@@ -106,6 +107,15 @@ export function ProfessionalVideoRoom() {
 
   const roomName = activeRoom || appointment?.video_link
 
+  // Al colgar una cita real, cerrarla (el cron horario es la red de seguridad
+  // si esto falla; el trigger 031 impide completar antes de la hora).
+  const handleHangup = () => {
+    if (activeRoom || !appointment) return
+    updateAppointmentStatus(appointment.id, 'completed').catch((err) =>
+      console.error('marcar cita completada:', err instanceof Error ? err.message : err)
+    )
+  }
+
   // Sala activa: el profesional actúa como anfitrión; entra primero para abrirla.
   if (roomName) {
     return (
@@ -128,6 +138,7 @@ export function ProfessionalVideoRoom() {
           preJoinTip="Entra 1-2 minutos antes de la hora agendada: como anfitrión, tú abres la sala para tu paciente."
           appointmentId={activeRoom ? undefined : appointmentId}
           onExit={() => navigate('/profesional/citas')}
+          onHangup={handleHangup}
         />
       </Suspense>
     )

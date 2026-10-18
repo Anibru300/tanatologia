@@ -4,6 +4,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { useAuth } from '@/features/auth/useAuth'
+import { updateAppointmentStatus } from '@/features/appointments/appointmentsService'
 import {
   findChatVideoSession,
   getAttachmentUrl,
@@ -150,6 +151,16 @@ export function ConversationThread({ conversation, myUserId, myRole, mySubprofil
   }, [myRole, mySubprofileId, otherSubprofileId])
 
   const videoWindow = videoSession ? getJoinWindowState(videoSession, now) : null
+
+  // Al colgar desde el chat, el PROFESIONAL cierra la cita (el paciente puede
+  // salir antes sin dar por terminada la sesión). El cron horario (migración
+  // 031) completa cualquier cita que esta señal no alcance.
+  const handleHangup = () => {
+    if (myRole !== 'professional' || !videoSession) return
+    updateAppointmentStatus(videoSession.id, 'completed').catch((err) =>
+      console.error('marcar cita completada:', err instanceof Error ? err.message : err)
+    )
+  }
   // Aviso de "próxima sesión" solo si empieza dentro de 24 h (evita ruido constante)
   const showSessionBanner =
     Boolean(videoSession?.video_link) &&
@@ -471,6 +482,7 @@ export function ConversationThread({ conversation, myUserId, myRole, mySubprofil
             preJoinTip="Busca un lugar tranquilo y privado. Al colgar regresarás a esta conversación."
             appointmentId={videoSession.id}
             onExit={() => setInCall(false)}
+            onHangup={handleHangup}
           />
         </Suspense>
       )}

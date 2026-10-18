@@ -26,6 +26,9 @@ interface VideoCallExperienceProps {
   fetchToken?: (roomName: string) => Promise<JaasResult>
   /** A dónde volver al colgar (normalmente navigate a la lista de citas). */
   onExit: () => void
+  /** Se dispara al colgar DESPUÉS de haber entrado a la sala (no en el prejoin).
+   *  El consumidor decide qué hacer (p. ej. marcar la cita como completada). */
+  onHangup?: () => void
 }
 
 /**
@@ -43,6 +46,7 @@ export function VideoCallExperience({
   appointmentId,
   fetchToken,
   onExit,
+  onHangup,
 }: VideoCallExperienceProps) {
   const [joined, setJoined] = useState(false)
   const [videoMuted, setVideoMuted] = useState(false)
@@ -84,6 +88,12 @@ export function VideoCallExperience({
     }
   }, [appointmentId, fetchToken, roomName])
 
+  const handleExit = () => {
+    // La señal de colgar solo aplica si realmente estuvo en la llamada
+    if (joined) onHangup?.()
+    onExit()
+  }
+
   return (
     <div className="fixed inset-0 z-[60] bg-bg flex flex-col">
       <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-3 border-b border-border bg-surface shrink-0">
@@ -91,7 +101,7 @@ export function VideoCallExperience({
           <h1 className="text-lg font-bold text-text truncate">{title}</h1>
           <p className="text-text-light text-xs sm:text-sm truncate">{subtitle}</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={onExit}>
+        <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={handleExit}>
           <PhoneOff size={16} /> {joined ? 'Colgar' : 'Salir'}
         </Button>
       </div>
@@ -103,7 +113,7 @@ export function VideoCallExperience({
             displayName={displayName}
             startWithVideoMuted={videoMuted}
             jaas={jaas ?? undefined}
-            onReadyToClose={onExit}
+            onReadyToClose={handleExit}
           />
         ) : (
           <div className="h-full overflow-y-auto">
