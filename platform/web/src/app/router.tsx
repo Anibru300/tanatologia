@@ -157,6 +157,9 @@ const AdminAnalytics = lazy(() =>
 const AdminBroadcasts = lazy(() =>
   import('@/features/admin/pages/AdminBroadcasts').then((m) => ({ default: m.AdminBroadcasts }))
 )
+const AdminInbox = lazy(() =>
+  import('@/features/admin/pages/AdminInbox').then((m) => ({ default: m.AdminInbox }))
+)
 const AdminNotificationBroadcasts = lazy(() =>
   import('@/features/admin/pages/AdminNotificationBroadcasts').then((m) => ({ default: m.AdminNotificationBroadcasts }))
 )
@@ -314,6 +317,7 @@ export function AppRouter() {
         <Route path="feedback" element={<AdminFeedback />} />
         <Route path="analiticas" element={<AdminAnalytics />} />
         <Route path="comunicados" element={<AdminBroadcasts />} />
+        <Route path="bandeja" element={<AdminInbox />} />
         <Route path="notificaciones" element={<AdminNotificationBroadcasts />} />
         <Route path="tutoriales" element={<AdminTutorials />} />
         <Route path="chats" element={<AdminChats />} />

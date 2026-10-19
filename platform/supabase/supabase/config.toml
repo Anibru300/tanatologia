@@ -510,3 +510,21 @@ enabled = true
 verify_jwt = true
 entrypoint = "./functions/daily-test-room/index.ts"
 
+[functions.inbound-email]
+enabled = true
+# Webhook de Resend Inbound (evento email.received). Hostinger reenvía
+# hola@ -> hola@inbound.somos-calma.com; Resend avisa aquí y la función trae
+# el cuerpo vía Receiving API, guarda adjuntos en el bucket email-attachments
+# e inserta en email_inbox (idempotente por message_id). Firma svix verificada
+# con RESEND_INBOUND_SECRET. Sin el secret responde 500 (Resend reintenta).
+verify_jwt = false
+entrypoint = "./functions/inbound-email/index.ts"
+
+[functions.inbox-reply]
+enabled = true
+# Responde un correo de la bandeja (panel admin /admin/bandeja) vía Resend con
+# headers In-Reply-To/References para conservar el hilo. Registra la salida en
+# email_inbox (direction='out'). Requiere sesión de admin; valida JWT internamente.
+verify_jwt = false
+entrypoint = "./functions/inbox-reply/index.ts"
+
