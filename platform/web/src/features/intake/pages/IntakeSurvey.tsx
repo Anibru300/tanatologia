@@ -31,6 +31,9 @@ const STEP_TITLES = [
   'Tus preferencias',
   'Tu motivo (opcional)',
   'Tamizaje opcional',
+  'Tamizaje: PHQ-9 (depresión)',
+  'Tamizaje: GAD-7 (ansiedad)',
+  'Tu tamizaje (no es un diagnóstico)',
 ]
 
 export function IntakeSurvey() {
@@ -67,12 +70,14 @@ export function IntakeSurvey() {
   const update = <K extends keyof IntakeData>(key: K, value: IntakeData[K]) =>
     setData((d) => ({ ...d, [key]: value }))
 
-  const handleFinish = async () => {
+  // skipScreening=true: la persona decidió saltar el tamizaje a mitad (los
+  // botones "Atrás"/"Saltar tamizaje" de los pasos 6-7 lo permiten).
+  const handleFinish = async (skipScreening = false) => {
     if (!user) return
     try {
       setSaving(true)
       setError('')
-      await saveIntake(user.id, { ...data, screeningDone: doScreening === true }, data.reasonText)
+      await saveIntake(user.id, { ...data, screeningDone: !skipScreening && doScreening === true }, data.reasonText)
       navigate('/paciente/terapeutas')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar tu encuesta.')
@@ -108,9 +113,9 @@ export function IntakeSurvey() {
           <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-3">
             <Heart size={28} className="text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-text">{STEP_TITLES[Math.min(step, 5)]}</h1>
+          <h1 className="text-2xl font-bold text-text">{STEP_TITLES[step]}</h1>
           <p className="text-text-light text-sm mt-1">
-            Paso {Math.min(step + 1, totalSteps)} de {totalSteps + 1}
+            Paso {step + 1} de {STEP_TITLES.length}
           </p>
           <ProgressBar value={progress} className="mt-4" />
         </div>
@@ -384,16 +389,21 @@ export function IntakeSurvey() {
             )}
 
             <div className="flex items-center justify-between mt-8">
-              <div>
+              <div className="flex items-center gap-2">
                 {step === 0 ? (
                   <Button variant="ghost" onClick={() => navigate('/paciente')} disabled={saving}>
                     <SkipForward size={16} className="mr-1" /> Saltar por ahora
                   </Button>
-                ) : step <= 5 ? (
+                ) : (
                   <Button variant="ghost" onClick={back} disabled={saving}>
                     <ArrowLeft size={16} className="mr-1" /> Atrás
                   </Button>
-                ) : null}
+                )}
+                {screeningStep && (
+                  <Button variant="ghost" onClick={() => void handleFinish(true)} disabled={saving}>
+                    <SkipForward size={16} className="mr-1" /> Saltar tamizaje
+                  </Button>
+                )}
               </div>
               {step < 8 ? (
                 <Button onClick={next} disabled={nextDisabled} className="gap-1">
@@ -401,7 +411,7 @@ export function IntakeSurvey() {
                   <ArrowRight size={16} />
                 </Button>
               ) : (
-                <Button onClick={handleFinish} disabled={saving} className="gap-1">
+                <Button onClick={() => void handleFinish()} disabled={saving} className="gap-1">
                   {saving ? 'Guardando...' : 'Ver profesionales para mí'}
                 </Button>
               )}
