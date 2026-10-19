@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.7.0-beta.1` (`platform/web/package.json` — bump obligatorio en cada release). Novedad: **Bandeja de entrada de correos en el admin** (ver 3f).
+- **Versión:** `1.7.1-beta.1` (`platform/web/package.json` — bump obligatorio en cada release). Novedad: **Bandeja de entrada de correos en el admin** (ver 3f).
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
@@ -134,6 +134,7 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 | P1 | **Facebook: actualizar teléfono en la página** | La página lleva el viejo 477 254 1540; debe cambiarse a 477 125 0075 (Página → Editar información → Teléfono). Del lado del cliente | Pendiente (cliente) |
 | P1 | **Confirmar WhatsApp del 477 125 0075** | El flotante del sitio abre chat directo a ese número; si no tiene WhatsApp habilitado el enlace falla. Probar enviándose un mensaje | Pendiente (cliente) |
 | P2 | Prueba completa notificaciones masivas | `ADMIN_EMAIL=... ADMIN_PASSWORD=... node scripts/test-notification-broadcast.mjs` (flujo de envío real) | Pendiente |
+| P1 | **Avisar a la paciente afectada: encuesta ya arreglada** | Reporte real (2026-19): "No deja completar encuesta". Causa: al elegir el tamizaje PHQ-9/GAD-7 la encuesta no tenía Atrás ni salida (16 preguntas forzosas). Fix v1.7.1: Atrás en todos los pasos + "Saltar tamizaje" + contador de pasos corregido. El guardado en servidor siempre funcionó (verificado E2E). Pedirle que reintente (dashboard → tarjeta de encuesta, o `/paciente/encuesta`) | Pendiente (cliente) |
 | P1 | **Responder correos reales en la Bandeja** | Hay 3 remitentes reales sin atender (Lupita 19-oct, Marcela Dieck 8/14-sep, paciente manasaca.76 6-sep) — contestar desde `/admin/bandeja` y confirmar que el hilo llega bien al remitente | Pendiente (cliente) |
 | P1 | **Limpieza de seguridad post-activación** | (1) Borrar la API key vieja de Resend (solo envío); (2) rotar el `whsec_` del webhook (pasó por chat) en Resend → Webhooks + `supabase secrets set`; (3) cambiar la contraseña del correo hola@ (pasó por chat; la Bandeja no depende de ella) | Pendiente (cliente) |
 | P2 | Test completo bandeja | `ADMIN_EMAIL=... ADMIN_PASSWORD=... RESEND_INBOUND_SECRET=... node scripts/test-inbox.mjs` (la parte de firma svix ya se verificó en Cloud) | Pendiente |
