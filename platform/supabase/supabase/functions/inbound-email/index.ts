@@ -65,9 +65,24 @@ async function verifySvixSignature(payload: string, req: Request, secret: string
 
 function parseAddress(raw: string | null | undefined): { email: string; name: string | null } {
   if (!raw) return { email: "", name: null };
-  const m = raw.match(/^(?:"?([^"]*)"?\s*)?<?([^<>\s]+@[^<>\s]+)>?$/);
-  if (m) return { email: m[2], name: m[1]?.trim() || null };
-  return { email: raw.trim(), name: null };
+  // Formato "Nombre <correo@dominio>": el correo es lo que está entre < >.
+  const angled = raw.match(/<([^<>\s]+@[^<>\s]+)>/);
+  if (angled) {
+    const name = raw.slice(0, angled.index).trim().replace(/^"|"$/g, "").trim() || null;
+    return { email: angled[1], name };
+  }
+  // Sin < >: toda la cadena es el correo (puede venir entre comillas).
+  const bare = raw.trim().replace(/^"|"$/g, "").trim();
+  return { email: bare, name: null };
+}
+
+// Los headers llegan con claves en minúsculas, pero se tolera cualquier caso.
+function headerValue(headers: Record<string, string>, name: string): string | undefined {
+  const lower = name.toLowerCase();
+  for (const [k, v] of Object.entries(headers)) {
+    if (k.toLowerCase() === lower) return v;
+  }
+  return undefined;
 }
 
 function normalizeMessageId(raw: string | null | undefined): string | null {
@@ -147,12 +162,13 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  const from = parseAddress(email.from);
-  const toEmail = Array.isArray(email.to) && email.to.length > 0 ? parseAddress(email.to[0]).email : "";
   const headers = email.headers ?? {};
-  const messageId = normalizeMessageId(email.message_id ?? headers["message-id"]);
-  const inReplyTo = normalizeMessageId(headers["in-reply-to"]);
-  const references = parseReferences(headers["references"]);
+  // headers.from trae el nombre visible (p. ej. "Carlos Urbina <...>"); email.from suele venir sin nombre.
+  const from = parseAddress(headerValue(headers, "from") ?? email.from);
+  const toEmail = Array.isArray(email.to) && email.to.length > 0 ? parseAddress(email.to[0]).email : "";
+  const messageId = normalizeMessageId(email.message_id ?? headerValue(headers, "message-id"));
+  const inReplyTo = normalizeMessageId(headerValue(headers, "in-reply-to"));
+  const references = parseReferences(headerValue(headers, "references"));
 
   // ---------------------------------------------------------------------------
   // Resolver hilo: ¿a qué mensaje existente responde este correo?
