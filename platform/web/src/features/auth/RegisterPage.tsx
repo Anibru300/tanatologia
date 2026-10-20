@@ -8,7 +8,8 @@ import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
-import { User, Stethoscope, CheckCircle } from 'lucide-react'
+import { User, Stethoscope, CheckCircle, MessageCircle } from 'lucide-react'
+import { isValidMxPhone, normalizeMxPhone } from '@/lib/phone'
 
 export function RegisterPage() {
   const [searchParams] = useSearchParams()
@@ -22,6 +23,8 @@ export function RegisterPage() {
   const [success, setSuccess] = useState(false)
   const [needsConfirmation, setNeedsConfirmation] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [phone, setPhone] = useState('')
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
 
@@ -48,10 +51,17 @@ export function RegisterPage() {
       setError('Debes aceptar el Aviso de Privacidad y los Términos y Condiciones para continuar.')
       return
     }
+    if (whatsappOptIn && !isValidMxPhone(phone)) {
+      setError('El teléfono para avisos por WhatsApp no es válido. Usa 10 dígitos o el formato +52 seguido de la lada.')
+      return
+    }
 
     setIsLoading(true)
     try {
-      await register(email, password, fullName, role)
+      await register(email, password, fullName, role, {
+        phone: normalizeMxPhone(phone),
+        whatsappOptIn,
+      })
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         setSuccess(true)
@@ -168,6 +178,34 @@ export function RegisterPage() {
                   minLength={8}
                 />
               </div>
+              <div>
+                <Label>Teléfono (opcional)</Label>
+                <Input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+52 55 1234 5678"
+                />
+                <p className="text-xs text-text-light mt-1">
+                  Solo lo usamos para avisarte sobre tus citas.
+                </p>
+              </div>
+              <label className="flex items-start gap-3 text-sm text-text-light cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={whatsappOptIn}
+                  onChange={(e) => setWhatsappOptIn(e.target.checked)}
+                  disabled={phone.trim() !== '' && !isValidMxPhone(phone)}
+                  className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary disabled:opacity-50"
+                />
+                <span className="flex items-start gap-2">
+                  <MessageCircle size={16} className="mt-0.5 shrink-0 text-success-dark" />
+                  <span>
+                    Quiero recibir avisos de mis citas por <strong>WhatsApp</strong> (nueva cita,
+                    recordatorios y cancelaciones) en este número.
+                  </span>
+                </span>
+              </label>
               {error && <Alert variant="error" className="p-3 rounded-sm">{error}</Alert>}
               <label className="flex items-start gap-3 text-sm text-text-light cursor-pointer">
                 <input

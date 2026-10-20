@@ -5,7 +5,13 @@ export interface AuthContextType {
   user: User | null
   isLoading: boolean
   login: (email: string, password: string, role?: UserRole) => Promise<void>
-  register: (email: string, password: string, fullName: string, role: UserRole) => Promise<void>
+  register: (
+    email: string,
+    password: string,
+    fullName: string,
+    role: UserRole,
+    whatsapp?: { phone: string | null; whatsappOptIn: boolean }
+  ) => Promise<void>
   logout: () => void
 }
 

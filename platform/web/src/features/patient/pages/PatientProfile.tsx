@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/Label'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { User, Mail, Phone, Calendar, Heart, AlertCircle, Loader2 } from 'lucide-react'
+import { normalizeMxPhone } from '@/lib/phone'
 
 const GENDER_OPTIONS = [
   { value: '', label: 'Selecciona una opción' },
@@ -93,9 +94,15 @@ export function PatientProfile() {
     setSaveMessage('')
 
     try {
+      const normalizedPhone = normalizeMxPhone(phone)
+      if (phone.trim() !== '' && !normalizedPhone) {
+        setSaveStatus('error')
+        setSaveMessage('El teléfono no tiene un formato válido. Usa 10 dígitos o +52 seguido de la lada.')
+        return
+      }
       await updateProfile(user.id, {
         full_name: fullName.trim(),
-        phone: phone.trim() || null,
+        phone: normalizedPhone,
       })
       await updatePatientProfile(user.id, {
         full_name: fullName.trim(),

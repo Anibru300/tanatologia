@@ -8,6 +8,7 @@ export type MyProfile = {
   full_name: string
   role: 'patient' | 'professional' | 'admin'
   phone: string | null
+  whatsapp_opt_in: boolean
   avatar_url: string | null
 }
 
@@ -51,6 +52,7 @@ export type MyProfileResult = {
 export type UpdateProfileInput = {
   full_name: string
   phone: string | null
+  whatsapp_opt_in?: boolean
 }
 
 export type UpdatePatientProfileInput = {
@@ -98,7 +100,7 @@ function friendlyError(error: { message?: string } | null, fallback: string): Er
 export async function getMyProfile(userId: string): Promise<MyProfileResult> {
   const { data: profileRow, error: profileError } = await supabase
     .from('profiles')
-    .select('id, email, full_name, role, phone, avatar_url')
+    .select('id, email, full_name, role, phone, whatsapp_opt_in, avatar_url')
     .eq('id', userId)
     .single()
 
@@ -146,7 +148,11 @@ export async function getMyProfile(userId: string): Promise<MyProfileResult> {
 export async function updateProfile(userId: string, input: UpdateProfileInput): Promise<void> {
   const { error } = await supabase
     .from('profiles')
-    .update({ full_name: input.full_name, phone: input.phone })
+    .update({
+      full_name: input.full_name,
+      phone: input.phone,
+      ...(input.whatsapp_opt_in !== undefined && { whatsapp_opt_in: input.whatsapp_opt_in }),
+    })
     .eq('id', userId)
 
   if (error) {

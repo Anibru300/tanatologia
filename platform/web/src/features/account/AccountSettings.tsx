@@ -1,13 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { Mail, KeyRound, Trash2 } from 'lucide-react'
+import { Mail, KeyRound, Trash2, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/useAuth'
+import { getMyProfile, updateProfile } from '@/features/profiles/profilesService'
+import { isValidMxPhone, normalizeMxPhone } from '@/lib/phone'
 
 interface AccountSettingsProps {
   profilePath?: string
@@ -29,6 +31,31 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  const [waPhone, setWaPhone] = useState('')
+  const [waOptIn, setWaOptIn] = useState(false)
+  const [waLoaded, setWaLoaded] = useState(false)
+  const [waLoading, setWaLoading] = useState(false)
+  const [waMessage, setWaMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  // Precargar teléfono y opt-in desde el perfil
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    getMyProfile(user.id)
+      .then(({ profile }) => {
+        if (cancelled) return
+        setWaPhone(profile.phone ?? '')
+        setWaOptIn(profile.whatsapp_opt_in)
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setWaLoaded(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
 
   const handleDeleteAccount = async () => {
     setDeleteLoading(true)
@@ -109,6 +136,49 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
       })
     } finally {
       setPasswordLoading(false)
+    }
+  }
+
+  const handleWhatsappSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setWaMessage(null)
+
+    if (!user?.id) return
+    const trimmed = waPhone.trim()
+    const normalized = normalizeMxPhone(trimmed)
+    if (waOptIn && !normalized) {
+      setWaMessage({
+        type: 'error',
+        text: 'Para activar los avisos por WhatsApp necesitas un teléfono válido (10 dígitos o +52 seguido de la lada).',
+      })
+      return
+    }
+    if (!waOptIn && trimmed !== '' && !normalized) {
+      setWaMessage({ type: 'error', text: 'El teléfono no tiene un formato válido. Déjalo vacío o usa +52 seguido de la lada.' })
+      return
+    }
+
+    setWaLoading(true)
+    try {
+      await updateProfile(user.id, {
+        full_name: user.fullName,
+        phone: normalized ?? (trimmed === '' ? null : trimmed),
+        whatsapp_opt_in: waOptIn && normalized !== null,
+      })
+      if (normalized) setWaPhone(normalized)
+      setWaMessage({
+        type: 'success',
+        text: waOptIn
+          ? 'Listo. Recibirás avisos de tus citas por WhatsApp.'
+          : 'Actualizado. Ya no recibirás avisos por WhatsApp.',
+      })
+    } catch (err) {
+      setWaMessage({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'No pudimos guardar tu configuración. Intenta de nuevo.',
+      })
+    } finally {
+      setWaLoading(false)
     }
   }
 
@@ -203,6 +273,52 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
             )}
             <Button type="submit" disabled={passwordLoading}>
               {passwordLoading ? 'Actualizando...' : 'Actualizar contraseña'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageCircle size={20} className="text-success-dark" />
+            Avisos por WhatsApp
+          </CardTitle>
+          <CardDescription>
+            Recibe en WhatsApp los avisos de tus citas: nueva cita, recordatorio 24 horas
+            antes, aviso 15 minutos antes y cancelaciones.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleWhatsappSave} className="space-y-4">
+            <div>
+              <Label>Teléfono (WhatsApp)</Label>
+              <Input
+                type="tel"
+                value={waPhone}
+                onChange={(e) => setWaPhone(e.target.value)}
+                placeholder="+52 55 1234 5678"
+              />
+            </div>
+            <label className="flex items-start gap-3 text-sm text-text-light cursor-pointer">
+              <input
+                type="checkbox"
+                checked={waOptIn}
+                onChange={(e) => setWaOptIn(e.target.checked)}
+                disabled={waPhone.trim() !== '' && !isValidMxPhone(waPhone)}
+                className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary disabled:opacity-50"
+              />
+              <span>
+                Quiero recibir avisos de mis citas por <strong>WhatsApp</strong> en este número.
+              </span>
+            </label>
+            {waMessage && (
+              <Alert variant={waMessage.type} className="p-3 rounded-sm">
+                {waMessage.text}
+              </Alert>
+            )}
+            <Button type="submit" disabled={waLoading || !waLoaded}>
+              {waLoading ? 'Guardando...' : 'Guardar avisos por WhatsApp'}
             </Button>
           </form>
         </CardContent>

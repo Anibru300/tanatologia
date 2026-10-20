@@ -510,6 +510,16 @@ enabled = true
 verify_jwt = true
 entrypoint = "./functions/daily-test-room/index.ts"
 
+[functions.whatsapp-notify]
+enabled = true
+# Función INTERNA: avisos de cita por WhatsApp (Meta Cloud API). La invocan
+# los triggers vía pg_net (dispatch_whatsapp) y appointment-reminders, siempre
+# con el header x-cron-secret. Solo envía a perfiles con whatsapp_opt_in=true.
+# Sin WHATSAPP_TOKEN / WHATSAPP_PHONE_NUMBER_ID responde 501 y el sistema sigue
+# solo con correo (degradación elegante durante la Beta).
+verify_jwt = false
+entrypoint = "./functions/whatsapp-notify/index.ts"
+
 [functions.inbound-email]
 enabled = true
 # Webhook de Resend Inbound (evento email.received). Hostinger reenvía

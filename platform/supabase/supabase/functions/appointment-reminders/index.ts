@@ -2,13 +2,21 @@ import { createClient } from "jsr:@supabase/supabase-js@^2";
 
 // appointment-reminders — envía recordatorios de cita (24h y 15min antes) por email
 // (Resend) e inserta notificación in-app ("alarma") para paciente y profesional.
+// Después intenta además el aviso por WhatsApp (Meta Cloud API) vía la Edge
+// Function interna whatsapp-notify — canal extra best-effort: el correo sigue
+// siendo el canal garantizado y los flags NO dependen del resultado WhatsApp.
 // Invocada por pg_cron cada 10 minutos con el header x-cron-secret.
 //
 // Secrets requeridos: CRON_SECRET, RESEND_API_KEY, RESEND_FROM_EMAIL (opcional).
+// WhatsApp (opcionales): WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID.
 
 const CRON_SECRET = Deno.env.get("CRON_SECRET");
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "SOMOS-CALMA <hola@somos-calma.com>";
+const WA_TOKEN = Deno.env.get("WHATSAPP_TOKEN");
+const WA_PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const WHATSAPP_CONFIGURED = Boolean(WA_TOKEN && WA_PHONE_NUMBER_ID && SUPABASE_URL);
 const APP_URL = "https://somos-calma.com/app";
 // México no observa horario de verano desde 2022: offset fijo -06:00.
 const MX_OFFSET_MS = -6 * 60 * 60 * 1000;
@@ -248,6 +256,26 @@ Deno.serve(async (req) => {
         { profile_id: professional.profile_id, type: "appointment_reminder", title, body, link: proLink },
       ]);
       if (!notifError) stats.notifications += 2;
+
+      // WhatsApp (best-effort): solo si Meta está configurado. whatsapp-notify
+      // filtra por opt-in y teléfono válido; un fallo nunca libera la bandera.
+      if (WHATSAPP_CONFIGURED) {
+        try {
+          const wa = await fetch(`${SUPABASE_URL}/functions/v1/whatsapp-notify`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-cron-secret": CRON_SECRET!,
+            },
+            body: JSON.stringify({ type: `appointment_reminder_${win.key}`, appointment_id: appt.id }),
+          });
+          if (!wa.ok) {
+            console.error(`whatsapp (${win.key}) falló para cita ${appt.id}: ${wa.status}`);
+          }
+        } catch (e) {
+          console.error(`whatsapp (${win.key}) error para cita ${appt.id}:`, e);
+        }
+      }
 
       // Si ningún email se envió (ej. Resend caído), liberamos la bandera para reintento.
       if (emailsSent === 0) {
