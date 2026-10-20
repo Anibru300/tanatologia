@@ -58,13 +58,13 @@
 
 ## 3g. Sesión 2026-10-19 — Fix contador 0 en Comunicados (PGRST201) + sistema de filtros por audiencia (v1.7.2-beta.1)
 
-**Commit:** `da8349a` en `main` (push hecho; deploy vía GitHub Actions ~5 min). Build ✓, lint ✓ (1 warning preexistente en `test-chat.mjs`), tests 31/31, tsc ✓.
+**Estado: VERIFICADO POR EL DUEÑO (2026-10-19, noche) — "Todo funciona bien".** Deploy confirmado en producción: bundle nuevo (`index-BNiBXrCb.js`, v1.7.2-beta.1) con el fix PGRST201 y los filtros nuevos; el dueño validó el contador y los filtros en vivo. Commit `da8349a` (código) + `10371b3` (docs) en `main`. Build ✓, lint ✓ (1 warning preexistente en `test-chat.mjs`), tests 31/31, tsc ✓.
 
 1. **Fix "Destinatarios activos: 0" al elegir profesionales verificados/pendientes.** Causa raíz: `professional_profiles` tiene **dos FKs hacia `profiles`** (`profile_id` y `verified_by`, migración 005), así que el join embebido de PostgREST era **ambiguo** → error `PGRST201` → la página lo tragaba en silencio (`catch → setRecipients(0)`). El envío también habría caído (lista vacía). Fix: FK explícita `professional_profiles!professional_profiles_profile_id_fkey!inner(...)` en `AdminBroadcasts.tsx`. Verificado contra la API en vivo: la consulta corregida regresa 200. Ojo para el futuro: cualquier join embebido a `professional_profiles` debe nombrar la FK.
 2. **Nuevo sistema de filtros en `/admin/comunicados`** (reemplaza a los subfiltros verificados/pendientes de v1.5.8, que quedaron rotos por lo anterior). Audiencia: **Ambos / Solo pacientes / Solo profesionales / Personas específicas**. Al elegir pacientes aparecen 4 filtros (con al menos una cita, con sesiones completadas, sin citas, completaron encuesta de registro); al elegir profesionales, 6 (verificados, pendientes, visibles en directorio, con horarios publicados, con precio capturado, sin documentos). Varios filtros marcados = **unión** (cumple cualquiera); ninguno = todos. La resolución es en el frontend (base de usuarios pequeña) y el envío usa `only_emails` de `send-broadcast` (sin cambio de backend). El error de conteo ahora se muestra con `Alert` en vez de caer a 0 en silencio. El ConfirmDialog lista los filtros activos.
 3. **Incidente de caché PWA resuelto (contexto):** el dueño reportó "desapareció la Bandeja" — era el bundle viejo en caché del service worker; se confirmó que producción servía 1.7.1 con la Bandeja y se resolvió actualizando.
 
-**Pendiente post-deploy:** verificar en producción (después del banner de actualización) que el contador marca números reales para cada filtro (verificados ~12, pendientes ~22 según hallazgos del 18-10) y luego sí lanzar las campañas de profesionistas que están listas desde el 18-10.
+**Pendiente post-deploy:** ~~verificar contador~~ ✓ hecho (dueño). Siguiente paso: lanzar las campañas de profesionistas listas desde el 18-10 (ver Pendientes P0).
 
 ## 3f. Sesión 2026-10-18 (noche) — Bandeja de entrada de correos en el admin (033, v1.7.0-beta.1)
 
