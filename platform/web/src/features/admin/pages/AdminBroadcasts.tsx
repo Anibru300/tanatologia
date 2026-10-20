@@ -15,8 +15,17 @@ import { supabase } from '@/lib/supabase'
 
 type Audience = 'all' | 'patients' | 'professionals'
 
-/** Audiencia extendida del formulario (los subfiltros se resuelven con only_emails). */
-type Target = Audience | 'professionals_verified' | 'professionals_pending' | 'specific'
+/** Audiencia base del formulario (los subfiltros se resuelven en el frontend con only_emails). */
+type Target = Audience | 'specific'
+
+type PatientFilter = 'with_appointment' | 'with_completed_session' | 'without_appointments' | 'intake_completed'
+type ProfessionalFilter =
+  | 'verified'
+  | 'pending_verification'
+  | 'visible'
+  | 'with_slots'
+  | 'with_price'
+  | 'without_documents'
 
 type Broadcast = {
   id: string
@@ -32,20 +41,32 @@ type Broadcast = {
 type UserOption = { email: string; full_name: string; role: 'patient' | 'professional' }
 
 const TARGET_OPTIONS: { value: Target; label: string }[] = [
-  { value: 'all', label: 'Todos (pacientes y profesionales)' },
+  { value: 'all', label: 'Ambos (pacientes y profesionales)' },
   { value: 'patients', label: 'Solo pacientes' },
-  { value: 'professionals', label: 'Solo profesionales (todos)' },
-  { value: 'professionals_verified', label: 'Solo profesionales verificados' },
-  { value: 'professionals_pending', label: 'Solo profesionales pendientes de verificar' },
+  { value: 'professionals', label: 'Solo profesionales' },
   { value: 'specific', label: 'Personas específicas…' },
 ]
 
+const PATIENT_FILTER_OPTIONS: { value: PatientFilter; label: string }[] = [
+  { value: 'with_appointment', label: 'Con al menos una cita' },
+  { value: 'with_completed_session', label: 'Con sesiones completadas' },
+  { value: 'without_appointments', label: 'Sin citas' },
+  { value: 'intake_completed', label: 'Completaron la encuesta de registro' },
+]
+
+const PROFESSIONAL_FILTER_OPTIONS: { value: ProfessionalFilter; label: string }[] = [
+  { value: 'verified', label: 'Verificados' },
+  { value: 'pending_verification', label: 'Pendientes de verificar' },
+  { value: 'visible', label: 'Visibles en el directorio' },
+  { value: 'with_slots', label: 'Con horarios publicados' },
+  { value: 'with_price', label: 'Con precio capturado' },
+  { value: 'without_documents', label: 'Sin documentos subidos' },
+]
+
 const TARGET_LABELS: Record<Target, string> = {
-  all: 'Todos',
+  all: 'Ambos (pacientes y profesionales)',
   patients: 'Pacientes',
-  professionals: 'Profesionales (todos)',
-  professionals_verified: 'Profesionales verificados',
-  professionals_pending: 'Profesionales pendientes de verificar',
+  professionals: 'Profesionales',
   specific: 'Personas específicas',
 }
 
@@ -88,41 +109,124 @@ function broadcastPreviewHtml(subject: string, bodyText: string): string {
   })
 }
 
-async function fetchProfessionalEmails(verificationStatuses: string[]): Promise<string[]> {
+type ActiveProfile = { id: string; email: string; role: 'patient' | 'professional' }
+
+async function fetchActiveProfiles(): Promise<ActiveProfile[]> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('email, professional_profiles!inner(verification_status)')
-    .eq('role', 'professional')
-    .eq('is_active', true)
-    .in('professional_profiles.verification_status', verificationStatuses)
-  if (error) throw new Error(error.message)
-  return ((data ?? []) as { email: string }[])
-    .map((r) => r.email)
-    .filter((e) => typeof e === 'string' && e.length > 0)
-}
-
-async function countRecipients(target: Target, specificEmails: string[]): Promise<number> {
-  if (target === 'specific') return specificEmails.length
-  if (target === 'professionals_verified') {
-    return (await fetchProfessionalEmails(['verified'])).length
-  }
-  if (target === 'professionals_pending') {
-    return (await fetchProfessionalEmails(PENDING_STATUSES)).length
-  }
-  let query = supabase
-    .from('profiles')
-    .select('id', { count: 'exact', head: true })
+    .select('id, email, role')
     .in('role', ['patient', 'professional'])
     .eq('is_active', true)
-  if (target === 'patients') query = query.eq('role', 'patient')
-  if (target === 'professionals') query = query.eq('role', 'professional')
-  const { count } = await query
-  return count ?? 0
+  if (error) throw new Error(error.message)
+  return (data ?? []) as ActiveProfile[]
+}
+
+/**
+ * Resuelve la lista final de correos del objetivo. Los subfiltros se evalúan en el
+ * frontend (la base de usuarios es pequeña) y se envían a la Edge Function vía only_emails.
+ * Varios filtros seleccionados = UNIÓN (se envía a quien cumpla cualquiera de ellos).
+ */
+async function resolveTargetEmails(
+  target: Target,
+  patientFilters: PatientFilter[],
+  professionalFilters: ProfessionalFilter[],
+  specificEmails: string[]
+): Promise<string[]> {
+  if (target === 'specific') return specificEmails
+
+  const profiles = await fetchActiveProfiles()
+  const base =
+    target === 'all'
+      ? profiles
+      : profiles.filter((p) => p.role === (target === 'patients' ? 'patient' : 'professional'))
+
+  if (target === 'all') return base.map((p) => p.email)
+
+  if (target === 'patients') {
+    if (patientFilters.length === 0) return base.map((p) => p.email)
+    const [{ data: appts, error: apptsErr }, { data: pats, error: patsErr }] = await Promise.all([
+      supabase.from('appointments').select('patient_profile_id, status'),
+      supabase.from('patient_profiles').select('id, profile_id, intake_completed_at'),
+    ])
+    if (apptsErr) throw new Error(apptsErr.message)
+    if (patsErr) throw new Error(patsErr.message)
+
+    const patientRows = (pats ?? []) as { id: string; profile_id: string; intake_completed_at: string | null }[]
+    const ppIdToProfileId = new Map(patientRows.map((r) => [r.id, r.profile_id]))
+    const appointmentRows = (appts ?? []) as { patient_profile_id: string; status: string }[]
+
+    const withAnyAppt = new Set(
+      appointmentRows.map((a) => ppIdToProfileId.get(a.patient_profile_id)).filter((v): v is string => Boolean(v))
+    )
+    const withCompleted = new Set(
+      appointmentRows
+        .filter((a) => a.status === 'completed')
+        .map((a) => ppIdToProfileId.get(a.patient_profile_id))
+        .filter((v): v is string => Boolean(v))
+    )
+    const withIntake = new Set(patientRows.filter((r) => r.intake_completed_at).map((r) => r.profile_id))
+    const withoutAppt = new Set(patientRows.map((r) => r.profile_id).filter((id) => !withAnyAppt.has(id)))
+
+    const sets: Record<PatientFilter, Set<string>> = {
+      with_appointment: withAnyAppt,
+      with_completed_session: withCompleted,
+      without_appointments: withoutAppt,
+      intake_completed: withIntake,
+    }
+    return base.filter((p) => patientFilters.some((f) => sets[f].has(p.id))).map((p) => p.email)
+  }
+
+  // Profesionales
+  if (professionalFilters.length === 0) return base.map((p) => p.email)
+  const [{ data: profs, error: profsErr }, { data: slots, error: slotsErr }, { data: docs, error: docsErr }] =
+    await Promise.all([
+      supabase.from('professional_profiles').select('profile_id, verification_status, is_visible, session_price'),
+      supabase.from('availability_slots').select('professional_profile_id').gte('slot_end', new Date().toISOString()),
+      supabase.from('professional_documents').select('professional_profile_id'),
+    ])
+  if (profsErr) throw new Error(profsErr.message)
+  if (slotsErr) throw new Error(slotsErr.message)
+  if (docsErr) throw new Error(docsErr.message)
+
+  const profRows = (profs ?? []) as {
+    profile_id: string
+    verification_status: string
+    is_visible: boolean
+    session_price: number | null
+  }[]
+  const profIdsWithSlots = new Set(
+    ((slots ?? []) as { professional_profile_id: string }[]).map((s) => s.professional_profile_id)
+  )
+  const profIdsWithDocs = new Set(
+    ((docs ?? []) as { professional_profile_id: string }[]).map((d) => d.professional_profile_id)
+  )
+
+  const matches = (profileId: string, filter: ProfessionalFilter): boolean => {
+    const row = profRows.find((r) => r.profile_id === profileId)
+    if (!row) return false
+    switch (filter) {
+      case 'verified':
+        return row.verification_status === 'verified'
+      case 'pending_verification':
+        return PENDING_STATUSES.includes(row.verification_status)
+      case 'visible':
+        return row.is_visible
+      case 'with_slots':
+        return profIdsWithSlots.has(profileId)
+      case 'with_price':
+        return row.session_price !== null
+      case 'without_documents':
+        return !profIdsWithDocs.has(profileId)
+    }
+  }
+  return base.filter((p) => professionalFilters.some((f) => matches(p.id, f))).map((p) => p.email)
 }
 
 export function AdminBroadcasts() {
   const { user } = useAuth()
   const [target, setTarget] = useState<Target>('all')
+  const [patientFilters, setPatientFilters] = useState<PatientFilter[]>([])
+  const [professionalFilters, setProfessionalFilters] = useState<ProfessionalFilter[]>([])
   const [subject, setSubject] = useState('')
   const [bodyText, setBodyText] = useState('')
   const [recipients, setRecipients] = useState(0)
@@ -139,12 +243,7 @@ export function AdminBroadcasts() {
   const [userSearch, setUserSearch] = useState('')
 
   // Audiencia base que se guarda en el historial (la tabla solo acepta estas)
-  const audience: Audience =
-    target === 'specific'
-      ? 'all'
-      : target === 'professionals_verified' || target === 'professionals_pending'
-        ? 'professionals'
-        : target
+  const audience: Audience = target === 'specific' ? 'all' : target
 
   const canSend =
     subject.trim().length > 0 &&
@@ -163,7 +262,6 @@ export function AdminBroadcasts() {
         .limit(50)
       if (queryError) throw queryError
       setItems((data ?? []) as Broadcast[])
-      setRecipients(await countRecipients(target, specificEmails))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo cargar la información.')
     } finally {
@@ -173,8 +271,25 @@ export function AdminBroadcasts() {
 
   useEffect(() => {
     load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Conteo de destinatarios según audiencia + filtros
+  useEffect(() => {
+    let cancelled = false
+    resolveTargetEmails(target, patientFilters, professionalFilters, specificEmails)
+      .then((emails) => {
+        if (!cancelled) setRecipients(emails.length)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setRecipients(0)
+          setError(err instanceof Error ? err.message : 'No se pudo calcular los destinatarios.')
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [target, patientFilters, professionalFilters, specificEmails])
 
   // Catálogo de usuarios para el selector de destinatarios específicos
   useEffect(() => {
@@ -197,10 +312,6 @@ export function AdminBroadcasts() {
     }
   }, [])
 
-  useEffect(() => {
-    countRecipients(target, specificEmails).then(setRecipients).catch(() => setRecipients(0))
-  }, [target, specificEmails])
-
   const filteredUsers = useMemo(() => {
     const q = userSearch.trim().toLowerCase()
     if (!q) return userOptions
@@ -215,10 +326,34 @@ export function AdminBroadcasts() {
     )
   }
 
+  function togglePatientFilter(filter: PatientFilter) {
+    setPatientFilters((prev) =>
+      prev.includes(filter) ? prev.filter((f) => f !== filter) : [...prev, filter]
+    )
+  }
+
+  function toggleProfessionalFilter(filter: ProfessionalFilter) {
+    setProfessionalFilters((prev) =>
+      prev.includes(filter) ? prev.filter((f) => f !== filter) : [...prev, filter]
+    )
+  }
+
   const previewHtml = useMemo(
     () => broadcastPreviewHtml(subject.trim(), bodyText.trim()),
     [subject, bodyText]
   )
+
+  const activeFilterCount =
+    target === 'patients' ? patientFilters.length : target === 'professionals' ? professionalFilters.length : 0
+
+  const filterSummary =
+    target === 'patients'
+      ? patientFilters.map((f) => PATIENT_FILTER_OPTIONS.find((o) => o.value === f)?.label).join(', ')
+      : target === 'professionals'
+        ? professionalFilters
+            .map((f) => PROFESSIONAL_FILTER_OPTIONS.find((o) => o.value === f)?.label)
+            .join(', ')
+        : ''
 
   async function handleDryRun() {
     if (!user?.email || !canSend) return
@@ -257,14 +392,14 @@ export function AdminBroadcasts() {
         .single()
       if (insertError) throw insertError
 
-      // Subfiltros y destinatarios específicos: la función los aplica sobre la audiencia
+      // Cuando hay subfiltros o destinatarios específicos, la función los aplica vía only_emails
       let onlyEmails: string[] | undefined
-      if (target === 'professionals_verified') {
-        onlyEmails = await fetchProfessionalEmails(['verified'])
-      } else if (target === 'professionals_pending') {
-        onlyEmails = await fetchProfessionalEmails(PENDING_STATUSES)
-      } else if (target === 'specific') {
+      if (target === 'specific') {
         onlyEmails = specificEmails
+      } else if (target === 'patients' && patientFilters.length > 0) {
+        onlyEmails = await resolveTargetEmails(target, patientFilters, [], [])
+      } else if (target === 'professionals' && professionalFilters.length > 0) {
+        onlyEmails = await resolveTargetEmails(target, [], professionalFilters, [])
       }
 
       const { data, error: invokeError } = await supabase.functions.invoke('send-broadcast', {
@@ -314,6 +449,49 @@ export function AdminBroadcasts() {
               onChange={(e) => setTarget(e.target.value as Target)}
               options={TARGET_OPTIONS}
             />
+
+            {target === 'patients' && (
+              <fieldset className="space-y-2 rounded-sm border border-border p-3">
+                <legend className="px-1 text-sm font-medium text-text">Filtros de pacientes</legend>
+                {PATIENT_FILTER_OPTIONS.map((option) => (
+                  <label key={option.value} className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="accent-primary-dark shrink-0"
+                      checked={patientFilters.includes(option.value)}
+                      onChange={() => togglePatientFilter(option.value)}
+                    />
+                    <span className="text-sm text-text">{option.label}</span>
+                  </label>
+                ))}
+                <p className="text-xs text-text-light pt-1">
+                  Sin marcar ninguno = todos los pacientes. Con varios marcados se envía a quien
+                  cumpla <strong>cualquiera</strong> de ellos.
+                </p>
+              </fieldset>
+            )}
+
+            {target === 'professionals' && (
+              <fieldset className="space-y-2 rounded-sm border border-border p-3">
+                <legend className="px-1 text-sm font-medium text-text">Filtros de profesionales</legend>
+                {PROFESSIONAL_FILTER_OPTIONS.map((option) => (
+                  <label key={option.value} className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="accent-primary-dark shrink-0"
+                      checked={professionalFilters.includes(option.value)}
+                      onChange={() => toggleProfessionalFilter(option.value)}
+                    />
+                    <span className="text-sm text-text">{option.label}</span>
+                  </label>
+                ))}
+                <p className="text-xs text-text-light pt-1">
+                  Sin marcar ninguno = todos los profesionales. Con varios marcados se envía a quien
+                  cumpla <strong>cualquiera</strong> de ellos.
+                </p>
+              </fieldset>
+            )}
+
             {target === 'specific' && (
               <div className="space-y-2">
                 <Input
@@ -351,6 +529,7 @@ export function AdminBroadcasts() {
                 </p>
               </div>
             )}
+
             <p className="text-sm text-text-light -mt-2">
               Destinatarios activos: <strong>{recipients}</strong>
             </p>
@@ -441,7 +620,14 @@ export function AdminBroadcasts() {
           <>
             Se enviará <strong>“{subject.trim()}”</strong> a{' '}
             <strong>{recipients} destinatarios</strong> (
-            {TARGET_LABELS[target].toLowerCase()}). Esta acción no se puede deshacer.
+            {TARGET_LABELS[target].toLowerCase()}
+            {activeFilterCount > 0 && (
+              <>
+                {' '}
+                · filtros: <strong>{filterSummary}</strong>
+              </>
+            )}
+            ). Esta acción no se puede deshacer.
           </>
         }
         confirmLabel="Enviar ahora"
