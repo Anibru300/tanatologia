@@ -20,9 +20,17 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
   const panelRef = useRef<HTMLDivElement>(null)
 
   const idRef = useRef(Symbol('modal'))
+  // El auto-foco solo debe ocurrir al ABRIR el modal. Antes se hacía en cada
+  // re-ejecución del efecto (cualquier re-render con onClose inline, p.ej.
+  // una arrow en la página, lo disparaba) y robaba el foco de los inputs en
+  // cada tecla (bug: escribir letra por letra en modales con textarea).
+  const wasOpenRef = useRef(false)
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      wasOpenRef.current = false
+      return
+    }
 
     const id = idRef.current
     openModals.push(id)
@@ -32,7 +40,10 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
     }
     document.addEventListener('keydown', onKeyDown)
     document.body.style.overflow = 'hidden'
-    panelRef.current?.focus()
+    if (!wasOpenRef.current) {
+      panelRef.current?.focus()
+      wasOpenRef.current = true
+    }
 
     return () => {
       const idx = openModals.indexOf(id)
