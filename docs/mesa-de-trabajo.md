@@ -47,6 +47,8 @@
 
 **Verificación final del día (todo verde):** sitio+app+sw 200, workflows en verde (incl. primer run con Actions pineadas a SHA), CSP sirviendo en `/` y `/app/`, 0 usuarios de prueba residuales, build+tests OK.
 
+**Cierre de día (noche):** el dueño rechazó hoy a 2 profesionistas reales por cédula incorrecta (Silvia Edith Morales Celis y Beatriz Hipolita Leal Romero, motivo registrado) y confirmó el flujo de segunda revisión: rechazado → notificación in-app + correo con motivo → el profesional ve "Requiere cambios", edita cédula, sube documentos nuevos y reenvía con "Enviar a revisión" (vuelve a la bandeja del admin). **Este reenvío estuvo roto del 03-sep al 20-oct por el bug de la 014 — corregido en 035 y verificado.** Fix adicional del día: foco robado en modales con textarea (v1.8.2). Commits del día: `4ea599b` (todo pusheado, workflows en verde).
+
 **Donde nos quedamos / pendientes para mañana:**
 - Opcional: correr los scanners recomendados (`@perufitlife/supabase-security`, `rls-auditor`) para tener reporte limpio en mano ante usuarios.
 - Pospuestos de seguridad (en el reporte): M3 rate limit persistente/Turnstile en contact-form, M6 WITH CHECK notifications, M7 migración 021 no reproducible, M10 sesión en localStorage, M11 tutorial_views auto-subconsulta, M12 triggers bloquean service role.
