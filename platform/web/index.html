@@ -2,6 +2,10 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <!-- CSP via <meta> (GitHub Pages no permite headers custom). Auditoría 2026-10-20 (M8).
+         frame-ancestors/Report-Only no aplican por meta: el anti-clickjacking real requeriría
+         migrar el hosting o poner Cloudflare delante. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://8x8.vc https://*.8x8.vc https://meet.jit.si; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://qjwebikgrqtotqfipeqt.supabase.co wss://qjwebikgrqtotqfipeqt.supabase.co https://www.google-analytics.com https://*.googletagmanager.com https://8x8.vc wss://8x8.vc https://*.8x8.vc wss://*.8x8.vc https://meet.jit.si wss://meet.jit.si; frame-src https://8x8.vc https://*.8x8.vc https://meet.jit.si; media-src 'self' blob: https://qjwebikgrqtotqfipeqt.supabase.co; worker-src 'self'; base-uri 'self'; form-action 'self'" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />

@@ -128,11 +128,20 @@ async function sendTemplate(recipient: Recipient, templateName: string): Promise
   }
 }
 
+// Comparación en tiempo constante (auditoría 2026-10-20, M2): esta función es
+// la ÚNICA barrera de funciones internas con verify_jwt=false.
+function cronSecretValid(header: string | null): boolean {
+  if (!CRON_SECRET || !header || header.length !== CRON_SECRET.length) return false;
+  let diff = 0;
+  for (let i = 0; i < header.length; i++) diff |= header.charCodeAt(i) ^ CRON_SECRET.charCodeAt(i);
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 
-  if (!CRON_SECRET || req.headers.get("x-cron-secret") !== CRON_SECRET) {
+  if (!cronSecretValid(req.headers.get("x-cron-secret"))) {
     return json({ error: "No autorizado" }, 401);
   }
   // Sin configuración de Meta: 501. Los llamadores son best-effort y lo ignoran.

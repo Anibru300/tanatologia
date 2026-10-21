@@ -18,6 +18,14 @@ import { createClient } from "jsr:@supabase/supabase-js@^2";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_INBOUND_SECRET = Deno.env.get("RESEND_INBOUND_SECRET");
 
+// Allowlist de destinatarios inbound válidos (auditoría 2026-10-20, M4): si la
+// cuenta Resend recibiera otras rutas inbound en el futuro, no deben alimentar
+// la bandeja admin. Separados por coma; valor por defecto = la ruta actual.
+const INBOUND_RECIPIENTS = (Deno.env.get("INBOUND_RECIPIENTS") || "hola@inbound.somos-calma.com")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -166,6 +174,10 @@ Deno.serve(async (req) => {
   // headers.from trae el nombre visible (p. ej. "Carlos Urbina <...>"); email.from suele venir sin nombre.
   const from = parseAddress(headerValue(headers, "from") ?? email.from);
   const toEmail = Array.isArray(email.to) && email.to.length > 0 ? parseAddress(email.to[0]).email : "";
+  // M4: solo procesamos correos dirigidos a la bandeja esperada.
+  if (!toEmail || !INBOUND_RECIPIENTS.includes(toEmail.toLowerCase())) {
+    return json({ ok: true, ignored: `recipient:${toEmail || "unknown"}` });
+  }
   const messageId = normalizeMessageId(email.message_id ?? headerValue(headers, "message-id"));
   const inReplyTo = normalizeMessageId(headerValue(headers, "in-reply-to"));
   const references = parseReferences(headerValue(headers, "references"));
