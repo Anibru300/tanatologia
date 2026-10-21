@@ -200,7 +200,7 @@ Para blindar la plataforma de forma continua (que es lo que le da confianza a pa
 | M8 sin CSP | Meta-CSP en `platform/web/index.html` (app) y en 18 páginas del sitio legacy (index, 404, pages/*). Ojo: `frame-ancestors` no aplica vía meta — el anti-clickjacking real requiere headers del hosting. | ✅ (deploy al push) |
 
 **Pendiente post-remediación:**
-- **C1**: verificar `supabase secrets list` que el CRON_SECRET actual difiere del expuesto en 020, y considerar purgar el historial de git si el repo es público. *(No verificable desde el repo — requiere acceso al dashboard/CLI con permisos de secrets.)*
+- **C1 — RESUELTO (2026-10-20):** verificado con `supabase secrets get` que el CRON_SECRET actual **difiere** del expuesto en 020 (la rotación de 021 sí se aplicó) y el historial de git fue purgado con `git filter-repo --replace-text` en las 13 ramas (backup local en `somos-calma-backup-pre-purge-20261020.bundle`); verificado en raw.githubusercontent.com que la 020 ya muestra `***REMOVED-ROTATED-CRON-SECRET***`. Ojo: los PRs abiertos de Dependabot quedaron con historial reescrito (se cerrarán solos o se recrean).
 - **M3** rate limit persistente / Turnstile en `contact-form` (pospuesto: cambio de arquitectura).
 - **M6** WITH CHECK en notifications; **M7** migración 021 no reproducible; **M9** pin de SHA en Actions; **M10** sesión en localStorage; **M11** tutorial_views auto-subconsulta; **M12** triggers bloquean service role. Documentados, no bloqueantes.
 - Redesplegar `app/` (el meta-CSP de la app entra en el build; el workflow lo publica al push a main).
