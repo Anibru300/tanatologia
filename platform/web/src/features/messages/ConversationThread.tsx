@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, lazy, Suspense } from 'react'
-import { ArrowLeft, Download, FileText, Image as ImageIcon, Paperclip, Send, Video, X } from 'lucide-react'
+import { ArrowLeft, CalendarClock, Download, FileText, Image as ImageIcon, Paperclip, Send, Video, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -7,6 +8,7 @@ import { useAuth } from '@/features/auth/useAuth'
 import { updateAppointmentStatus } from '@/features/appointments/appointmentsService'
 import {
   findChatVideoSession,
+  findRecentNoShowSession,
   getAttachmentUrl,
   listMessages,
   markConversationRead,
@@ -113,6 +115,7 @@ function AttachmentView({ attachment, mine }: { attachment: ChatAttachment; mine
 
 export function ConversationThread({ conversation, myUserId, myRole, mySubprofileId, onBack, onMessageSent }: ConversationThreadProps) {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -123,6 +126,8 @@ export function ConversationThread({ conversation, myUserId, myRole, mySubprofil
 
   // Sesión con videollamada del par (para el acceso directo a la sala)
   const [videoSession, setVideoSession] = useState<ChatVideoSession | null>(null)
+  // Última sesión marcada no_show (aviso + salida a reagenda, si no hay cita activa)
+  const [recentNoShow, setRecentNoShow] = useState<ChatVideoSession | null>(null)
   const [now, setNow] = useState(() => new Date())
   const [inCall, setInCall] = useState(false)
 
@@ -136,9 +141,13 @@ export function ConversationThread({ conversation, myUserId, myRole, mySubprofil
   useEffect(() => {
     let cancelled = false
     const check = async () => {
-      const session = await findChatVideoSession(myRole, mySubprofileId, otherSubprofileId)
+      const [session, noShow] = await Promise.all([
+        findChatVideoSession(myRole, mySubprofileId, otherSubprofileId),
+        findRecentNoShowSession(myRole, mySubprofileId, otherSubprofileId),
+      ])
       if (!cancelled) {
         setVideoSession(session)
+        setRecentNoShow(noShow)
         setNow(new Date())
       }
     }
@@ -304,6 +313,42 @@ export function ConversationThread({ conversation, myUserId, myRole, mySubprofil
 
       {/* Acceso a la videollamada: el chat es donde ambos se encuentran antes
           de la sesión; aquí tiene que haber una puerta a la sala. */}
+      {/* Aviso cuando la sesión quedó marcada como no asistida: explicación y
+          salida clara (reagendar), en vez de dejar el chat sin acceso. */}
+      {!showSessionBanner && recentNoShow && (
+        <div className="px-4 py-2.5 border-b bg-warning/10 border-warning/30">
+          <Alert variant="warning" className="mb-2">
+            La sesión del{' '}
+            <strong>
+              {new Date(recentNoShow.scheduled_at).toLocaleString('es-MX', {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              })}
+            </strong>{' '}
+            fue marcada como <strong>“no asistió”</strong>. Si hubo un problema de horario o de
+            acceso, acuerden un nuevo horario aquí mismo.
+          </Alert>
+          {myRole === 'patient' ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1"
+              onClick={() =>
+                navigate('/paciente/agendar', { state: { therapistId: otherSubprofileId } })
+              }
+            >
+              <CalendarClock size={16} />
+              Reagendar cita
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate('/profesional/agenda')}>
+              <CalendarClock size={16} />
+              Ver mi agenda
+            </Button>
+          )}
+        </div>
+      )}
+
       {showSessionBanner && videoSession && (
         <div
           className={`flex items-center gap-3 px-4 py-2.5 border-b ${

@@ -232,7 +232,7 @@ export function ProfessionalAppointments() {
                             <MessageSquare size={14} />
                             Mensaje
                           </Button>
-                          {a.video_link && (
+                          {a.video_link && !['completed', 'cancelled', 'no_show'].includes(a.status) && (
                             <Link to={`/profesional/sala/${a.id}`}>
                               <Button size="sm" variant="primary" className="gap-1">
                                 <Video size={16} />

@@ -18,8 +18,31 @@ const WA_PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const WHATSAPP_CONFIGURED = Boolean(WA_TOKEN && WA_PHONE_NUMBER_ID && SUPABASE_URL);
 const APP_URL = "https://somos-calma.com/app";
-// México no observa horario de verano desde 2022: offset fijo -06:00.
-const MX_OFFSET_MS = -6 * 60 * 60 * 1000;
+// Las horas de los correos se formatean en la ZONA HORARIA DEL DESTINATARIO
+// (profiles.timezone, capturada del navegador en registro/login). Fallback:
+// centro de México. Incidente 2026-10-22: correo con hora fija de México
+// ("09:00 h") confundió a una profesional de Toronto que entró 2 h antes a
+// la sala; la cita quedó marcada no_show y la sesión se perdió.
+const FALLBACK_TZ = "America/Mexico_City";
+
+function safeTz(tz: string | null | undefined): string {
+  if (!tz) return FALLBACK_TZ;
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: tz });
+    return tz;
+  } catch {
+    return FALLBACK_TZ;
+  }
+}
+
+// "America/Toronto" -> "Toronto"; alias en español para la zona fallback.
+function tzCity(tz: string): string {
+  const aliases: Record<string, string> = {
+    "America/Mexico_City": "Ciudad de México",
+  };
+  if (aliases[tz]) return aliases[tz];
+  return tz.split("/").pop()?.replace(/_/g, " ") ?? tz;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,26 +53,40 @@ function json(body: unknown, status = 200) {
   return Response.json(body, { status, headers: corsHeaders });
 }
 
-function mxDateParts(utcIso: string) {
-  const d = new Date(new Date(utcIso).getTime() + MX_OFFSET_MS);
+function tzDateParts(utcIso: string, timeZone: string) {
+  const d = new Date(utcIso);
   const pad = (n: number) => String(n).padStart(2, "0");
+  const dateFmt = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
+  const timeFmt = new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const weekdayFmt = new Intl.DateTimeFormat("es-MX", { weekday: "long", timeZone });
+  const pick = (fmt: Intl.DateTimeFormat) =>
+    Object.fromEntries(fmt.formatToParts(d).filter((p) => p.type !== "literal").map((p) => [p.type, p.value]));
+  const dp = pick(dateFmt);
+  const tp = pick(timeFmt);
+  const y = String(dp.year);
+  const mo = pad(Number(dp.month));
+  const da = pad(Number(dp.day));
+  const hh = pad(Number(tp.hour));
+  const mi = pad(Number(tp.minute));
   return {
-    ymd: `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}`,
-    hm: `${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}`,
-    pretty: `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} h`,
-    weekday: new Intl.DateTimeFormat("es-MX", { weekday: "long", timeZone: "UTC" }).format(d),
+    ymd: `${y}${mo}${da}`,
+    hm: `${hh}${mi}`,
+    pretty: `${da}/${mo}/${y} ${hh}:${mi} h`,
+    weekday: weekdayFmt.format(d),
   };
 }
 
-function googleCalendarUrl(opts: { title: string; startUtc: string; durationMin: number; details: string }) {
-  const s = mxDateParts(opts.startUtc);
+function googleCalendarUrl(opts: { title: string; startUtc: string; durationMin: number; details: string; timeZone: string }) {
+  const s = tzDateParts(opts.startUtc, opts.timeZone);
   const end = new Date(new Date(opts.startUtc).getTime() + opts.durationMin * 60 * 1000);
-  const e = mxDateParts(end.toISOString());
+  const e = tzDateParts(end.toISOString(), opts.timeZone);
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: opts.title,
     dates: `${s.ymd}T${s.hm}00/${e.ymd}T${e.hm}00`,
     details: opts.details,
+    // ctz hace que Google Calendar interprete las horas en la zona del destinatario
+    ctz: opts.timeZone,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
@@ -59,6 +96,7 @@ function reminderEmail(opts: {
   otherName: string;
   whenPretty: string;
   weekday: string;
+  tzCity: string;
   urgency: "24h" | "15m";
   link: string;
   calendarUrl: string;
@@ -87,7 +125,7 @@ function reminderEmail(opts: {
 <tr><td style="background:#ffffff;padding:28px 24px;border:1px solid #e3e8ee;border-top:none">
 <p style="margin:0 0 12px;font-size:15px;color:#26303d">Hola, ${opts.recipientName}:</p>
 <p style="margin:0 0 16px;font-size:15px;color:#26303d">${lead}</p>
-<p style="margin:0 0 4px;font-size:14px;color:#26303d"><strong>${opts.weekday} ${opts.whenPretty}</strong> (hora del Centro de México)</p>
+<p style="margin:0 0 4px;font-size:14px;color:#26303d"><strong>${opts.weekday} ${opts.whenPretty}</strong> (hora de ${opts.tzCity})</p>
 <p style="margin:0 0 16px;font-size:14px;color:#5b6779">${opts.role === "patient" ? "Con" : "Con tu paciente"}: <strong>${opts.otherName}</strong></p>
 ${tip}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px"><tr>
@@ -201,46 +239,54 @@ Deno.serve(async (req) => {
       if (!patient || !professional) continue;
 
       const [{ data: patientUser }, { data: proUser }] = await Promise.all([
-        supabase.from("profiles").select("email, full_name").eq("id", patient.profile_id).single(),
-        supabase.from("profiles").select("email, full_name").eq("id", professional.profile_id).single(),
+        supabase.from("profiles").select("email, full_name, timezone").eq("id", patient.profile_id).single(),
+        supabase.from("profiles").select("email, full_name, timezone").eq("id", professional.profile_id).single(),
       ]);
 
       const patientName = patient.full_name || patientUser?.full_name || "paciente";
       const proName = professional.full_name || proUser?.full_name || "tu profesional";
-      const when = mxDateParts(appt.scheduled_at);
-      const calendarUrl = googleCalendarUrl({
-        title: `Sesión SOMOS-CALMA — ${patientName} / ${proName}`,
-        startUtc: appt.scheduled_at,
-        durationMin: appt.duration_minutes ?? 50,
-        details: `Sesión de acompañamiento por videollamada. Entra desde ${APP_URL}`,
-      });
 
-      const roomPath = `/#/sala/${appt.id}`;
+      // Rutas de sala POR ROL. Ojo: la ruta genérica /#/sala/<id> no existe en el
+      // router (los links de un correo previo caían en el login).
+      const roomPath = (role: "patient" | "professional") =>
+        `/#/${role === "patient" ? "paciente" : "profesional"}/sala/${appt.id}`;
       const emails = [
         {
           to: patientUser?.email,
           role: "patient" as const,
           name: patientName.split(" ")[0],
           other: proName,
-          link: `${APP_URL}${win.key === "15m" ? roomPath : "/#/paciente/citas"}`,
+          tz: safeTz(patientUser?.timezone),
+          link: `${APP_URL}${win.key === "15m" ? roomPath("patient") : "/#/paciente/citas"}`,
         },
         {
           to: proUser?.email,
           role: "professional" as const,
           name: proName.split(" ")[0],
           other: patientName,
-          link: `${APP_URL}${win.key === "15m" ? roomPath : "/#/profesional/citas"}`,
+          tz: safeTz(proUser?.timezone),
+          link: `${APP_URL}${win.key === "15m" ? roomPath("professional") : "/#/profesional/citas"}`,
         },
       ];
 
       let emailsSent = 0;
       for (const e of emails) {
         if (!e.to) continue;
+        // La hora del correo y del Google Calendar va en la zona del destinatario.
+        const when = tzDateParts(appt.scheduled_at, e.tz);
+        const calendarUrl = googleCalendarUrl({
+          title: `Sesión SOMOS-CALMA — ${patientName} / ${proName}`,
+          startUtc: appt.scheduled_at,
+          durationMin: appt.duration_minutes ?? 50,
+          details: `Sesión de acompañamiento por videollamada. Entra desde ${APP_URL}`,
+          timeZone: e.tz,
+        });
         const { subject, html } = reminderEmail({
           recipientName: e.name,
           otherName: e.other,
           whenPretty: when.pretty,
           weekday: when.weekday,
+          tzCity: tzCity(e.tz),
           urgency: win.key,
           link: e.link,
           calendarUrl,
@@ -256,13 +302,23 @@ Deno.serve(async (req) => {
       }
 
       // Notificación in-app ("alarma") para ambos, aunque algún email falle.
+      // El cuerpo lleva la hora en la zona de CADA destinatario.
       const title = win.key === "15m" ? "Tu sesión comienza en 15 minutos" : "Recordatorio: tu sesión es mañana";
-      const body = `${when.weekday} ${when.pretty} — ${win.key === "15m" ? "entra a la sala ahora." : "te esperamos."}`;
       const patientLink = win.key === "15m" ? `/paciente/sala/${appt.id}` : "/paciente/citas";
       const proLink = win.key === "15m" ? `/profesional/sala/${appt.id}` : "/profesional/citas";
+      const notifFor = (profileId: string, link: string, tz: string) => {
+        const w = tzDateParts(appt.scheduled_at, tz);
+        return {
+          profile_id: profileId,
+          type: "appointment_reminder",
+          title,
+          body: `${w.weekday} ${w.pretty} (hora de ${tzCity(tz)}) — ${win.key === "15m" ? "entra a la sala ahora." : "te esperamos."}`,
+          link,
+        };
+      };
       const { error: notifError } = await supabase.from("notifications").insert([
-        { profile_id: patient.profile_id, type: "appointment_reminder", title, body, link: patientLink },
-        { profile_id: professional.profile_id, type: "appointment_reminder", title, body, link: proLink },
+        notifFor(patient.profile_id, patientLink, safeTz(patientUser?.timezone)),
+        notifFor(professional.profile_id, proLink, safeTz(proUser?.timezone)),
       ]);
       if (!notifError) stats.notifications += 2;
 

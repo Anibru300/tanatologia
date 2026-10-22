@@ -191,6 +191,48 @@ export async function findChatVideoSession(
   return filterUpcomingSessions(sessions, new Date(), 1)[0] ?? null
 }
 
+/**
+ * Última cita del par marcada 'no_show' en las últimas 36 h. El chat es donde
+ * ambos se encuentran cuando algo sale mal: si la sesión se cayó (p. ej. un
+ * problema de horario), aquí se les dice explícitamente y se les da salida
+ * (reagendar), en vez de dejar el chat sin ninguna puerta a la videollamada.
+ */
+export async function findRecentNoShowSession(
+  myRole: 'patient' | 'professional',
+  mySubprofileId: string,
+  otherSubprofileId: string
+): Promise<ChatVideoSession | null> {
+  if (!mySubprofileId || !otherSubprofileId) return null
+
+  const myColumn = myRole === 'patient' ? 'patient_profile_id' : 'professional_profile_id'
+  const otherColumn = myRole === 'patient' ? 'professional_profile_id' : 'patient_profile_id'
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('id, video_link, scheduled_at, duration_minutes, status')
+    .eq(myColumn, mySubprofileId)
+    .eq(otherColumn, otherSubprofileId)
+    .eq('status', 'no_show')
+    .gte('scheduled_at', new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString())
+    .order('scheduled_at', { ascending: false })
+    .limit(1)
+
+  if (error) {
+    console.error('findRecentNoShowSession:', error.message)
+    return null
+  }
+
+  const row = (data || [])[0] as Record<string, unknown> | undefined
+  if (!row) return null
+  return {
+    id: String(row.id),
+    video_link: row.video_link ? String(row.video_link) : null,
+    scheduled_at: String(row.scheduled_at),
+    duration_minutes: Number(row.duration_minutes ?? 50),
+    status: String(row.status) as SessionStatus,
+  }
+}
+
 /** profiles.id del dueño de un subperfil (para abrir chat con él). */
 export async function getProfileIdBySubprofile(
   subprofileId: string,

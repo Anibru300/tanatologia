@@ -107,12 +107,39 @@ export function ProfessionalVideoRoom() {
 
   const roomName = activeRoom || appointment?.video_link
 
+  // Cita en estado final: no se puede volver a entrar (espejo del portal del
+  // paciente). La sala manual (activeRoom) no se ve afectada.
+  const appointmentEnded =
+    !activeRoom &&
+    appointment &&
+    ['cancelled', 'completed', 'no_show'].includes(appointment.status)
+
   // Al colgar una cita real, cerrarla (el cron horario es la red de seguridad
   // si esto falla; el trigger 031 impide completar antes de la hora).
   const handleHangup = () => {
     if (activeRoom || !appointment) return
     updateAppointmentStatus(appointment.id, 'completed').catch((err) =>
       console.error('marcar cita completada:', err instanceof Error ? err.message : err)
+    )
+  }
+
+  if (appointmentEnded && appointment) {
+    return (
+      <div className="section-calma">
+        <div className="container-calma">
+          <h1 className="text-2xl font-bold text-text mb-2">Esta sesión ya no está disponible</h1>
+          <p className="text-text-light mb-6">
+            {appointment.status === 'cancelled'
+              ? 'La cita fue cancelada. Revisa tu agenda para confirmar que el horario quedó libre.'
+              : appointment.status === 'no_show'
+                ? 'Esta sesión se marcó como “no asistió”. Si fue un problema de horario o de acceso, coordina un nuevo horario con tu paciente por el chat interno y pídele reagendar desde su panel.'
+                : 'La sesión ya fue completada. Si necesitas una nueva sesión con este paciente, coordínala por el chat interno.'}
+          </p>
+          <Button variant="outline" onClick={() => navigate('/profesional/citas')}>
+            Volver a mis citas
+          </Button>
+        </div>
+      </div>
     )
   }
 

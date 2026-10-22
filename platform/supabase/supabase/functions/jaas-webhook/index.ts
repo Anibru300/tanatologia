@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
   // La cita de la sala (la más reciente si el nombre se reutilizara)
   const { data: appointment } = await adminClient
     .from("appointments")
-    .select("id, status")
+    .select("id, status, scheduled_at, duration_minutes")
     .eq("video_link", roomName)
     .order("scheduled_at", { ascending: false })
     .limit(1)
@@ -144,8 +144,22 @@ Deno.serve(async (req) => {
     return json({ error: "No se pudo registrar el evento" }, 500);
   }
 
-  // No-show real: la sala se cerró sin alcanzar 2 participantes distintos
-  if (event.eventType === "ROOM_DESTROYED" && ["pending", "confirmed"].includes(appointment.status)) {
+  // No-show real: la sala se cerró sin alcanzar 2 participantes distintos.
+  // GUARDA DE HORARIO (incidente 2026-10-22): solo aplica DESPUÉS de que la
+  // cita terminó (+15 min de gracia). Antes de esa hora, la destrucción de la
+  // sala casi siempre es alguien probando el acceso (p. ej. el profesional
+  // entrando temprano a revisar cámara/mic): marcar no_show ahí cerraba la
+  // cita a ambos para siempre y ninguno podía volver a entrar.
+  const occurredAt = new Date(event.timestamp ?? Date.now());
+  const endsAt = new Date(
+    new Date(appointment.scheduled_at).getTime() + (appointment.duration_minutes ?? 50) * 60 * 1000,
+  );
+  const graceEndsAt = new Date(endsAt.getTime() + 15 * 60 * 1000);
+  if (
+    event.eventType === "ROOM_DESTROYED" &&
+    ["pending", "confirmed"].includes(appointment.status) &&
+    occurredAt >= graceEndsAt
+  ) {
     const { data: joined } = await adminClient
       .from("video_call_events")
       .select("participant_jid")

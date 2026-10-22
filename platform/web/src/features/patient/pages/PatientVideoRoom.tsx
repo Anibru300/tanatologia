@@ -85,11 +85,26 @@ export function PatientVideoRoom() {
           <p className="text-text-light mb-6">
             {appointment.status === 'cancelled'
               ? 'La cita fue cancelada. Si necesitas reagendar, puedes hacerlo desde tu panel.'
-              : 'El horario de esta sesión ya pasó. Si tuviste algún problema, contáctanos.'}
+              : appointment.status === 'no_show'
+                ? 'Esta sesión se marcó como “no asistió”. Si fue un problema de horario o de acceso, escríbele a tu profesional por el chat interno y reagenda tu cita.'
+                : 'El horario de esta sesión ya pasó. Si tuviste algún problema, contáctanos.'}
           </p>
-          <Button variant="outline" onClick={() => navigate('/paciente/citas')}>
-            Volver a mis citas
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" onClick={() => navigate('/paciente/citas')}>
+              Volver a mis citas
+            </Button>
+            {appointment.status === 'no_show' && (
+              <Button
+                onClick={() =>
+                  navigate('/paciente/agendar', {
+                    state: { therapistId: appointment.professional_profile_id },
+                  })
+                }
+              >
+                Reagendar cita
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     )
