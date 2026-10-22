@@ -30,9 +30,6 @@ const TEMPLATES = {
 };
 const SUPPORTED_TYPES = Object.keys(TEMPLATES);
 
-// México no observa horario de verano desde 2022: offset fijo -06:00.
-const MX_OFFSET_MS = -6 * 60 * 60 * 1000;
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
@@ -76,11 +73,40 @@ export function normalizeMxPhone(input: string | null | undefined): string | nul
   return `+52${digits}`;
 }
 
-function mxPretty(utcIso: string) {
-  const d = new Date(new Date(utcIso).getTime() + MX_OFFSET_MS);
+// Mismo patrón que appointment-reminders/user-emails (fix 2026-10-22): la hora
+// va en la zona horaria del destinatario (fallback centro de México).
+const FALLBACK_TZ = "America/Mexico_City";
+
+function safeTz(tz: string | null | undefined): string {
+  if (!tz) return FALLBACK_TZ;
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: tz });
+    return tz;
+  } catch {
+    return FALLBACK_TZ;
+  }
+}
+
+// "America/Toronto" -> "Toronto"; alias en español para la zona fallback.
+function tzCity(tz: string): string {
+  const aliases: Record<string, string> = {
+    "America/Mexico_City": "Ciudad de México",
+  };
+  if (aliases[tz]) return aliases[tz];
+  return tz.split("/").pop()?.replace(/_/g, " ") ?? tz;
+}
+
+function tzPretty(utcIso: string, timeZone: string) {
+  const d = new Date(utcIso);
   const pad = (n: number) => String(n).padStart(2, "0");
-  const weekday = new Intl.DateTimeFormat("es-MX", { weekday: "long", timeZone: "UTC" }).format(d);
-  return `${weekday} ${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} h`;
+  const dateFmt = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
+  const timeFmt = new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const weekday = new Intl.DateTimeFormat("es-MX", { weekday: "long", timeZone }).format(d);
+  const pick = (fmt: Intl.DateTimeFormat) =>
+    Object.fromEntries(fmt.formatToParts(d).filter((p) => p.type !== "literal").map((p) => [p.type, p.value]));
+  const dp = pick(dateFmt);
+  const tp = pick(timeFmt);
+  return `${weekday} ${pad(Number(dp.day))}/${pad(Number(dp.month))}/${dp.year} ${pad(Number(tp.hour))}:${pad(Number(tp.minute))} h (hora de ${tzCity(timeZone)})`;
 }
 
 type Recipient = {
@@ -188,18 +214,27 @@ Deno.serve(async (req) => {
   }
 
   const [{ data: patientUser }, { data: proUser }] = await Promise.all([
-    supabase.from("profiles").select("phone, whatsapp_opt_in, full_name").eq("id", patient.profile_id).maybeSingle(),
-    supabase.from("profiles").select("phone, whatsapp_opt_in, full_name").eq("id", professional.profile_id).maybeSingle(),
+    supabase.from("profiles").select("phone, whatsapp_opt_in, full_name, timezone").eq("id", patient.profile_id).maybeSingle(),
+    supabase.from("profiles").select("phone, whatsapp_opt_in, full_name, timezone").eq("id", professional.profile_id).maybeSingle(),
   ]);
 
-  const whenPretty = mxPretty(appt.scheduled_at);
   const patientName = patient.full_name || patientUser?.full_name || "paciente";
   const proName = professional.full_name || proUser?.full_name || "tu profesional";
   const templateName = TEMPLATES[type as keyof typeof TEMPLATES];
 
-  const candidates: { user: typeof patientUser; name: string; otherName: string }[] = [
-    { user: patientUser, name: patientName.split(" ")[0], otherName: proName },
-    { user: proUser, name: proName.split(" ")[0], otherName: patientName },
+  const candidates: { user: typeof patientUser; name: string; otherName: string; whenPretty: string }[] = [
+    {
+      user: patientUser,
+      name: patientName.split(" ")[0],
+      otherName: proName,
+      whenPretty: tzPretty(appt.scheduled_at, safeTz(patientUser?.timezone)),
+    },
+    {
+      user: proUser,
+      name: proName.split(" ")[0],
+      otherName: patientName,
+      whenPretty: tzPretty(appt.scheduled_at, safeTz(proUser?.timezone)),
+    },
   ];
 
   const stats = { sent: 0, skipped: 0, errors: [] as string[] };
@@ -215,7 +250,7 @@ Deno.serve(async (req) => {
       console.warn(`whatsapp-notify: teléfono inválido para perfil (cita ${appointmentId})`);
       continue;
     }
-    const result = await sendTemplate({ to, name: c.name, otherName: c.otherName, whenPretty }, templateName);
+    const result = await sendTemplate({ to, name: c.name, otherName: c.otherName, whenPretty: c.whenPretty }, templateName);
     if (result.ok) {
       stats.sent += 1;
     } else {
