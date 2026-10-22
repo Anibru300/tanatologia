@@ -44,7 +44,7 @@ export async function getProfessionalDetail(professionalProfileId: string): Prom
       `id, profile_id, full_name, professional_title, license_number, university,
        specialties, approach, bio, education, languages, years_experience, session_price,
        verification_status, is_visible, rating, rejection_reason,
-       profiles!inner(email, phone, avatar_url, timezone)`
+       profiles!professional_profiles_profile_id_fkey(email, phone, avatar_url, timezone)`
     )
     .eq('id', professionalProfileId)
     .single()
