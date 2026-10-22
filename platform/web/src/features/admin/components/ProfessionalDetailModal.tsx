@@ -27,6 +27,7 @@ import {
   FileText,
   ShieldCheck,
   Star,
+  X,
   XCircle,
 } from 'lucide-react'
 
@@ -512,6 +513,14 @@ export function ProfessionalDetailModal({ professional, onClose, onChanged }: Pr
                 )}
               </div>
             )}
+
+            {/* Botón de cierre explícito (además de la X del encabezado y clic fuera) */}
+            <div className="flex justify-end border-t border-border pt-4 mt-4">
+              <Button variant="outline" className="gap-2" onClick={closeAll}>
+                <X size={16} />
+                Cerrar
+              </Button>
+            </div>
           </>
         )}
       </Modal>
