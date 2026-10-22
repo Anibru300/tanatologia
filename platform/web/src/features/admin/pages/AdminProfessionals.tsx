@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -11,6 +10,7 @@ import { Modal } from '@/components/ui/Modal'
 import { DataTable } from '@/components/ui/DataTable'
 import { Search, FileText, Mail, Send } from 'lucide-react'
 import { getAdminProfessionals, updateProfessionalVerification, type AdminProfessional } from '@/features/admin/adminService'
+import { ProfessionalDetailModal } from '@/features/admin/components/ProfessionalDetailModal'
 import { supabase } from '@/lib/supabase'
 
 const statusLabels: Record<string, string> = {
@@ -33,6 +33,7 @@ export function AdminProfessionals() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [contactTarget, setContactTarget] = useState<AdminProfessional | null>(null)
+  const [detailTarget, setDetailTarget] = useState<AdminProfessional | null>(null)
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -190,12 +191,10 @@ export function AdminProfessionals() {
                   header: 'Acciones',
                   render: (p) => (
                     <div className="flex flex-wrap gap-2">
-                      <Link to="/admin/verificacion">
-                        <Button size="sm" variant="outline" className="gap-2">
-                          <FileText size={16} />
-                          Revisar expediente
-                        </Button>
-                      </Link>
+                      <Button size="sm" variant="outline" className="gap-2" onClick={() => setDetailTarget(p)}>
+                        <FileText size={16} />
+                        Revisar expediente
+                      </Button>
                       <Button size="sm" variant="outline" className="gap-2" onClick={() => openContact(p)}>
                         <Mail size={16} />
                         Contactar
@@ -207,6 +206,12 @@ export function AdminProfessionals() {
             />
           </CardContent>
         </Card>
+
+        <ProfessionalDetailModal
+          professional={detailTarget}
+          onClose={() => setDetailTarget(null)}
+          onChanged={load}
+        />
 
         <Modal
           open={contactTarget !== null}

@@ -11,6 +11,73 @@ export type AdminProfessional = {
   license_number?: string
 }
 
+/** Detalle completo de un profesional para revisión del admin (solo lectura).
+ *  Une `professional_profiles` con los datos de contacto de `profiles`. */
+export type AdminProfessionalDetail = {
+  id: string
+  profile_id: string
+  full_name: string
+  professional_title?: string
+  license_number?: string
+  university?: string
+  specialties: string[]
+  approach?: string
+  bio?: string
+  education?: string
+  languages?: string[]
+  years_experience?: number | null
+  session_price: number | null
+  verification_status: string
+  is_visible: boolean
+  rating: number
+  rejection_reason?: string
+  email: string
+  phone?: string
+  avatar_url?: string
+  timezone?: string
+}
+
+export async function getProfessionalDetail(professionalProfileId: string): Promise<AdminProfessionalDetail> {
+  const { data, error } = await supabase
+    .from('professional_profiles')
+    .select(
+      `id, profile_id, full_name, professional_title, license_number, university,
+       specialties, approach, bio, education, languages, years_experience, session_price,
+       verification_status, is_visible, rating, rejection_reason,
+       profiles!inner(email, phone, avatar_url, timezone)`
+    )
+    .eq('id', professionalProfileId)
+    .single()
+
+  if (error) throw new Error(error.message)
+
+  const row = data as Record<string, unknown>
+  const prof = (row.profiles as Record<string, unknown>) || {}
+  return {
+    id: String(row.id),
+    profile_id: String(row.profile_id),
+    full_name: String(row.full_name || ''),
+    professional_title: row.professional_title ? String(row.professional_title) : undefined,
+    license_number: row.license_number ? String(row.license_number) : undefined,
+    university: row.university ? String(row.university) : undefined,
+    specialties: (row.specialties as string[]) || [],
+    approach: row.approach ? String(row.approach) : undefined,
+    bio: row.bio ? String(row.bio) : undefined,
+    education: row.education ? String(row.education) : undefined,
+    languages: (row.languages as string[]) || undefined,
+    years_experience: row.years_experience != null ? Number(row.years_experience) : null,
+    session_price: row.session_price != null ? Number(row.session_price) : null,
+    verification_status: String(row.verification_status || 'pending'),
+    is_visible: Boolean(row.is_visible),
+    rating: Number(row.rating ?? 0),
+    rejection_reason: row.rejection_reason ? String(row.rejection_reason) : undefined,
+    email: String(prof.email || ''),
+    phone: prof.phone ? String(prof.phone) : undefined,
+    avatar_url: prof.avatar_url ? String(prof.avatar_url) : undefined,
+    timezone: prof.timezone ? String(prof.timezone) : undefined,
+  }
+}
+
 export type AdminPatient = {
   id: string
   profile_id: string
