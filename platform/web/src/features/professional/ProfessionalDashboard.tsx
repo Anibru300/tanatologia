@@ -16,6 +16,7 @@ import {
   ArrowRight,
   CheckCircle,
   AlertCircle,
+  MessageCircle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -117,6 +118,32 @@ export function ProfessionalDashboard() {
         </div>
 
         {error && <Alert variant="error" className="mb-6 p-3 rounded-sm">{error}</Alert>}
+
+        <div className="mb-8">
+          <Card className="border-l-4" style={{ borderLeftColor: '#25D366' }}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MessageCircle size={20} style={{ color: '#25D366' }} />
+                Únete a nuestro grupo de apoyo de SOMOS CALMA para profesionistas
+              </CardTitle>
+              <CardDescription>
+                Entra a través de tu celular a este link para unirte a la comunidad.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <a
+                href="https://chat.whatsapp.com/Gs5aoOFzXjXBO6u7TdfA5c"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="gap-2" style={{ backgroundColor: '#25D366' }}>
+                  <MessageCircle size={18} />
+                  Unirme al grupo de WhatsApp
+                </Button>
+              </a>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="border-l-4 border-l-primary">

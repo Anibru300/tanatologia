@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-22: v1.9.2 — incidente zona horaria en correos (Toronto) + no_show prematuro del webhook + puertas a la videollamada; v1.9.0/1.9.1 — expediente completo del profesional en admin)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-24: v1.9.3 — tarjeta grupo de apoyo WhatsApp en dashboard profesional + tutorial v7)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.2-beta.1` (`platform/web/package.json` — bump obligatorio en cada release). Novedad: **fix zona horaria en correos + hardening de acceso a videollamada** (incidente real Toronto/Phoenix; ver 3i). Anteriores: 1.9.1 botón Cerrar en modal de expediente, 1.9.0 expediente completo del profesional en admin (modal `ProfessionalDetailModal` en `/admin/profesionales`: perfil público, contacto, precio y documentos en un solo lugar, todo solo lectura), 1.8.2 foco en modales.
+- **Versión:** `1.9.3-beta.1` (`platform/web/package.json` — bump obligatorio en cada release). Novedad: **tarjeta "Únete a nuestro grupo de apoyo"** (grupo de WhatsApp de profesionistas) en el dashboard principal del portal profesional + notificación in-app a los 46 profesionales. Anterior: 1.9.2 fix zona horaria en correos + hardening de acceso a videollamada (incidente Toronto/Phoenix; ver 3i).
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
@@ -24,7 +24,7 @@
 - **Ground-truth de videollamadas (032, v1.6.1, webhook JaaS ACTIVO):** JaaS avisa en tiempo real quién entró/salió de cada sala (eventos en `video_call_events`; firma HMAC verificada en la Edge Function `jaas-webhook`); sala cerrada con <2 participantes → cita `no_show` automático. Panel admin `/admin/citas` muestra columna **Videollamada** (participantes + duración real).
 - **Videollamadas:** **JaaS (8x8.vc)** vía Edge Function `jaas-token` (JWT por cita); fallback automático a meet.jit.si (5 min) con Alert visible si ocurre. Admin tiene `/admin/prueba-videollamada` (sala de prueba JaaS + comparador Daily.co).
 - **Chat paciente↔profesional** (023): solo si hay cita no cancelada; escritura solo por RPCs; adjuntos bucket privado `chat-attachments`; supervisión silenciosa admin en `/admin/chats`.
-- **Tutoriales** (022): 6 videos publicados (5 originales editados/auditados PII + v6 "Nueva actualización del portal profesional" de 2026-10-03, solo profesionales). Bucket privado `tutorials`. Gestión admin en `/admin/tutoriales`. **Listado:** ordenados por fecha de publicación (el más nuevo primero), cada tarjeta muestra "Subido el …", y los videos de <7 días llevan insignia "¡Nuevo!" que **se apaga por usuario al llegar a ≥90 % visto** (migración 029 dio SELECT de `tutorial_views` al propio usuario). La miniatura NO debe capturarse del frame de login (muestra el correo del dueño) — usar un frame interior sin PII.
+- **Tutoriales** (022): 6 videos publicados (5 originales editados/auditados PII + v6 "Nueva actualización del portal profesional" de 2026-10-03, solo profesionales); **v7 "Video informativo para profesionistas" (53 s, 2026-10-24) auditado PII sin hallazgos y pendiente de subir por el dueño** (ver 3j). Bucket privado `tutorials`. Gestión admin en `/admin/tutoriales`. **Listado:** ordenados por fecha de publicación (el más nuevo primero), cada tarjeta muestra "Subido el …", y los videos de <7 días llevan insignia "¡Nuevo!" que **se apaga por usuario al llegar a ≥90 % visto** (migración 029 dio SELECT de `tutorial_views` al propio usuario). La miniatura NO debe capturarse del frame de login (muestra el correo del dueño) — usar un frame interior sin PII.
 - **Correos:** Resend (SMTP + Edge Functions `send-email`, `contact-form`, `user-emails`, `send-broadcast`, `appointment-reminders`, `support-request`, `admin-contact`, `inbound-email`, `inbox-reply`). con etiqueta explícita ("hora de Toronto") y `ctz` en Google Calendar (fix 2026-10-22, ver 3i; antes era offset fijo de México y causó un incidente real). Buzón hola@somos-calma.com en Hostinger (MX/SPF/DKIM/DMARC OK; DKIM de Resend en subdominio `send`). **Bandeja de entrada en el admin** (033, v1.7.0): `/admin/bandeja` lee/responde los correos de hola@ — recepción por Resend Inbound (`guavmoe.resend.app` + filtro de reenvío en el webmail de Hostinger), con backfill histórico de 14 correos desde el 6-sep — ver 3f.
 - **Analíticas first-party:** Edge Function `track-view` → tabla `page_views` + panel `/admin/analiticas`. GA4 como complemento.
 - **Intake/encuesta:** `patient_profiles.intake` (JSONB) filtra directorio; PHQ-9/GAD-7 opcionales.
@@ -35,7 +35,17 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-22 — Expediente admin v1.9.0/1.9.1 + incidente de zona horaria en correos y acceso a videollamada v1.9.2)
+## 3. Última sesión (2026-10-24 — v1.9.3: tarjeta grupo de apoyo WhatsApp + tutorial v7 informativo)
+
+### 3j. Sesión 2026-10-24 (completa) — Tarjeta "grupo de apoyo" en dashboard profesional + tutorial v7
+
+**Hecho y verificado:** auditoría PII del video nuevo (27 frames): **sin hallazgos** (única escena: fundadora hablando a cámara; sin texto/PII en pantalla; audio no transcrito, mismo criterio que v1–v6). Video movido a `VIDEOS TUTORIALES/PROFESIONISTA/Video informativo para profesionistas (53s).mp4` (53 s, vertical 478×850, 11 MB — bajo el límite de 50 MB, sin recompresión). Miniatura `.tools/review/tut7/thumbnail.jpg` (frame del 1 s, sin PII).
+
+1. **Tarjeta grupo de apoyo (v1.9.3, `ProfessionalDashboard.tsx`):** anuncio bajo el saludo — "Únete a nuestro grupo de apoyo de SOMOS CALMA para profesionistas", "Entra a través de tu celular a este link", botón verde (#25D366) con el link de invitación de WhatsApp en pestaña nueva (`target="_blank"`). tsc ✓, oxlint ✓, tests 38/38, build ✓.
+2. **Notificación in-app enviada a los 46 profesionales** (type `admin_broadcast`, link `/profesional`, historial en `notification_broadcasts` 46/46) — SQL `.tools/review/tut7/notify-whatsapp-group.sql` vía `supabase db query --linked`.
+3. **Tutorial v7 pendiente de subir por el dueño** (requiere sus credenciales admin; mismo patrón que v6): `ADMIN_EMAIL=<correo> ADMIN_PASSWORD=<pass> node .tools/review/tut7/upload-tutorial-v7.mjs` (sube video+miniatura al bucket privado `tutorials` e inserta el tutorial `published`, audiencia `professional`, categoría "Informativo", sort_order 7). **Después** aplicar `.tools/review/tut7/notify-tutorial-v7.sql` (notificación a los 46 profesionales, link `/profesional/tutoriales`).
+
+**Verificación post-subida (cuando el dueño la haga):** `upload-tutorial-v7.mjs` imprime ✅ en cada paso; confirmar en `/admin/tutoriales` que v7 aparece publicado primero en la lista del portal profesional (llevará insignia "¡Nuevo!" <7 días) y que un paciente NO lo ve.
 
 ### 3i. Sesión 2026-10-22 (completa) — Expediente del profesional en admin + fix incidente Toronto (zona horaria, no_show prematuro, link roto, chat sin puerta)
 
@@ -176,6 +186,7 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 
 | # | Qué | Detalle | Estado |
 |---|-----|---------|--------|
+| P0 | **Subir tutorial v7 y notificar (dueño, 5 min)** | Ejecutar `ADMIN_EMAIL=<correo> ADMIN_PASSWORD=<pass> node .tools/review/tut7/upload-tutorial-v7.mjs` (desde la raíz del repo) y luego avisar al agente para aplicar `.tools/review/tut7/notify-tutorial-v7.sql` (notificación a profesionales). Video ya auditado PII (sin hallazgos) y renombrado en `VIDEOS TUTORIALES/PROFESIONISTA/` | Pendiente (cliente) |
 | P1 | Rotar contraseña del admin | Las credenciales de `admin@demo.com` pasaron por el chat el 2026-10-03 (subida del tutorial v6). No están en ningún archivo, pero conviene cambiarla: Supabase Dashboard → Authentication → Users, o pedirle al dueño que la actualice desde su perfil | Pendiente (seguridad) |
 | P1 | **Facebook: actualizar teléfono en la página** | La página lleva el viejo 477 254 1540; debe cambiarse a 477 125 0075 (Página → Editar información → Teléfono). Del lado del cliente | Pendiente (cliente) |
 | P1 | **Confirmar WhatsApp del 477 125 0075** | El flotante del sitio abre chat directo a ese número; si no tiene WhatsApp habilitado el enlace falla. Probar enviándose un mensaje | Pendiente (cliente) |
