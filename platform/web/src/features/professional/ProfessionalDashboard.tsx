@@ -29,6 +29,7 @@ import {
   type MyProfessionalProfile,
   type VerificationStatus,
 } from '@/features/verification/verificationService'
+import { trackClick } from '@/lib/trackEvent'
 
 const VERIFICATION_UI: Record<VerificationStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'info'; description: string }> = {
   pending: {
@@ -135,6 +136,12 @@ export function ProfessionalDashboard() {
                 href="https://chat.whatsapp.com/Gs5aoOFzXjXBO6u7TdfA5c"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => {
+                  trackClick('whatsapp-grupo')
+                  if (typeof window.gtag === 'function') {
+                    window.gtag('event', 'whatsapp_group_click')
+                  }
+                }}
               >
                 <Button className="gap-2" style={{ backgroundColor: '#25D366' }}>
                   <MessageCircle size={18} />

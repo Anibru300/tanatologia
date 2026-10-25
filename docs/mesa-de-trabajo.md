@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-24: v1.9.3 — tarjeta grupo de apoyo WhatsApp en dashboard profesional + tutorial v7)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-25: v1.9.4 — tracking de clics al grupo de apoyo WhatsApp)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.3-beta.1` (`platform/web/package.json` — bump obligatorio en cada release). Novedad: **tarjeta "Únete a nuestro grupo de apoyo"** (grupo de WhatsApp de profesionistas) en el dashboard principal del portal profesional + notificación in-app a los 46 profesionales. Anterior: 1.9.2 fix zona horaria en correos + hardening de acceso a videollamada (incidente Toronto/Phoenix; ver 3i).
+- **Versión:** `1.9.4-beta.1` (`platform/web/package.json` — bump obligatorio en cada release). Novedad: **tracking de clics** al botón "Unirme al grupo de WhatsApp" del dashboard profesional — beacon a `track-view` con path sintético `/app/#/profesional/whatsapp-grupo` (visible en Admin > Flujo de la página, helper `src/lib/trackEvent.ts`) + evento GA4 `whatsapp_group_click`. Cuenta solo desde el deploy (los clics previos no se recuperan). Anterior: 1.9.3 tarjeta "Únete a nuestro grupo de apoyo" + notificación a los 46 profesionales.
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
@@ -35,7 +35,15 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-24 — v1.9.3: tarjeta grupo de apoyo WhatsApp + video informativo EN ESPERA para página pública)
+## 3. Última sesión (2026-10-25 — v1.9.4: tracking de clics al enlace del grupo de WhatsApp)
+
+### 3k. Sesión 2026-10-25 (completa) — ¿Le dieron clic al grupo de WhatsApp?
+
+**Contexto:** el dueño preguntó si los profesionales daban clic al enlace del grupo de apoyo (v1.9.3). La analítica first-party solo registra vistas de página, no clics salientes — solo se podía inferir exposición: 4 sesiones distintas vieron `/profesional` desde el 24-oct (de 46 notificados). Con luz verde del dueño se agregó tracking.
+
+**Hecho:** nuevo helper `src/lib/trackClick()` (`src/lib/trackEvent.ts`) que reusa la Edge Function `track-view` registrando el path sintético `/app/#/profesional/whatsapp-grupo` (aparece en Admin > Flujo de la página; sin backend ni migraciones; best-effort, nunca rompe la app) + evento GA4 `whatsapp_group_click` (tipado `window.gtag` en `vite-env.d.ts`, tolera adblock). Cableado al `onClick` del botón verde en `ProfessionalDashboard.tsx`. Versión bump a 1.9.4. tsc ✓, oxlint ✓, tests 38/38, build ✓.
+
+**Cómo consultar:** SQL `SELECT * FROM page_views WHERE path LIKE '%whatsapp-grupo%'` (1 fila = 1 clic) o panel `/admin/analiticas`. **Ojo:** solo cuenta desde el deploy de v1.9.4 en adelante.
 
 ### 3j. Sesión 2026-10-24 (completa) — Tarjeta "grupo de apoyo" en dashboard profesional + tutorial v7
 
