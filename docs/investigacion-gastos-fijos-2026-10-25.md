@@ -3,6 +3,26 @@
 > Todos los precios verificados hoy contra fuentes públicas (oficiales cuando fue posible).
 > Tipo de cambio de referencia: **$18.50 MXN por USD** (FIX Banxico ~18.42–18.62, semana del 20-oct-2026; el peso se ha depreciado, conviene presupuestar a $19).
 
+## ✅ PRESUPUESTO APROBADO POR EL DUEÑO (2026-10-25, vía WhatsApp)
+
+**Plan de crecimiento — $167 USD/mes ≈ ~$3,090 MXN/mes:**
+
+| Concepto | USD/mes | Detalle |
+|---|---|---|
+| GitHub Pro | $4 | Repo privado (seguridad); GitHub Pages sigue sirviendo el sitio y la app |
+| Supabase Pro | $25 | Respaldos diarios, nunca se pausa, 8 GB BD / 100 GB archivos / 100k usuarios |
+| JaaS Basic | $99 | Videollamadas hasta 300 MAU |
+| Kimi Pro (soporte) | $39 | Asistente para actualizaciones, correcciones y atención de problemas |
+| **TOTAL** | **$167** | Confirmado por el dueño con cifras reales verificadas |
+
+**Estado de activación (2026-10-25):**
+- ✅ **Supabase:** migración a PostgreSQL 17 hecha (gratis, plan sigue Free); el salto a Pro ($25) se activa cuando se decida.
+- ⏳ **GitHub Pro:** pendiente (decisión del dueño: "después").
+- ⏳ **JaaS Basic ($99):** pendiente — hoy estamos en plan Developer gratis (25 MAU); se activa al superar ese volumen.
+- ✅ **Kimi Pro ($39):** vigente (es el servicio que ya usa el asistente de desarrollo).
+
+---
+
 ## Estado actual de la plataforma (contexto real)
 
 - **49 usuarios registrados** (34 profesionales / 14 pacientes), 12 profesionales verificados, pocas citas reales por mes.
