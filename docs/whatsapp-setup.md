@@ -113,14 +113,18 @@ no es 501 sino 400/404 en los casos inválidos. Para una prueba real end-to-end:
 crear una cita de prueba entre dos cuentas con opt-in activado y teléfono de
 prueba agregado en Meta, y verificar que lleguen los mensajes.
 
-## Costos (referencia Meta, sujeta a cambio)
+## Costos (verificados 2026-10-25, tarifas oficiales de Meta vigentes desde el 1-oct-2026)
 
-Meta cobra **por mensaje de plantilla entregado** (rango orientativo
-US$0.01–0.06 según categoría y país; ver la calculadora vigente en la
-documentación de Meta). El volumen de una beta de citas es bajo (decenas de
-mensajes al mes), por lo que el costo es mínimo. Las conversaciones iniciadas
-por el usuario (ej. si alguien escribe al número) tienen su propia ventana
-gratuita de 24 h, que hoy no utilizamos.
+Meta cobra **por mensaje entregado** en México:
+
+| Categoría | USD/mensaje | ≈ MXN/mensaje |
+|---|---|---|
+| **Utilidad** (las 4 plantillas de cita son esta categoría) | $0.0085 | ~$0.16 |
+| Autenticación | $0.0085 | ~$0.16 |
+| Servicio (respuestas libres) | $0.0085, pero **primeros 1,000/mes gratis por número** | ~$0.16 |
+| Marketing | $0.0397 | ~$0.73 |
+
+**Ejemplo real de la beta:** 100 citas/mes × 4 avisos × 2 personas = 800 mensajes de utilidad ≈ **$6.80 USD ≈ $125 MXN/mes** (variable: solo se paga lo enviado; sin mensualidad fija). Meta Business y la verificación son gratis; la SIM exclusiva para el número es un gasto aparte de celular (~$100–150 MXN/mes si se contrata plan básico).
 
 ## Notas
 
