@@ -1,16 +1,19 @@
 import { createClient } from "jsr:@supabase/supabase-js@^2";
 
 // support-request — un usuario autenticado (paciente o profesional) envía una
-// solicitud de soporte/contacto desde su portal. Llega al inbox de soporte
-// (CONTACT_INBOX) con reply_to del usuario, e inserta una notificación in-app
-// de confirmación (type: support_request).
+// solicitud de soporte/contacto desde su portal. Se inserta DIRECTAMENTE en
+// public.email_inbox (service role) como mensaje entrante con from_email del
+// usuario, para que el admin la vea en /admin/soporte y /admin/bandeja y la
+// responda desde ahí (inbox-reply contesta al remitente). Se notifica in-app
+// a los administradores (type: inbox_email) y se confirma al usuario
+// (type: support_request).
 // verify_jwt=false en el gateway; JWT validado aquí. Rate-limit por IP.
 //
-// Secrets requeridos: RESEND_API_KEY, RESEND_FROM_EMAIL (opcional), CONTACT_INBOX.
+// Secrets requeridos: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "SOMOS-CALMA <hola@somos-calma.com>";
 const CONTACT_INBOX = Deno.env.get("CONTACT_INBOX") || "hola@somos-calma.com";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,15 +22,6 @@ const corsHeaders = {
 
 function json(body: unknown, status = 200) {
   return Response.json(body, { status, headers: corsHeaders });
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 // Rate-limit en memoria por IP (3 por minuto; las cuentas son autenticadas,
@@ -97,64 +91,59 @@ Deno.serve(async (req) => {
   if (!subject || subject.length > 150) return json({ error: "Asunto inválido (máx. 150 caracteres)" }, 400);
   if (!message || message.length > 3000) return json({ error: "Mensaje inválido (máx. 3000 caracteres)" }, 400);
 
-  if (!RESEND_API_KEY) {
-    return json({ error: "RESEND_API_KEY no está configurada" }, 500);
-  }
-
   const roleLabel = ROLE_LABEL[profile.role] ?? profile.role;
-  const fecha = new Date().toLocaleString("es-MX", { timeZone: "America/Mexico_City" });
   const nombre = profile.full_name || "(sin nombre)";
-  const emailUsuario = profile.email || user.email || "(sin correo)";
-
-  const html = `<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:24px;background:#F7F5F0;font-family:sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#FFFFFF;border-radius:12px;">
-    <tr><td style="background:#5F6F55;color:#FFFFFF;padding:20px 24px;font-size:18px;font-weight:bold;">Solicitud de soporte — ${escapeHtml(roleLabel)}</td></tr>
-    <tr><td style="padding:24px;">
-      <table style="font-size:14px;border-collapse:collapse;">
-        <tr><td style="padding:4px 12px 4px 0;color:#777;">Nombre:</td><td style="padding:4px 0;">${escapeHtml(nombre)}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;color:#777;">Correo:</td><td style="padding:4px 0;">${escapeHtml(emailUsuario)}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;color:#777;">Rol:</td><td style="padding:4px 0;">${escapeHtml(roleLabel)}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;color:#777;">Fecha (CDMX):</td><td style="padding:4px 0;">${escapeHtml(fecha)}</td></tr>
-      </table>
-      <p style="margin:16px 0 4px;font-weight:bold;font-size:14px;">Asunto: ${escapeHtml(subject)}</p>
-      <div style="white-space:pre-wrap;background:#F7F5F2;padding:12px;border-radius:8px;font-size:14px;color:#444;">${escapeHtml(message)}</div>
-      <p style="margin:16px 0 0;font-size:12px;color:#999;">Responder a este correo contesta directamente al usuario (Reply-To configurado).</p>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: RESEND_FROM_EMAIL,
-      to: [CONTACT_INBOX],
-      reply_to: emailUsuario,
-      subject: `[Soporte ${roleLabel}] ${subject}`,
-      html,
-    }),
-  });
-
-  if (!res.ok) {
-    const detail = await res.text();
-    console.error("Resend falló (support-request):", res.status, detail);
-    return json({ error: "No se pudo enviar tu mensaje. Inténtalo de nuevo." }, 502);
+  const emailUsuario = profile.email || user.email || "";
+  if (!EMAIL_REGEX.test(emailUsuario)) {
+    return json({ error: "Tu cuenta no tiene un correo válido para responderte" }, 422);
   }
 
-  // Confirmación in-app al usuario (service role: RLS no permite INSERT
-  // a authenticated; el dueño de la notificación sigue siendo el usuario)
-  const link = profile.role === "professional" ? "/profesional/ayuda" : "/paciente/ayuda";
   const service = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
+
+  // Insertar directamente en la bandeja como mensaje ENTRANTE del usuario.
+  // message_id generado: al responder, inbox-reply registra la salida con el
+  // id real de Resend y el hilo enlaza correctamente si el usuario contesta.
+  const fullSubject = `[Soporte ${roleLabel}] ${subject}`;
+  const { data: inserted, error: insertError } = await service
+    .from("email_inbox")
+    .insert({
+      direction: "in",
+      from_email: emailUsuario,
+      from_name: nombre,
+      to_email: CONTACT_INBOX,
+      subject: fullSubject,
+      text_body: message,
+      message_id: `support-${crypto.randomUUID()}@somos-calma.com`,
+      is_read: false,
+    })
+    .select("id")
+    .single();
+
+  if (insertError || !inserted) {
+    console.error("No se pudo registrar la solicitud en la bandeja:", insertError);
+    return json({ error: "No se pudo enviar tu mensaje. Inténtalo de nuevo." }, 502);
+  }
+
+  // Avisar in-app a los administradores (mismo type que usa inbound-email).
+  const { data: admins } = await service.from("profiles").select("id").eq("role", "admin");
+  if (admins && admins.length > 0) {
+    await service.from("notifications").insert(
+      admins.map((a) => ({
+        profile_id: a.id,
+        type: "inbox_email",
+        title: `Soporte ${roleLabel}: ${subject}`,
+        body: `${nombre} (${emailUsuario}) envió una solicitud de ayuda.`,
+        link: "/admin/soporte",
+      })),
+    );
+  }
+
+  // Confirmación in-app al usuario (el `service` de más arriba ya usa service role:
+  // RLS no permite INSERT a authenticated; el dueño de la notificación es el usuario).
+  const link = profile.role === "professional" ? "/profesional/ayuda" : "/paciente/ayuda";
   await service.from("notifications").insert({
     profile_id: profile.id,
     type: "support_request",

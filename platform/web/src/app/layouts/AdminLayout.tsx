@@ -38,7 +38,7 @@ const menuItems: PortalMenuItem[] = [
   { to: '/admin/tutoriales', icon: GraduationCap, label: 'Tutoriales' },
   { to: '/admin/chats', icon: MessagesSquare, label: 'Chats' },
   { to: '/admin/prueba-videollamada', icon: Video, label: 'Prueba de video' },
-  { to: '/admin/soporte', icon: Headphones, label: 'Soporte', soon: true },
+  { to: '/admin/soporte', icon: Headphones, label: 'Soporte' },
 ]
 
 // Accesos de la barra inferior móvil (seleccionados del menú, sin duplicar definiciones)

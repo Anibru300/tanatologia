@@ -187,6 +187,10 @@ Deno.serve(async (req) => {
     console.error("Resend rechazó la respuesta:", resendRes.status, detail);
     return json({ error: "No se pudo enviar la respuesta" }, 502);
   }
+  // Id de Resend del correo enviado: al guardarlo como message_id de la salida,
+  // la respuesta del destinatario enlaza a este hilo (inbound-email matchea
+  // in-reply-to/references contra message_id existentes).
+  const resendData = await resendRes.json().catch(() => ({} as { id?: string }));
 
   // Registrar la salida y marcar leído el mensaje al que se respondió.
   const { data: inserted, error: insertError } = await adminClient
@@ -198,6 +202,7 @@ Deno.serve(async (req) => {
       to_email: original.from_email,
       subject,
       text_body: textBody,
+      message_id: resendData.id || null,
       in_reply_to: original.message_id,
       refs: refsChain,
       thread_root_id: original.thread_root_id ?? original.id,

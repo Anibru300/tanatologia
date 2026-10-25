@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-25: v1.9.4 — tracking de clics al grupo de apoyo WhatsApp)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-25: v1.9.5 — sección Soporte del admin conectada a la Bandeja + fix respuesta a tickets)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.4-beta.1` (`platform/web/package.json` — bump obligatorio en cada release). Novedad: **tracking de clics** al botón "Unirme al grupo de WhatsApp" del dashboard profesional — beacon a `track-view` con path sintético `/app/#/profesional/whatsapp-grupo` (visible en Admin > Flujo de la página, helper `src/lib/trackEvent.ts`) + evento GA4 `whatsapp_group_click`. Cuenta solo desde el deploy (los clics previos no se recuperan). Anterior: 1.9.3 tarjeta "Únete a nuestro grupo de apoyo" + notificación a los 46 profesionales.
+- **Versión:** `1.9.5-beta.1`. Novedad: **sección "Soporte" del admin operativa** (ya sin insignia "Pronto") — muestra las solicitudes de ayuda de pacientes/profesionales filtradas de `email_inbox` (asunto `[Soporte …]`), con KPIs (sin responder/atendidas/total), conversación y respuesta inline vía `inbox-reply`; sincronizada con la Bandeja. Detrás: `support-request` ahora inserta DIRECTO en `email_inbox` con `from_email` del usuario (antes enviaba correo a sí misma con reply_to, y responder desde la Bandeja hubiera contestado a hola@ — bug latente) + notifica in-app a admins (type `inbox_email`, link `/admin/soporte`); `inbox-reply` ahora guarda el `message_id` real de Resend en la salida para que la réplica del usuario enlace al hilo. Prueba E2E real 2/2 + verificación en BD, limpieza completa. Anterior: 1.9.4 tracking de clics al grupo de WhatsApp (`/profesional/whatsapp-grupo` en analíticas + GA4).
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
@@ -35,7 +35,20 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-25 — v1.9.4: tracking de clics al enlace del grupo de WhatsApp)
+## 3. Última sesión (2026-10-25 — v1.9.5: sección Soporte operativa + fix latente de respuesta a tickets)
+
+### 3l. Sesión 2026-10-25 (tarde, completa) — "Soporte/Tickets" del admin: de página fantasma a herramienta real
+
+**Motivación:** la sección "Soporte" del admin era placeholder ("próximamente", sin datos). El canal real de ayuda (formularios de Ayuda de paciente/profesional → `support-request`) sí existía, pero con **bug latente**: el correo se enviaba a hola@ DESDE hola@ con reply_to del usuario, así que al llegar a la Bandeja su `from_email` era hola@somos-calma.com — responder desde la Bandeja hubiera contestado a nosotros mismos. 0 tickets reales en producción, por eso nadie lo notó.
+
+**Cambios (deploy hecho, funciones verificadas en Cloud):**
+1. **Edge Function `support-request` reescrita** (ya no usa Resend): inserta la solicitud DIRECTAMENTE en `email_inbox` (service role) como mensaje entrante con `from_email`/`from_name` del usuario, `message_id` generado (`support-<uuid>@somos-calma.com`) y asunto `[Soporte Paciente|Profesional] …`; notifica in-app a los admins (type `inbox_email`, link `/admin/soporte`) y confirma al usuario (type `support_request`, igual que antes). Secrets: ya no necesita `RESEND_API_KEY`.
+2. **Edge Function `inbox-reply`**: guarda el `message_id` real de Resend en el registro de la salida → si el usuario contesta, `inbound-email` enlaza su réplica al mismo hilo (antes la salida quedaba con `message_id` NULL y la réplica abría hilo nuevo). Mejora para TODA la Bandeja, no solo soporte.
+3. **`AdminSupport.tsx` reescrito**: KPIs (sin responder / atendidas / total), lista de hilos de soporte con badges de estado y "N nuevo", conversación burbuja-por-burbuja y respuesta inline (invoke `inbox-reply` con el último entrante) — mismo patrón que `AdminInbox`. Quitada la insignia "Pronto" del menú (`AdminLayout.tsx`). Aviso de que la Bandeja está sincronizada (misma tabla).
+
+**Pruebas:** tsc ✓, oxlint 0 ✓, tests 38/38 ✓, build ✓. Funciones redeplegadas: OPTIONS 200 / 401 sin auth en ambas. **E2E real**: usuario temporal registrado → `support-request` 200 → verificado en BD: fila `email_inbox` (direction='in', remitente = usuario, message_id presente, no leído) + notificación `inbox_email` al admin con link `/admin/soporte`. Limpieza verificada (0 residuos: inbox/notifs/usuario). Script de prueba temporal eliminado.
+
+**Nota:** los 3 correos de prueba de la auditoría del 19-oct (remitente hola@) siguen en la bandeja y aparecerán en Soporte; son de prueba, se pueden borrar desde la Bandeja si se quieren.
 
 ### 3k. Sesión 2026-10-25 (completa) — ¿Le dieron clic al grupo de WhatsApp?
 
