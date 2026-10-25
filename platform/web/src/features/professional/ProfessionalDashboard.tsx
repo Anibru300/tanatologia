@@ -17,6 +17,7 @@ import {
   CheckCircle,
   AlertCircle,
   MessageCircle,
+  Bug,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -30,6 +31,7 @@ import {
   type VerificationStatus,
 } from '@/features/verification/verificationService'
 import { trackClick } from '@/lib/trackEvent'
+import { ReportProblemModal } from '@/components/ReportProblemModal'
 
 const VERIFICATION_UI: Record<VerificationStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'info'; description: string }> = {
   pending: {
@@ -110,12 +112,20 @@ export function ProfessionalDashboard() {
   const verification = VERIFICATION_UI[profile?.verification_status ?? 'pending']
   const rating = profile?.rating ?? 0
 
+  const [showReportProblem, setShowReportProblem] = useState(false)
+
   return (
     <div className="section-calma">
       <div className="container-calma">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-text mb-2">Hola, {user?.fullName}</h1>
-          <p className="text-text-light">Gestiona tu práctica y acompaña a tus pacientes.</p>
+        <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-text mb-2">Hola, {user?.fullName}</h1>
+            <p className="text-text-light">Gestiona tu práctica y acompaña a tus pacientes.</p>
+          </div>
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowReportProblem(true)}>
+            <Bug size={16} />
+            Reportar un problema
+          </Button>
         </div>
 
         {error && <Alert variant="error" className="mb-6 p-3 rounded-sm">{error}</Alert>}
@@ -320,6 +330,8 @@ export function ProfessionalDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        <ReportProblemModal open={showReportProblem} onClose={() => setShowReportProblem(false)} />
       </div>
     </div>
   )

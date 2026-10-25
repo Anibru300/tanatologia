@@ -17,8 +17,10 @@ import {
   Headphones,
   Users,
   Sparkles,
+  Bug,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { ReportProblemModal } from '@/components/ReportProblemModal'
 import {
   getPatientProfileId,
   getAppointmentsForPatient,
@@ -32,6 +34,7 @@ export function PatientDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [intakeDone, setIntakeDone] = useState(true)
+  const [showReportProblem, setShowReportProblem] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -85,9 +88,15 @@ export function PatientDashboard() {
   return (
     <div className="section-calma">
       <div className="container-calma">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-text mb-2">Hola, {user?.fullName}</h1>
-          <p className="text-text-light">Este es tu espacio seguro para sanar.</p>
+        <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-text mb-2">Hola, {user?.fullName}</h1>
+            <p className="text-text-light">Este es tu espacio seguro para sanar.</p>
+          </div>
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowReportProblem(true)}>
+            <Bug size={16} />
+            Reportar un problema
+          </Button>
         </div>
 
         {error && <Alert variant="error" className="mb-6 p-3 rounded-sm">{error}</Alert>}
@@ -290,6 +299,8 @@ export function PatientDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        <ReportProblemModal open={showReportProblem} onClose={() => setShowReportProblem(false)} />
       </div>
     </div>
   )
