@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-25: v1.9.5 — sección Soporte del admin conectada a la Bandeja + fix respuesta a tickets)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-25 noche: v1.9.7 — reporte de problemas + avance 60% de la configuración de WhatsApp)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -35,7 +35,29 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-25 — v1.9.5: sección Soporte operativa + fix latente de respuesta a tickets)
+## 3. Última sesión (2026-10-25 noche — v1.9.7 "Reportar un problema" + WhatsApp: app Meta creada, token guardado, falta la SIM)
+
+### 3m. Sesión 2026-10-25 (noche) — Configuración del canal WhatsApp: avance y lo que falta
+
+**Contexto:** se retomó el pendiente de WhatsApp (3h, 19-oct). Código ya estaba desplegado en modo seguro; faltaba todo el trámite del dueño con Meta.
+
+**HECHO (esta sesión):**
+1. **Portafolio Meta Business creado:** nombre "Somos Calma" ("SOMOS-CALMA" con guion lo rechaza el filtro de Meta). Verificación del negocio INICIADA — pendiente aprobación (tarda días; hay constancia de situación fiscal a la mano). Mientras tanto todo funciona en modo desarrollo.
+2. **App creada** en developers.facebook.com: nombre `SOMOS-CALMA`, **App ID `1125353830457079`**, caso de uso "Conectar en WhatsApp", permisos obligatorios por default (whatsapp_business_messaging + management). NO hace falta: publicar la app, ser proveedor de tecnología, revisión de apps, registro insertado, webhooks (solo enviamos, no recibimos).
+3. **Usuario del sistema** "Somos Calma API" (Administrador) creado en business.facebook.com/settings/system-users.
+4. **Token permanente generado (EAA...) y guardado YA** en Supabase secrets (`WHATSAPP_TOKEN`) — `whatsapp-notify` redeplegada para tomarlo. **Ojo: el token quedó también en el chat; si se sospecha exposición, se regenera en system-users.**
+5. **Número de prueba de Meta: NO se pudo crear** ("Se produjo un error al crear la cuenta de prueba", reintentado 3+ veces en horas distintas — bug conocido de Meta en apps nuevas, suele durar 24-48 h). **Decisión: se salta** — el número de prueba es opcional.
+6. **Decisión del dueño (26-oct madrugada): comprar SIM nueva exclusiva para la API** (opción A). El 477 125 0075 NO se toca — sigue para atención humana de las fundadoras.
+7. Docs actualizados: `docs/whatsapp-setup.md` con costos verificados oct-2026 (utilidad MX $0.0085/msg ≈ $0.16 MXN; primeros 1,000 de servicio gratis/mes/número).
+8. **Extra de la sesión (ya en producción):** v1.9.7 botón "Reportar un problema" en dashboards paciente y profesional (`ReportProblemModal` → support-request con `[Problema]` → Soporte/Bandeja del admin).
+
+**SIGUIENTE SESIÓN — retomar WhatsApp aquí (en orden):**
+1. El dueño compra la SIM (~$100-150 MXN/mes).
+2. Agregar el número en https://business.facebook.com → menú ☰ → **WhatsApp Manager** → Configuración de la API → "Agregar número de teléfono" (verificación por SMS al chip). Ahí aparecen el **Phone Number ID** y el **WABA ID**.
+3. Agregar el celular del dueño (y hasta 4 más) como destinatarios de prueba (sección "Enviar y recibir mensajes").
+4. Pasar Phone Number ID a quién opere → `supabase secrets set WHATSAPP_PHONE_NUMBER_ID=...` → deploy `whatsapp-notify` + `appointment-reminders`.
+5. Prueba real: cita de prueba con opt-in y celular en lista → debe llegar el WhatsApp. Script: `CRON_SECRET=... node scripts/test-whatsapp.mjs` (ahora ya no da 501, da 400/404 en casos inválidos).
+6. Después (producción real): crear las 4 plantillas (textos exactos en `docs/whatsapp-setup.md`), esperar aprobación de la verificación del negocio, agregar método de pago en Meta (Billing Hub) — sin método de pago Meta solo entrega los 1,000 mensajes de servicio gratis.
 
 ### 3l. Sesión 2026-10-25 (tarde, completa) — "Soporte/Tickets" del admin: de página fantasma a herramienta real
 
@@ -221,7 +243,7 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 | P1 | Re-grabar v1 y v5 | v1 tiene PII propia y de tercero; v5 muestra flujo que falló y explorador personal (aunque ambos fueron aprobados por decisión expresa del dueño, conviene re-grabar) | Decisión del cliente |
 | P2 | Decisión proveedor de video | Comparación JaaS vs Daily.co en `/admin/prueba-videollamada`; JaaS gratis hasta 25 MAU, después $99/300 MAU; plan futuro: Jitsi propio | Decisión del cliente |
 | P2 | Pagos | Solo cuando haya tracción. Requisito: tarjeta + PayPal + SPEI (Openpay cubre tarjeta+SPEI; PayPal aparte). El sitio ya lo anuncia como "próximamente" | Diferido |
-| P3 | WhatsApp recordatorios | Requiere WhatsApp Business API (de pago) | Decisión del cliente |
+| P3 | WhatsApp recordatorios | **En configuración (~60%) — ver 3m.** Token permanente ya guardado en Supabase; falta: SIM nueva (decisión del dueño tomada) → agregar número real en WhatsApp Manager (Phone Number ID + WABA ID) → destinatarios de prueba → secrets → prueba real. Plantillas y verificación del negocio después. Costo: ~$0.16 MXN/mensaje de utilidad (verificado oct-2026) | Pendiente (cliente+ técnico) |
 | P2 | **Guardar aceptación del aviso en `legal_acceptances`** | Tabla existe (migración 007) pero el registro no la usa; guardar qué versión del aviso aceptó cada usuario = evidencia legal. ~1 h | Pendiente |
 | P3 | Revisión securityheaders.com | Pegar https://somos-calma.com y ver calificación de headers de seguridad (5 min, gratis) | Pendiente |
 | P3 | Skill `web-design-guidelines` de Vercel | Ya está en `.tmp` del repo clonado; copiar a `.kimi-code/skills/` si se quiere | Opcional |
