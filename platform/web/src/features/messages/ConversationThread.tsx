@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, lazy, Suspense } from 'react'
-import { ArrowLeft, CalendarClock, Download, FileText, Image as ImageIcon, Paperclip, Send, Video, X } from 'lucide-react'
+import { ArrowLeft, CalendarClock, Download, FileText, Image as ImageIcon, Paperclip, Send, Sparkles, Video, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -8,6 +8,7 @@ import { useAuth } from '@/features/auth/useAuth'
 import { updateAppointmentStatus } from '@/features/appointments/appointmentsService'
 import {
   findChatVideoSession,
+  findProgramFollowup,
   findRecentNoShowSession,
   getAttachmentUrl,
   listMessages,
@@ -16,10 +17,12 @@ import {
   subscribeToConversation,
   uploadAttachment,
   type ChatVideoSession,
+  type ProgramFollowup,
 } from './messagesService'
 import type { ChatAttachment, ChatMessage, ConversationSummary } from './types'
 import { isImageMime } from './types'
 import { formatTimeUntilStart, getJoinWindowState, minutesUntilStart } from '@/lib/videoSession'
+import { siteConfig } from '@/lib/siteConfig'
 
 const VideoCallExperience = lazy(() =>
   import('@/components/video/VideoCallExperience').then((m) => ({ default: m.VideoCallExperience }))
@@ -128,6 +131,8 @@ export function ConversationThread({ conversation, myUserId, myRole, mySubprofil
   const [videoSession, setVideoSession] = useState<ChatVideoSession | null>(null)
   // Última sesión marcada no_show (aviso + salida a reagenda, si no hay cita activa)
   const [recentNoShow, setRecentNoShow] = useState<ChatVideoSession | null>(null)
+  // Plan de 4/6 sesiones entre el par (aviso de seguimiento tras la 1ª sesión)
+  const [programFollowup, setProgramFollowup] = useState<ProgramFollowup | null>(null)
   const [now, setNow] = useState(() => new Date())
   const [inCall, setInCall] = useState(false)
 
@@ -141,13 +146,15 @@ export function ConversationThread({ conversation, myUserId, myRole, mySubprofil
   useEffect(() => {
     let cancelled = false
     const check = async () => {
-      const [session, noShow] = await Promise.all([
+      const [session, noShow, followup] = await Promise.all([
         findChatVideoSession(myRole, mySubprofileId, otherSubprofileId),
         findRecentNoShowSession(myRole, mySubprofileId, otherSubprofileId),
+        findProgramFollowup(myRole, mySubprofileId, otherSubprofileId),
       ])
       if (!cancelled) {
         setVideoSession(session)
         setRecentNoShow(noShow)
+        setProgramFollowup(followup)
         setNow(new Date())
       }
     }
@@ -377,6 +384,76 @@ export function ConversationThread({ conversation, myUserId, myRole, mySubprofil
               <Video size={16} /> Entrar
             </Button>
           )}
+        </div>
+      )}
+
+      {/* Seguimiento del plan de 4/6 sesiones: sutil, a ambos, con salida
+          clara (el paciente elige horario; el profesional publica
+          disponibilidad). Se oculta mientras haya una sesión agendada a
+          futuro o un aviso de no asistencia pendiente de resolver. */}
+      {!showSessionBanner && !recentNoShow && programFollowup && (
+        <div className="px-4 py-3 border-b bg-primary/5 border-primary/15">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <Sparkles
+              size={18}
+              className={`shrink-0 ${programFollowup.completed ? 'text-success-dark' : 'text-primary-dark'}`}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-text">
+                {programFollowup.completed
+                  ? `¡Plan de ${programFollowup.total} sesiones completado con ${conversation.other.full_name}! 🎉`
+                  : myRole === 'patient'
+                    ? `${programFollowup.sessionType === 'program_4' ? siteConfig.pricing.program4.label : siteConfig.pricing.program6.label}: sesión ${programFollowup.used + 1} de ${programFollowup.total}`
+                    : `${conversation.other.full_name} · Plan de ${programFollowup.total} sesiones (${programFollowup.used} de ${programFollowup.total})`}
+              </p>
+              {/* Progreso visual: un punto por sesión */}
+              <span className="mt-1 inline-flex items-center gap-1" aria-label={`${programFollowup.used} de ${programFollowup.total} sesiones`}>
+                {Array.from({ length: programFollowup.total }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-2 w-2 rounded-full ${
+                      i < programFollowup.used ? 'bg-primary-dark' : 'bg-primary/25'
+                    }`}
+                  />
+                ))}
+                <span className="ml-1 text-xs text-text-light">
+                  {programFollowup.used}/{programFollowup.total}
+                </span>
+              </span>
+              {!programFollowup.completed && (
+                <p className="mt-0.5 text-xs text-text-light">
+                  {myRole === 'patient'
+                    ? 'Selecciona tu siguiente horario disponible.'
+                    : 'Publica tu disponibilidad para que tu paciente agende la siguiente sesión.'}
+                </p>
+              )}
+            </div>
+            {!programFollowup.completed &&
+              (myRole === 'patient' ? (
+                <Button
+                  size="sm"
+                  className="gap-1 shrink-0"
+                  onClick={() =>
+                    navigate('/paciente/agendar', {
+                      state: { therapistId: otherSubprofileId, sessionType: programFollowup.sessionType },
+                    })
+                  }
+                >
+                  <CalendarClock size={16} />
+                  Agendar siguiente sesión
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 shrink-0"
+                  onClick={() => navigate('/profesional/disponibilidad')}
+                >
+                  <CalendarClock size={16} />
+                  Publicar disponibilidad
+                </Button>
+              ))}
+          </div>
         </div>
       )}
 

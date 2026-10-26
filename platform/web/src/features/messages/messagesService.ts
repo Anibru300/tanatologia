@@ -233,6 +233,76 @@ export async function findRecentNoShowSession(
   }
 }
 
+/** Seguimiento de un plan de 4/6 sesiones entre el par del chat.
+ *  Devuelve el plan activo cuando ya se completó al menos 1 sesión, aún faltan
+ *  sesiones por agendar y no hay una siguiente cita futura del mismo plan
+ *  (ese caso lo cubre la barra de videollamada). También devuelve el plan
+ *  recién terminado (completed) para celebrarlo sin llamada a la acción.
+ *  El progreso cuenta citas no-canceladas del mismo tipo entre el par,
+ *  igual que PatientPrograms. */
+export type ProgramFollowup = {
+  sessionType: 'program_4' | 'program_6'
+  used: number
+  total: number
+  completed: boolean
+}
+
+export async function findProgramFollowup(
+  myRole: 'patient' | 'professional',
+  mySubprofileId: string,
+  otherSubprofileId: string
+): Promise<ProgramFollowup | null> {
+  if (!mySubprofileId || !otherSubprofileId) return null
+
+  const myColumn = myRole === 'patient' ? 'patient_profile_id' : 'professional_profile_id'
+  const otherColumn = myRole === 'patient' ? 'professional_profile_id' : 'patient_profile_id'
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('session_type, status, scheduled_at')
+    .eq(myColumn, mySubprofileId)
+    .eq(otherColumn, otherSubprofileId)
+    .in('session_type', ['program_4', 'program_6'])
+    .neq('status', 'cancelled')
+    .order('scheduled_at', { ascending: false })
+    .limit(50)
+
+  if (error) {
+    console.error('findProgramFollowup:', error.message)
+    return null
+  }
+
+  const now = Date.now()
+  const plans = new Map<string, { used: number; done: number; latest: string; upcoming: boolean }>()
+  for (const row of (data || []) as Record<string, unknown>[]) {
+    const type = String(row.session_type)
+    const plan = plans.get(type) ?? { used: 0, done: 0, latest: '', upcoming: false }
+    plan.used += 1
+    if (row.status === 'completed') plan.done += 1
+    const at = String(row.scheduled_at)
+    if (at > plan.latest) plan.latest = at
+    if ((row.status === 'pending' || row.status === 'confirmed') && new Date(at).getTime() > now) {
+      plan.upcoming = true
+    }
+    plans.set(type, plan)
+  }
+
+  let best: { type: string; plan: { used: number; done: number; latest: string; upcoming: boolean } } | null = null
+  for (const [type, plan] of plans) {
+    if (plan.done < 1 || plan.upcoming) continue // sin sesión completada o ya hay siguiente agendada
+    if (!best || plan.latest > best.plan.latest) best = { type, plan }
+  }
+  if (!best) return null
+
+  const total = best.type === 'program_4' ? 4 : 6
+  return {
+    sessionType: best.type as ProgramFollowup['sessionType'],
+    used: best.plan.used,
+    total,
+    completed: best.plan.used >= total,
+  }
+}
+
 /** profiles.id del dueño de un subperfil (para abrir chat con él). */
 export async function getProfileIdBySubprofile(
   subprofileId: string,

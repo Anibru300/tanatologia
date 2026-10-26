@@ -72,11 +72,16 @@ export function BookAppointment() {
   const location = useLocation()
   const { user } = useAuth()
 
-  // Terapeuta preseleccionado desde el directorio (state de navegación).
-  const preselectedTherapistId = (location.state as { therapistId?: string } | null)?.therapistId || null
+  // Terapeuta (y plan) preseleccionados desde el chat/directorio (state de navegación).
+  const navState = location.state as { therapistId?: string; sessionType?: string } | null
+  const preselectedTherapistId = navState?.therapistId || null
+  const preselectedSessionType: SessionType | null =
+    navState?.sessionType === 'program_4' || navState?.sessionType === 'program_6'
+      ? navState.sessionType
+      : null
 
-  const [step, setStep] = useState(0)
-  const [selectedService, setSelectedService] = useState<SessionType>('single')
+  const [step, setStep] = useState(() => (preselectedTherapistId && preselectedSessionType ? 2 : 0))
+  const [selectedService, setSelectedService] = useState<SessionType>(preselectedSessionType ?? 'single')
   const [selectedTherapist, setSelectedTherapist] = useState<string | null>(preselectedTherapistId)
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
@@ -196,7 +201,8 @@ export function BookAppointment() {
     return true
   }
 
-  // Si el terapeuta ya viene elegido del directorio, se salta el paso 1.
+  // Si el terapeuta ya viene elegido (directorio/chat), se salta el paso 1.
+  // Con terapeuta + plan preseleccionados el componente arranca en el paso 2.
   const goNext = () => {
     if (step === 0 && preselectedTherapistId && selectedTherapist) {
       setStep(2)
