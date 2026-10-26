@@ -915,38 +915,8 @@ a.resource-card:focus-visible {
    - Directorio público de profesionales verificados (pro-dir)
    - Mini-guía interactiva consulta vs programa (quiz)
    - CTA flotante móvil (mobile-cta)
-   - Mock visual del portal profesional (portal-mock)
+   - Capturas reales de la plataforma (shot-frame, shots-grid)
    ============================================================================= */
-
-/* --- Cinta de números reales --- */
-.public-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem 2.25rem;
-    margin-top: 1.75rem;
-}
-
-.public-stats:empty,
-.public-stats[hidden] {
-    display: none;
-}
-
-.public-stats__item {
-    display: flex;
-    flex-direction: column;
-}
-
-.public-stats__num {
-    font-size: 1.7rem;
-    font-weight: 700;
-    color: var(--color-primary-dark);
-    line-height: 1.15;
-}
-
-.public-stats__label {
-    font-size: 0.85rem;
-    color: var(--color-text-light);
-}
 
 /* --- Directorio público de profesionales --- */
 .pro-dir {
@@ -1155,136 +1125,47 @@ a.resource-card:focus-visible {
     }
 }
 
-/* --- Mock visual del portal profesional --- */
-.portal-mock {
-    max-width: 520px;
-    margin: 0 auto;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
+
+/* --- Capturas reales de la plataforma (landings) --- */
+.shots-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.shot-frame {
     border-radius: var(--radius);
     overflow: hidden;
-    box-shadow: var(--shadow-lg);
-}
-
-.portal-mock__bar {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: var(--color-peace);
-    padding: 0.6rem 0.9rem;
-    border-bottom: 1px solid var(--color-border);
-}
-
-.portal-mock__dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.portal-mock__dot:nth-child(1) { background: #C1666B; }
-.portal-mock__dot:nth-child(2) { background: #D4A373; }
-.portal-mock__dot:nth-child(3) { background: #7A9E7E; }
-
-.portal-mock__url {
-    flex: 1;
-    margin-left: 0.5rem;
-    background: var(--color-surface);
-    border-radius: 999px;
-    font-size: 0.7rem;
-    color: var(--color-text-light);
-    padding: 0.2rem 0.8rem;
-}
-
-.portal-mock__body {
-    display: grid;
-    grid-template-columns: 130px 1fr;
-    min-height: 300px;
-}
-
-.portal-mock__side {
-    background: var(--color-bg);
-    border-right: 1px solid var(--color-border);
-    padding: 1rem 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-}
-
-.portal-mock__nav {
-    font-size: 0.72rem;
-    color: var(--color-text-light);
-    padding: 0.45rem 0.6rem;
-    border-radius: var(--radius-sm);
-    white-space: nowrap;
-}
-
-.portal-mock__nav--active {
-    background: var(--color-primary);
-    color: #fff;
-    font-weight: 600;
-}
-
-.portal-mock__main {
-    padding: 1.1rem;
-}
-
-.portal-mock__title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--color-text);
-    margin-bottom: 0.9rem;
-}
-
-.portal-mock__row {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: 0.6rem 0.7rem;
-    margin-bottom: 0.55rem;
-    font-size: 0.72rem;
-    color: var(--color-text);
+    box-shadow: var(--shadow-lg);
     background: var(--color-surface);
+    line-height: 0;
 }
 
-.portal-mock__time {
-    font-weight: 700;
-    color: var(--color-primary-dark);
+.shot-frame img {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
-.portal-mock__badge {
-    margin-left: auto;
-    font-size: 0.62rem;
-    border-radius: 999px;
-    padding: 0.15rem 0.55rem;
-    white-space: nowrap;
+.shot-frame--phone {
+    max-width: 340px;
+    margin: 0 auto;
+    border: 5px solid var(--color-text);
+    border-radius: 32px;
 }
 
-.portal-mock__badge--video {
-    background: rgba(122, 154, 168, 0.15);
-    color: var(--color-secondary-dark);
-}
-
-.portal-mock__badge--free {
-    background: var(--color-peace);
-    color: var(--color-text-light);
-}
-
-.portal-mock__badge--done {
-    background: rgba(122, 158, 126, 0.15);
-    color: var(--color-success);
-}
-
-.portal-mock__caption {
+.shot-frame__caption {
     text-align: center;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     color: var(--color-text-light);
-    margin-top: 0.9rem;
+    margin-top: 0.8rem;
+    line-height: 1.4;
 }
 
 @media (max-width: 768px) {
-    .portal-mock__body {
-        grid-template-columns: 100px 1fr;
+    .shots-grid {
+        grid-template-columns: 1fr;
     }
 }
