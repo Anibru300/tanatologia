@@ -86,7 +86,7 @@
 
 1. **Tarjeta grupo de apoyo (v1.9.3, `ProfessionalDashboard.tsx`):** anuncio bajo el saludo — "Únete a nuestro grupo de apoyo de SOMOS CALMA para profesionistas", "Entra a través de tu celular a este link", botón verde (#25D366) con el link de invitación de WhatsApp en pestaña nueva (`target="_blank"`). tsc ✓, oxlint ✓, tests 38/38, build ✓.
 2. **Notificación in-app enviada a los 46 profesionales** (type `admin_broadcast`, link `/profesional`, historial en `notification_broadcasts` 46/46) — SQL `.tools/review/tut7/notify-whatsapp-group.sql` vía `supabase db query --linked`.
-3. **Video informativo (v7) — NO publicado, en espera para la PÁGINA PÚBLICA (decisión del dueño 2026-10-24).** Audio mejorado con loudnorm de dos pasadas (+16 dB, -16 LUFS, pico -1.2 dBTP, normalización lineal sin bombeo; video sin re-encodear, h264 intacto). Archivo final en `VIDEOS TUTORIALES/PROFESIONISTA/Video informativo para profesionistas (53s).mp4`; original sin editar respaldado en `.tools/review/tut7/original.mp4`. **No ejecutar** `upload-tutorial-v7.mjs` ni `notify-tutorial-v7.sql` (eran para Tutoriales de la app — congelados hasta nueva orden). Cuando el dueño diga, se publica en el sitio estático (raíz del repo), NO en la app.
+3. **Video informativo (v7) — ✅ PUBLICADO EN LA PÁGINA PÚBLICA 2026-10-25** (orden del dueño). En `pages/profesionales.html`, sección "Conócenos en 53 segundos / Te contamos cómo funciona", video embebido en marco tipo teléfono (`.video-phone` en pages.css), `preload=metadata`, poster sin PII. Archivos: `assets/videos/profesionales-video-informativo.mp4` (11 MB, audio +16 dB) y `-poster.jpg`. **No ejecutar** `upload-tutorial-v7.mjs` ni `notify-tutorial-v7.sql` (eran para Tutoriales de la app — congelados).
 
 ### 3i. Sesión 2026-10-22 (completa) — Expediente del profesional en admin + fix incidente Toronto (zona horaria, no_show prematuro, link roto, chat sin puerta)
 
@@ -227,7 +227,7 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 
 | # | Qué | Detalle | Estado |
 |---|-----|---------|--------|
-| P0 | **Publicar video informativo en la PÁGINA PÚBLICA cuando el dueño diga** | Audio ya mejorado (+16 dB); archivo listo en `VIDEOS TUTORIALES/PROFESIONISTA/`. NO va a la app ni a Tutoriales. Al publicarse: secciones públicas del sitio estático (index/recursos), optimizado para web | Pendiente (cliente) |
+| P0 | ~~Publicar video informativo en la PÁGINA PÚBLICA~~ ✅ **HECHO 2026-10-25** | Publicado en `pages/profesionales.html` (sección "Conócenos en 53 segundos", marco tipo teléfono) con video en `assets/videos/profesionales-video-informativo.mp4` + poster. Verificado con capturas desktop/móvil. NO fue a la app ni a Tutoriales (scripts tut7 siguen congelados) | Hecho |
 | P1 | Rotar contraseña del admin | Las credenciales de `admin@demo.com` pasaron por el chat el 2026-10-03 (subida del tutorial v6). No están en ningún archivo, pero conviene cambiarla: Supabase Dashboard → Authentication → Users, o pedirle al dueño que la actualice desde su perfil | Pendiente (seguridad) |
 | P1 | **Facebook: actualizar teléfono en la página** | La página lleva el viejo 477 254 1540; debe cambiarse a 477 125 0075 (Página → Editar información → Teléfono). Del lado del cliente | Pendiente (cliente) |
 | P1 | **Confirmar WhatsApp del 477 125 0075** | El flotante del sitio abre chat directo a ese número; si no tiene WhatsApp habilitado el enlace falla. Probar enviándose un mensaje | Pendiente (cliente) |

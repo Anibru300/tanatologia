@@ -880,3 +880,31 @@ a.resource-card:focus-visible {
         padding: 1.5rem;
     }
 }
+
+/* =============================================================================
+   Video informativo para profesionistas (página pública profesionales.html)
+   Marco tipo teléfono para el video vertical 9:16.
+   ============================================================================= */
+.video-phone {
+    max-width: 290px;
+    margin: 0 auto;
+    border-radius: 28px;
+    overflow: hidden;
+    border: 6px solid var(--color-text);
+    box-shadow: 0 24px 48px rgba(45, 66, 53, 0.25);
+    background: var(--color-text);
+    line-height: 0;
+}
+
+.video-phone video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .video-phone {
+        max-width: 240px;
+        margin-top: 1rem;
+    }
+}
