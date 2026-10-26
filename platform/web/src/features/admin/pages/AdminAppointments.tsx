@@ -1,10 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { DataTable } from '@/components/ui/DataTable'
 import { Calendar, Video } from 'lucide-react'
-import { getAdminAppointments, getCallFacts, type AdminAppointment, type AdminCallFact } from '@/features/admin/adminService'
+import {
+  getAdminAppointments,
+  getAdminProgramAppointments,
+  getCallFacts,
+  type AdminAppointment,
+  type AdminCallFact,
+  type AdminProgramAppointment,
+} from '@/features/admin/adminService'
 
 const sessionTypeLabels: Record<string, string> = {
   single: 'Consulta aislada',
@@ -30,6 +37,7 @@ const statusVariants: Record<string, 'default' | 'success' | 'warning' | 'error'
 
 export function AdminAppointments() {
   const [appointments, setAppointments] = useState<AdminAppointment[]>([])
+  const [programAppointments, setProgramAppointments] = useState<AdminProgramAppointment[]>([])
   const [callFacts, setCallFacts] = useState<Map<string, AdminCallFact>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -41,8 +49,12 @@ export function AdminAppointments() {
   async function load() {
     setLoading(true)
     try {
-      const data = await getAdminAppointments()
+      const [data, programRows] = await Promise.all([
+        getAdminAppointments(),
+        getAdminProgramAppointments(),
+      ])
       setAppointments(data)
+      setProgramAppointments(programRows)
       setCallFacts(await getCallFacts(data.map((a) => a.id)))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar')
@@ -50,6 +62,51 @@ export function AdminAppointments() {
       setLoading(false)
     }
   }
+
+  // Resumen para supervisión: planes con sesiones aún no agendadas.
+  const programSummary = useMemo(() => {
+    const byPlan = new Map<string, AdminProgramAppointment[]>()
+    for (const row of programAppointments) {
+      const key = `${row.patient_profile_id}|${row.professional_profile_id}|${row.session_type}`
+      const list = byPlan.get(key) || []
+      list.push(row)
+      byPlan.set(key, list)
+    }
+    let activePlans = 0
+    let pendingSessions = 0
+    for (const [key, rows] of byPlan) {
+      const total = key.endsWith('program_4') ? 4 : 6
+      const remaining = total - rows.length
+      if (remaining > 0) {
+        activePlans += 1
+        pendingSessions += remaining
+      }
+    }
+    return { activePlans, pendingSessions }
+  }, [programAppointments])
+
+  // Progreso de cada plan (par paciente+profesional+tipo): posición de la
+  // cita en la secuencia, total del plan y cuántas quedan por agendar.
+  const programInfoById = useMemo(() => {
+    const byPlan = new Map<string, AdminProgramAppointment[]>()
+    for (const row of programAppointments) {
+      const key = `${row.patient_profile_id}|${row.professional_profile_id}|${row.session_type}`
+      const list = byPlan.get(key) || []
+      list.push(row)
+      byPlan.set(key, list)
+    }
+    const now = Date.now()
+    const map = new Map<string, { total: number; ordinal: number; used: number; upcoming: number }>()
+    for (const [key, rows] of byPlan) {
+      const total = key.endsWith('program_4') ? 4 : 6
+      const used = rows.length
+      const upcoming = rows.filter(
+        (r) => (r.status === 'pending' || r.status === 'confirmed') && new Date(r.scheduled_at).getTime() > now
+      ).length
+      rows.forEach((r, i) => map.set(r.id, { total, ordinal: i + 1, used, upcoming }))
+    }
+    return map
+  }, [programAppointments])
 
   return (
     <div className="section-calma">
@@ -70,6 +127,14 @@ export function AdminAppointments() {
             <CardDescription>Todas las citas de la plataforma.</CardDescription>
           </CardHeader>
           <CardContent>
+            {programSummary.activePlans > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Badge variant="info">{programSummary.activePlans} plan{programSummary.activePlans === 1 ? '' : 'es'} en curso</Badge>
+                <Badge variant="warning">
+                  {programSummary.pendingSessions} sesión{programSummary.pendingSessions === 1 ? '' : 'es'} por agendar
+                </Badge>
+              </div>
+            )}
             <DataTable
               loading={loading}
               rows={appointments}
@@ -93,7 +158,27 @@ export function AdminAppointments() {
                 },
                 {
                   header: 'Tipo',
-                  render: (a) => <span className="text-text-light">{sessionTypeLabels[a.session_type] || a.session_type}</span>,
+                  render: (a) => {
+                    const info = programInfoById.get(a.id)
+                    if (!info) {
+                      return <span className="text-text-light">{sessionTypeLabels[a.session_type] || a.session_type}</span>
+                    }
+                    const remaining = info.total - info.used
+                    return (
+                      <div>
+                        <span className="text-text-light">{sessionTypeLabels[a.session_type] || a.session_type}</span>
+                        <p className="text-xs text-text-light mt-0.5">
+                          <span className="font-medium text-text">Sesión {info.ordinal} de {info.total}</span>
+                          {' · '}
+                          {remaining <= 0
+                            ? 'plan completo'
+                            : info.upcoming > 0
+                              ? `${info.upcoming} agendada${info.upcoming === 1 ? '' : 's'}, ${remaining - info.upcoming} por agendar`
+                              : `${remaining} por agendar`}
+                        </p>
+                      </div>
+                    )
+                  },
                 },
                 {
                   header: 'Videollamada',

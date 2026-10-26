@@ -89,6 +89,8 @@ export type AdminPatient = {
 
 export type AdminAppointment = {
   id: string
+  patient_profile_id: string
+  professional_profile_id: string
   patient_name: string
   professional_name: string
   scheduled_at: string
@@ -154,7 +156,7 @@ export async function getAdminAppointments(): Promise<AdminAppointment[]> {
   const { data, error } = await supabase
     .from('appointments')
     .select(
-      'id, scheduled_at, status, session_type, patient_profiles(full_name), professional_profiles(full_name)'
+      'id, patient_profile_id, professional_profile_id, scheduled_at, status, session_type, patient_profiles(full_name), professional_profiles(full_name)'
     )
     .order('scheduled_at', { ascending: false })
 
@@ -165,6 +167,8 @@ export async function getAdminAppointments(): Promise<AdminAppointment[]> {
     const prof = (row.professional_profiles as { full_name?: string } | null) || {}
     return {
       id: String(row.id),
+      patient_profile_id: String(row.patient_profile_id),
+      professional_profile_id: String(row.professional_profile_id),
       patient_name: pp.full_name || 'Paciente',
       professional_name: prof.full_name || 'Profesional',
       scheduled_at: String(row.scheduled_at),
@@ -172,6 +176,38 @@ export async function getAdminAppointments(): Promise<AdminAppointment[]> {
       session_type: String(row.session_type),
     }
   })
+}
+
+/** Citas de planes (4/6 sesiones) no canceladas, de TODOS los pacientes.
+ *  El admin las usa para calcular el progreso de cada plan (sesión N de M,
+ *  cuántas faltan por agendar / ya están agendadas a futuro). */
+export type AdminProgramAppointment = {
+  id: string
+  patient_profile_id: string
+  professional_profile_id: string
+  session_type: string
+  status: string
+  scheduled_at: string
+}
+
+export async function getAdminProgramAppointments(): Promise<AdminProgramAppointment[]> {
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('id, patient_profile_id, professional_profile_id, session_type, status, scheduled_at')
+    .in('session_type', ['program_4', 'program_6'])
+    .neq('status', 'cancelled')
+    .order('scheduled_at', { ascending: true })
+
+  if (error) throw new Error(error.message)
+
+  return (data || []).map((row: Record<string, unknown>) => ({
+    id: String(row.id),
+    patient_profile_id: String(row.patient_profile_id),
+    professional_profile_id: String(row.professional_profile_id),
+    session_type: String(row.session_type),
+    status: String(row.status),
+    scheduled_at: String(row.scheduled_at),
+  }))
 }
 
 export type AdminSlot = {
