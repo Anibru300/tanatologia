@@ -44,13 +44,42 @@
     }
     </script>
 
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "¿La plataforma me cobra comisiones?",
+                "acceptedAnswer": { "@type": "Answer", "text": "No durante la Beta: no hay cuotas ni comisiones de plataforma. Cuando la Beta termine, cualquier cambio se comunicará con al menos 30 días de anticipación." }
+            },
+            {
+                "@type": "Question",
+                "name": "¿Cómo recibo el pago de mis sesiones?",
+                "acceptedAnswer": { "@type": "Answer", "text": "El paciente te paga directamente por cada sesión, con el método que ambos acuerden (transferencia SPEI o tarjeta). Somos Calma no procesa ni retiene tus pagos durante la Beta." }
+            },
+            {
+                "@type": "Question",
+                "name": "¿Cómo verifican mi cédula profesional?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Subes tu cédula y título desde tu portal y nuestro equipo los revisa manualmente en 24–48 horas, consultando la cédula en el registro público de la SEP." }
+            },
+            {
+                "@type": "Question",
+                "name": "¿Puedo definir mis propios horarios?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Sí. Publicas los espacios que quieras dentro de la cobertura de 7 a.m. a 11 p.m., los 7 días de la semana, y puedes modificarlos en cualquier momento." }
+            }
+        ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/pages.css">
 </head>
-<body class="page-with-bg">
+<body class="page-with-bg has-cta-bar">
     <a href="#main-content" class="skip-link">Saltar al contenido principal</a><div id="header-component"></div>
 
     <main id="main-content">
@@ -59,6 +88,20 @@
                 <span class="section__eyebrow">Para profesionales</span>
                 <h1>Consultas, formación y comunidad</h1>
                 <p>Únete a una red de psicólogos y tanatólogos. Recibe pacientes sin invertir en publicidad y accede a conferencias, bibliografía y materiales para tus sesiones.</p>
+                <div class="public-stats" data-public-stats hidden>
+                    <div class="public-stats__item">
+                        <span class="public-stats__num" data-count="professionals">–</span>
+                        <span class="public-stats__label">profesionales ya verificados</span>
+                    </div>
+                    <div class="public-stats__item">
+                        <span class="public-stats__num" data-count="patients">–</span>
+                        <span class="public-stats__label">pacientes en la red</span>
+                    </div>
+                    <div class="public-stats__item">
+                        <span class="public-stats__num">$0</span>
+                        <span class="public-stats__label">comisiones durante la Beta</span>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -153,8 +196,49 @@
                             <a href="/app/#/register?role=professional" class="btn btn--outline">Solicitar acceso</a>
                         </div>
                     </div>
-                    <div class="illustration-box">
-                        <img src="../assets/images/illustration-learning.svg" alt="Ilustración del portal de profesionales" loading="lazy">
+                    <div>
+                        <div class="portal-mock" aria-label="Vista previa ilustrativa del portal de profesionales">
+                            <div class="portal-mock__bar">
+                                <span class="portal-mock__dot"></span>
+                                <span class="portal-mock__dot"></span>
+                                <span class="portal-mock__dot"></span>
+                                <span class="portal-mock__url">somos-calma.com/app</span>
+                            </div>
+                            <div class="portal-mock__body">
+                                <div class="portal-mock__side">
+                                    <span class="portal-mock__nav portal-mock__nav--active">Mi agenda</span>
+                                    <span class="portal-mock__nav">Mis citas</span>
+                                    <span class="portal-mock__nav">Pacientes</span>
+                                    <span class="portal-mock__nav">Mensajes</span>
+                                    <span class="portal-mock__nav">Biblioteca</span>
+                                    <span class="portal-mock__nav">Tutoriales</span>
+                                </div>
+                                <div class="portal-mock__main">
+                                    <p class="portal-mock__title">Hoy</p>
+                                    <div class="portal-mock__row">
+                                        <span class="portal-mock__time">10:00</span>
+                                        <span>Sesión individual</span>
+                                        <span class="portal-mock__badge portal-mock__badge--video">Videollamada</span>
+                                    </div>
+                                    <div class="portal-mock__row">
+                                        <span class="portal-mock__time">12:30</span>
+                                        <span>Espacio disponible</span>
+                                        <span class="portal-mock__badge portal-mock__badge--free">Publicar</span>
+                                    </div>
+                                    <div class="portal-mock__row">
+                                        <span class="portal-mock__time">17:00</span>
+                                        <span>Sesión · Programa 4</span>
+                                        <span class="portal-mock__badge portal-mock__badge--video">Videollamada</span>
+                                    </div>
+                                    <div class="portal-mock__row">
+                                        <span class="portal-mock__time">19:30</span>
+                                        <span>Sesión completada</span>
+                                        <span class="portal-mock__badge portal-mock__badge--done">Nota clínica ✓</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="portal-mock__caption">Vista previa ilustrativa de tu portal</p>
                     </div>
                 </div>
             </div>
@@ -215,6 +299,68 @@
             </div>
         </section>
 
+        <section class="section">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Proceso de alta</span>
+                    <h2 class="section__title">Así de sencillo es unirse</h2>
+                </div>
+                <div class="grid grid--4 steps">
+                    <article class="step">
+                        <h3>1. Aplicas</h3>
+                        <p>Formulario y documentos desde tu celular, en menos de 10 minutos.</p>
+                    </article>
+                    <article class="step">
+                        <h3>2. Verificamos</h3>
+                        <p>Revisamos tu cédula y título manualmente en 24–48 horas.</p>
+                    </article>
+                    <article class="step">
+                        <h3>3. Platicamos</h3>
+                        <p>Una breve entrevista y tu inducción a la plataforma.</p>
+                    </article>
+                    <article class="step">
+                        <h3>4. Empiezas</h3>
+                        <p>Tu perfil se publica en el directorio y comienzas a recibir pacientes.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section--alt">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Preguntas frecuentes</span>
+                    <h2 class="section__title">Antes de aplicar</h2>
+                </div>
+                <div class="faq" style="max-width: 800px; margin: 0 auto;">
+                    <div class="faq__item">
+                        <h3 class="faq__question">¿La plataforma me cobra comisiones?</h3>
+                        <p class="faq__answer">No durante la Beta: no hay cuotas ni comisiones de plataforma. Cuando la Beta termine, cualquier cambio en el modelo se te comunicará con al menos 30 días de anticipación y tu participación será siempre voluntaria.</p>
+                    </div>
+                    <div class="faq__item">
+                        <h3 class="faq__question">¿Cómo recibo el pago de mis sesiones?</h3>
+                        <p class="faq__answer">El paciente te paga directamente por cada sesión, con el método que ambos acuerden (transferencia SPEI o tarjeta). Somos Calma no procesa ni retiene tus pagos durante la Beta; tú defines tu tarifa entre $150 y $350 MXN por sesión.</p>
+                    </div>
+                    <div class="faq__item">
+                        <h3 class="faq__question">¿Cómo verifican mi cédula profesional?</h3>
+                        <p class="faq__answer">Subes tu cédula y título desde tu portal y nuestro equipo los revisa manualmente en 24–48 horas (consultamos la cédula en el registro público de la SEP). Tu perfil se publica en el directorio solo después de ser verificado.</p>
+                    </div>
+                    <div class="faq__item">
+                        <h3 class="faq__question">¿Puedo definir mis propios horarios?</h3>
+                        <p class="faq__answer">Sí, totalmente. Publicas los espacios que quieras dentro de nuestra cobertura (7 a.m. a 11 p.m., los 7 días de la semana) y puedes modificarlos en cualquier momento. Solo las citas ya agendadas requieren respetar el aviso de cancelación.</p>
+                    </div>
+                    <div class="faq__item">
+                        <h3 class="faq__question">¿Cuántos pacientes puedo esperar?</h3>
+                        <p class="faq__answer">Somos honestos: la red está creciendo. Los pacientes te encuentran en el directorio según tu especialidad y tus horarios publicados — a mayor disponibilidad, mayor visibilidad. Durante la Beta no hay mínimos ni obligación de carga de pacientes.</p>
+                    </div>
+                    <div class="faq__item">
+                        <h3 class="faq__question">¿Qué necesito para dar sesiones en línea?</h3>
+                        <p class="faq__answer">Una computadora o tablet con cámara y micrófono, conexión a internet estable y un espacio privado y tranquilo. La videollamada corre dentro de la plataforma: no necesitas instalar nada ni compartir tus datos personales con el paciente.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="section section--peace">
             <div class="container">
                 <div class="text-center">
@@ -227,6 +373,10 @@
     </main>
 
     <div id="footer-component"></div>
+
+    <div class="mobile-cta">
+        <a href="/app/#/register?role=professional" class="btn btn--primary">Aplicar como profesional</a>
+    </div>
 
     <script src="../assets/js/components.js"></script>
     <script src="../assets/js/main.js"></script>

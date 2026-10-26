@@ -35,7 +35,14 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-25 noche — v1.9.7 "Reportar un problema" + WhatsApp: app Meta creada, token guardado, falta la SIM)
+## 3. Última sesión (2026-10-25 noche — Mejoras de landing pública + directorio en vivo)
+
+**Hecho y verificado (todas con capturas headless en `.tools/review/shot-landings.cjs` / `shot-profe-sections.cjs`):**
+1. **Fixes:** "50 min" → "60 min" en `pages/pacientes.html` (3 lugares, info desactualizada desde el 18-oct); schema `FAQPage` JSON-LD en ambas landings.
+2. **Edge Function `public-directory`** (pública, GET, rate-limit 30/min/IP, cache 5 min): directorio de verificados+visibles (nombre, avatar, especialidades) + conteos (profesionales/sesiones/pacientes). **Ojo:** el join a `profiles` requiere `profiles!professional_profiles_profile_id_fkey` (hay 2 FK a profiles). Desplegada y probada en Cloud (16/16/4). Loader opt-in por markup en `assets/js/components.js`; si falla el fetch todo queda oculto.
+3. **pacientes.html:** video Dra. Edith (marco teléfono), cifras reales en el hero, "Conoce a quienes te acompañan" (directorio real máx 8), mini-guía interactiva de 2 preguntas (consulta/4/6), CTA móvil "Agenda tu primera sesión".
+4. **profesionales.html:** cifras reales (N verificados / N pacientes / $0 comisiones), mock del portal (`portal-mock`, agenda ilustrativa sin datos reales), línea de tiempo del alta (4 pasos), FAQ de 6 preguntas, CTA móvil "Aplicar como profesional".
+5. **CSS:** `.public-stats`, `.pro-dir`, `.quiz`, `.mobile-cta` en `pages.css`; `body.has-cta-bar` (solo móvil) sube whatsapp/facebook/atencion-bot a 5.5rem + padding-bottom 72px.
 
 ### 3m. Sesión 2026-10-25 (noche) — Configuración del canal WhatsApp: avance y lo que falta
 

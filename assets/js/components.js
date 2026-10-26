@@ -186,3 +186,73 @@
         }
     } catch (e) { /* sin localStorage (modo privado estricto): omitir */ }
 })();
+
+/* =============================================================================
+   Datos reales en la landing pública (directorio + conteos).
+   Las páginas opt-in por markup:
+     - Conteos:  <div class="public-stats" data-public-stats hidden> con spans
+                 <span data-count="professionals|patients|sessions">
+     - Directorio: <section ... data-public-directory hidden> con un
+                 <div data-public-directory-grid> dentro.
+   Si el fetch falla, todo queda oculto (la página se ve como antes).
+   ============================================================================= */
+(function () {
+    var statsContainers = document.querySelectorAll('[data-public-stats]');
+    var dirSections = document.querySelectorAll('[data-public-directory]');
+    if (!statsContainers.length && !dirSections.length) return;
+
+    function esc(text) {
+        return String(text).replace(/[&<>"']/g, function (ch) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+        });
+    }
+
+    fetch('https://qjwebikgrqtotqfipeqt.supabase.co/functions/v1/public-directory')
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .then(function (data) {
+            if (!data) return;
+            var counts = data.counts || {};
+
+            statsContainers.forEach(function (box) {
+                var filled = false;
+                box.querySelectorAll('[data-count]').forEach(function (el) {
+                    var value = counts[el.getAttribute('data-count')];
+                    if (typeof value === 'number' && value > 0) {
+                        el.textContent = value;
+                        filled = true;
+                    }
+                });
+                if (filled) box.hidden = false;
+            });
+
+            dirSections.forEach(function (section) {
+                var grid = section.querySelector('[data-public-directory-grid]');
+                var directory = (data.directory || []).slice(0, 8);
+                if (!grid || !directory.length) return;
+
+                grid.innerHTML = directory.map(function (pro) {
+                    var name = String(pro.full_name || 'Profesional').trim();
+                    var initial = name.charAt(0).toUpperCase();
+                    var specs = (pro.specialties || []).slice(0, 3);
+                    var extra = (pro.specialties || []).length - specs.length;
+                    var avatar = pro.avatar_url
+                        ? '<img src="' + esc(pro.avatar_url) + '" alt="" loading="lazy">'
+                        : esc(initial);
+                    var chips = specs.map(function (s) {
+                        return '<span class="pro-dir__spec">' + esc(s) + '</span>';
+                    }).join('');
+                    if (extra > 0) chips += '<span class="pro-dir__spec">+' + extra + '</span>';
+
+                    return '<article class="pro-dir__card">' +
+                        '<div class="pro-dir__avatar">' + avatar + '</div>' +
+                        '<p class="pro-dir__name">' + esc(name) + '</p>' +
+                        '<div class="pro-dir__specs">' + chips + '</div>' +
+                        '<span class="pro-dir__verified">✓ Cédula verificada</span>' +
+                        '</article>';
+                }).join('');
+
+                section.hidden = false;
+            });
+        })
+        .catch(function () { /* sin conexión: la landing queda como estaba */ });
+})();

@@ -44,13 +44,46 @@
     }
     </script>
 
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "¿Cuál es la diferencia entre una consulta aislada y un programa?",
+                "acceptedAnswer": { "@type": "Answer", "text": "La consulta aislada es una sola sesión de 60 minutos para lo urgente. Los programas son paquetes de 4 o 6 sesiones para trabajar de manera guiada tu salud mental o un duelo." }
+            },
+            {
+                "@type": "Question",
+                "name": "¿Puedo elegir entre psicólogo y tanatólogo?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Sí. Si tu situación está relacionada con duelo, muerte o pérdida, te vinculamos con un tanatólogo. Para ansiedad, depresión o salud mental general, con un psicólogo." }
+            },
+            {
+                "@type": "Question",
+                "name": "¿A qué horas puedo agendar?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Contamos con cobertura de 7:00 a.m. a 11:00 p.m., todos los días de la semana." }
+            },
+            {
+                "@type": "Question",
+                "name": "¿Las sesiones son confidenciales?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Sí. Todos los profesionales cumplen con normas éticas y de privacidad. Las sesiones se realizan por videollamada privada." }
+            },
+            {
+                "@type": "Question",
+                "name": "¿Atienden emergencias?",
+                "acceptedAnswer": { "@type": "Answer", "text": "No. Si estás en riesgo inminente, contacta al 911 o a una línea de crisis." }
+            }
+        ]
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/pages.css">
 </head>
-<body class="page-with-bg">
+<body class="page-with-bg has-cta-bar">
     <a href="#main-content" class="skip-link">Saltar al contenido principal</a><div id="header-component"></div>
 
     <main id="main-content">
@@ -59,10 +92,50 @@
                 <span class="section__eyebrow">Para pacientes</span>
                 <h1>Acompañamiento que respeta tu ritmo</h1>
                 <p>Consulta aislada para lo urgente, o un programa guiado de 4 o 6 sesiones para cuidar tu salud mental o acompañarte en una pérdida.</p>
+                <div class="public-stats" data-public-stats hidden>
+                    <div class="public-stats__item">
+                        <span class="public-stats__num" data-count="professionals">–</span>
+                        <span class="public-stats__label">profesionales verificados</span>
+                    </div>
+                    <div class="public-stats__item">
+                        <span class="public-stats__num" data-count="patients">–</span>
+                        <span class="public-stats__label">pacientes acompañados</span>
+                    </div>
+                    <div class="public-stats__item">
+                        <span class="public-stats__num">7–23 h</span>
+                        <span class="public-stats__label">todos los días</span>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section class="section">
+            <div class="container">
+                <div class="feature">
+                    <div class="video-phone">
+                        <video
+                            src="../assets/images/fundadoras/edith.mp4"
+                            poster="../assets/images/fundadoras/edith.jpg"
+                            controls
+                            playsinline
+                            preload="metadata"
+                            aria-label="Mensaje de la Dra. Edith González Huerta, fundadora y tanatóloga de Somos Calma">
+                        </video>
+                    </div>
+                    <div class="feature__content">
+                        <span class="section__eyebrow">Un mensaje antes de comenzar</span>
+                        <h2>Te acompañamos con calma</h2>
+                        <p>
+                            Nuestra fundadora y tanatóloga te cuenta, en menos de un minuto, cómo es el
+                            acompañamiento en Somos Calma y qué puedes esperar de tu primera sesión.
+                        </p>
+                        <a href="/app/#/register?role=patient" class="btn btn--primary">Comenzar mi acompañamiento</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="opciones" class="section section--alt">
             <div class="container">
                 <div class="section__header">
                     <span class="section__eyebrow">Nuestras opciones</span>
@@ -72,21 +145,61 @@
                     <article class="card">
                         <div class="card__icon">🌿</div>
                         <h3>Consulta aislada</h3>
-                        <p>Una sola sesión de 50 minutos cuando sientes que el día pesa demasiado. Sin compromiso, sin contratos.</p>
+                        <p>Una sola sesión de 60 minutos cuando sientes que el día pesa demasiado. Sin compromiso, sin contratos.</p>
                         <p><strong>Estamos en Beta</strong></p>
                     </article>
                     <article class="card">
                         <div class="card__icon">🧠</div>
                         <h3>Programa de Salud Mental</h3>
                         <p>Cuatro sesiones para cuidar tu salud emocional, manejar la ansiedad o construir rutinas de autocuidado.</p>
-                        <p><strong>4 sesiones</strong> · <strong>$150–$350 MXN por sesión de 50 min</strong></p>
+                        <p><strong>4 sesiones</strong> · <strong>$150–$350 MXN por sesión de 60 min</strong></p>
                     </article>
                     <article class="card">
                         <div class="card__icon">🕊️</div>
                         <h3>Programa de acompañamiento por duelo, muerte o pérdida</h3>
                         <p>Seis sesiones con un tanatólogo para acompañarte en un proceso de duelo, pérdida o crisis vital.</p>
-                        <p><strong>6 sesiones · $150–$350 MXN por sesión de 50 min</strong></p>
+                        <p><strong>6 sesiones · $150–$350 MXN por sesión de 60 min</strong></p>
                     </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">¿No sabes cuál elegir?</span>
+                    <h2 class="section__title">Responde 2 preguntas y te orientamos</h2>
+                </div>
+                <div class="quiz" data-quiz>
+                    <div class="quiz__progress" aria-hidden="true">
+                        <span class="quiz__dot quiz__dot--active"></span>
+                        <span class="quiz__dot"></span>
+                    </div>
+                    <div data-quiz-step="1">
+                        <p class="quiz__question">¿Lo que sientes está relacionado con algo puntual o lleva tiempo conmigo?</p>
+                        <div class="quiz__options">
+                            <button type="button" class="quiz__option" data-q1="puntual">Es algo puntual o reciente</button>
+                            <button type="button" class="quiz__option" data-q1="tiempo">Lleva semanas o meses conmigo</button>
+                            <button type="button" class="quiz__option" data-q1="duelo">Es un duelo o una pérdida</button>
+                        </div>
+                    </div>
+                    <div data-quiz-step="2" hidden>
+                        <p class="quiz__question">¿Cómo prefieres avanzar?</p>
+                        <div class="quiz__options">
+                            <button type="button" class="quiz__option" data-q2="suelta">Sesión a sesión, sin compromiso</button>
+                            <button type="button" class="quiz__option" data-q2="plan">Con un plan guiado paso a paso</button>
+                        </div>
+                        <button type="button" class="quiz__back" data-quiz-back>Volver a la pregunta anterior</button>
+                    </div>
+                    <div data-quiz-result hidden>
+                        <p class="quiz__result-title"></p>
+                        <p class="quiz__result-text"></p>
+                        <div class="quiz__result-actions">
+                            <a href="/app/#/register?role=patient" class="btn btn--primary">Crear mi cuenta</a>
+                            <a href="#opciones" class="btn btn--outline">Ver las opciones</a>
+                        </div>
+                        <button type="button" class="quiz__back" data-quiz-restart>Volver a empezar</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -132,7 +245,18 @@
             </div>
         </section>
 
-        <section class="section">
+        <section class="section" data-public-directory hidden>
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Nuestro equipo</span>
+                    <h2 class="section__title">Conoce a quienes te acompañan</h2>
+                    <p>Profesionales con cédula verificada que atienden por videollamada, de 7 a.m. a 11 p.m.</p>
+                </div>
+                <div class="pro-dir" data-public-directory-grid></div>
+            </div>
+        </section>
+
+        <section class="section section--alt">
             <div class="container">
                 <div class="section__header">
                     <span class="section__eyebrow">Proceso</span>
@@ -203,6 +327,74 @@
     </main>
 
     <div id="footer-component"></div>
+
+    <div class="mobile-cta">
+        <a href="/app/#/register?role=patient" class="btn btn--primary">Agenda tu primera sesión</a>
+    </div>
+
+    <script>
+        // Mini-guía interactiva: orienta entre consulta aislada y programas.
+        (function () {
+            var quiz = document.querySelector('[data-quiz]');
+            if (!quiz) return;
+            var step1 = quiz.querySelector('[data-quiz-step="1"]');
+            var step2 = quiz.querySelector('[data-quiz-step="2"]');
+            var result = quiz.querySelector('[data-quiz-result]');
+            var dots = quiz.querySelectorAll('.quiz__dot');
+            var q1 = null;
+
+            var recommendations = {
+                consulta: {
+                    title: 'Te recomendamos la Consulta aislada',
+                    text: 'Una sesión de 60 minutos puede ser justo lo que necesitas para ordenar lo que sientes, sin compromiso de continuidad. Si después quieres seguir, siempre puedes pasarte a un programa.'
+                },
+                programa4: {
+                    title: 'Te recomendamos el Programa de Salud Mental',
+                    text: 'Cuatro sesiones guiadas para trabajar de forma estructurada lo que llevas conmigo: ansiedad, estrés o rutinas de autocuidado, con seguimiento de tu profesional.'
+                },
+                programa6: {
+                    title: 'Te recomendamos el Acompañamiento por duelo',
+                    text: 'Seis sesiones con un tanatólogo especializado para acompañarte en tu proceso de pérdida, a tu ritmo y con el cuidado que mereces.'
+                }
+            };
+
+            function showStep(step) {
+                step1.hidden = step !== 1;
+                step2.hidden = step !== 2;
+                result.hidden = step !== 3;
+                dots.forEach(function (dot, i) {
+                    dot.classList.toggle('quiz__dot--active', i < step);
+                });
+            }
+
+            function recommend(key) {
+                var rec = recommendations[key];
+                result.querySelector('.quiz__result-title').textContent = rec.title;
+                result.querySelector('.quiz__result-text').textContent = rec.text;
+                showStep(3);
+            }
+
+            step1.querySelectorAll('[data-q1]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    q1 = btn.getAttribute('data-q1');
+                    showStep(2);
+                });
+            });
+
+            step2.querySelectorAll('[data-q2]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var q2 = btn.getAttribute('data-q2');
+                    if (q1 === 'duelo') return recommend('programa6');
+                    if (q2 === 'plan') return recommend('programa4');
+                    if (q1 === 'puntual') return recommend('consulta');
+                    return recommend('programa4');
+                });
+            });
+
+            quiz.querySelector('[data-quiz-back]').addEventListener('click', function () { showStep(1); });
+            quiz.querySelector('[data-quiz-restart]').addEventListener('click', function () { q1 = null; showStep(1); });
+        })();
+    </script>
 
     <script src="../assets/js/components.js"></script>
     <script src="../assets/js/main.js"></script>

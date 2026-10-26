@@ -447,6 +447,14 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/track-view/index.ts"
 
+[functions.public-directory]
+enabled = true
+# Endpoint público de SOLO LECTURA para el sitio estático: directorio de
+# profesionales verificados/visibles + conteos (legitimidad en la landing).
+# Expone únicamente datos no sensibles, ya públicos en el directorio de la app.
+verify_jwt = false
+entrypoint = "./functions/public-directory/index.ts"
+
 [functions.user-emails]
 enabled = true
 # Función INTERNA: correos transaccionales (bienvenida, cancelación, verificación)
