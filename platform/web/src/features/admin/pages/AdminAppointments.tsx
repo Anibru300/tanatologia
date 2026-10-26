@@ -164,17 +164,22 @@ export function AdminAppointments() {
                       return <span className="text-text-light">{sessionTypeLabels[a.session_type] || a.session_type}</span>
                     }
                     const remaining = info.total - info.used
+                    const pending = remaining - info.upcoming
+                    const followup =
+                      remaining <= 0
+                        ? 'plan completo'
+                        : info.upcoming === 0
+                          ? `faltan ${remaining} sin agendar`
+                          : info.upcoming === remaining
+                            ? `quedan ${remaining}, todas con fecha`
+                            : `quedan ${remaining}: ${info.upcoming} con fecha, ${pending} sin agendar`
                     return (
                       <div>
                         <span className="text-text-light">{sessionTypeLabels[a.session_type] || a.session_type}</span>
                         <p className="text-xs text-text-light mt-0.5">
                           <span className="font-medium text-text">Sesión {info.ordinal} de {info.total}</span>
                           {' · '}
-                          {remaining <= 0
-                            ? 'plan completo'
-                            : info.upcoming > 0
-                              ? `${info.upcoming} agendada${info.upcoming === 1 ? '' : 's'}, ${remaining - info.upcoming} por agendar`
-                              : `${remaining} por agendar`}
+                          {followup}
                         </p>
                       </div>
                     )
