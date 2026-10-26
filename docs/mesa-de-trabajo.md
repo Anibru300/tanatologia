@@ -35,7 +35,18 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-25 noche — Mejoras de landing pública + directorio en vivo)
+## 3. Última sesión (2026-10-25 — Seguimiento de planes 4/6 + landing pública con capturas reales)
+
+### 3n. Madrugada — Seguimiento de programas de 4/6 sesiones (v1.9.8–v1.9.10)
+
+**Motivación (casos reales):** al elegir plan de 4/6 el wizard solo agendaba la 1ª sesión y las demás quedaban sin seguimiento.
+1. **Migración 035** `notify_program_followup`: al completarse una sesión de plan con sesiones pendientes y sin cita futura del mismo plan, notifica in-app a paciente ("Selecciona tu siguiente horario") y profesional ("Publica tu disponibilidad"). Aplicada en Cloud y probada con transacción + rollback (ambas notificaciones correctas, sin residuo).
+2. **Barra de seguimiento en el chat** (ambos participantes, puntos de progreso ●●○○ + CTA; paciente → agenda con terapeuta+plan preseleccionados directo al paso Horario; profesional → publicar disponibilidad; "¡Plan completado!" al terminar). Se oculta si hay sesión futura agendada o no-show.
+3. **Admin `/admin/citas`:** columna "Tipo" con "Sesión N de M · quedan X: Y con fecha, Z sin agendar" (redacción ajustada a pedido del dueño para que se entienda) + insignias de resumen (planes en curso / sesiones por agendar). Datos de `getAdminProgramAppointments()`, sin migración.
+4. **Video v7 publicado en la página pública** (P0 cerrado): `pages/profesionales.html`, sección "Conócenos en 53 segundos", marco tipo teléfono; archivos en `assets/videos/`. Scripts tut7 de la app siguen congelados.
+5. Commits: `76c09a1` (v1.9.8), `a9d65c2` (v1.9.9), `0697abb`/`b881059` (v1.9.10 redacción), `493919a` (video v7). Deploys verificados uno por uno (bundle en producción con versión y textos).
+
+### 3o. Noche — Mejoras de landing pública (directorio en vivo + capturas reales)
 
 **Hecho y verificado (todas con capturas headless en `.tools/review/shot-landings.cjs` / `shot-profe-sections.cjs`):**
 1. **Fixes:** "50 min" → "60 min" en `pages/pacientes.html` (3 lugares, info desactualizada desde el 18-oct); schema `FAQPage` JSON-LD en ambas landings.
