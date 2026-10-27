@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/Label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { User, Stethoscope, CheckCircle, MessageCircle } from 'lucide-react'
 import { isValidMxPhone, normalizeMxPhone } from '@/lib/phone'
+import { recordSignupAcceptances } from '@/lib/legalAcceptances'
 
 export function RegisterPage() {
   const [searchParams] = useSearchParams()
@@ -64,6 +65,8 @@ export function RegisterPage() {
       })
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
+        // Evidencia legal: guarda qué versión del aviso/términos aceptó (best-effort)
+        void recordSignupAcceptances()
         setSuccess(true)
         setTimeout(() => {
           navigate(role === 'patient' ? '/paciente/encuesta' : '/profesional')

@@ -218,6 +218,7 @@
                         <p class="quiz__result-text"></p>
                         <div class="quiz__result-actions">
                             <a href="/app/#/register?role=patient" class="btn btn--primary">Crear mi cuenta</a>
+                            <a href="#equipo" class="btn btn--outline" data-quiz-team>Conocer al equipo</a>
                             <a href="#opciones" class="btn btn--outline">Ver las opciones</a>
                         </div>
                         <button type="button" class="quiz__back" data-quiz-restart>Volver a empezar</button>
@@ -267,12 +268,12 @@
             </div>
         </section>
 
-        <section class="section" data-public-directory hidden>
+        <section id="equipo" class="section" data-public-directory hidden>
             <div class="container">
                 <div class="section__header">
                     <span class="section__eyebrow">Nuestro equipo</span>
                     <h2 class="section__title">Conoce a quienes te acompañan</h2>
-                    <p>Profesionales con cédula verificada que atienden por videollamada, de 7 a.m. a 11 p.m.</p>
+                    <p>Profesionales con cédula verificada por nuestro equipo —la consultamos directamente en el registro público de la SEP— que atienden por videollamada, de 7 a.m. a 11 p.m.</p>
                 </div>
                 <div class="pro-dir" data-public-directory-grid></div>
             </div>
@@ -415,6 +416,15 @@
 
             quiz.querySelector('[data-quiz-back]').addEventListener('click', function () { showStep(1); });
             quiz.querySelector('[data-quiz-restart]').addEventListener('click', function () { q1 = null; showStep(1); });
+
+            // Si el directorio aún no cargó (o falló el fetch), el CTA cae a #opciones
+            var teamBtn = result.querySelector('[data-quiz-team]');
+            if (teamBtn) {
+                teamBtn.addEventListener('click', function () {
+                    var dir = document.querySelector('[data-public-directory]');
+                    if (dir && dir.hidden) window.location.hash = 'opciones';
+                });
+            }
         })();
     </script>
 

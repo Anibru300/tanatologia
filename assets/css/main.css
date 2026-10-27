@@ -2528,3 +2528,45 @@ body.page-with-bg::after {
 }
 
 
+
+/* =============================================================================
+   TESTIMONIOS REALES (reseñas de usuarios, con su consentimiento)
+   ============================================================================= */
+.testimonial {
+    max-width: 760px;
+    margin: 3rem auto 0;
+    padding: 2rem 2.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+}
+
+.testimonial__stars {
+    color: var(--color-accent);
+    font-size: 1.1rem;
+    letter-spacing: 0.2em;
+}
+
+.testimonial__quote {
+    margin: 1rem 0 1.25rem;
+    font-size: 1.08rem;
+    line-height: 1.7;
+    color: var(--color-text);
+}
+
+.testimonial__author {
+    font-size: 0.95rem;
+    color: var(--color-text-light);
+}
+
+.testimonial__author strong {
+    color: var(--color-text);
+}
+
+@media (max-width: 640px) {
+    .testimonial {
+        padding: 1.5rem 1.25rem;
+    }
+}
