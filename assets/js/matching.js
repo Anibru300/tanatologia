@@ -81,7 +81,73 @@ document.addEventListener('DOMContentLoaded', () => {
         if (error) error.remove();
     }
 
-    function showResults() {
+    // Directorio real: verificados + visibles (misma fuente que las landings).
+    // Fallback sin conexión: las fundadoras (lista estática de siempre).
+    const DIRECTORY_URL = 'https://qjwebikgrqtotqfipeqt.supabase.co/functions/v1/public-directory';
+    let directoryCache = null;
+
+    function esc(text) {
+        return String(text).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+
+    function normalize(s) {
+        return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    // Palabras clave por motivo de consulta (focus) para ordenar "mejor ajuste".
+    const FOCUS_KEYWORDS = {
+        'ansiedad-estres': ['ansiedad', 'estres', 'crisis'],
+        'depresion': ['depresion'],
+        'duelo-muerte': ['duelo', 'tanatologia', 'perdida'],
+        'perdida': ['duelo', 'tanatologia', 'pareja', 'ruptura'],
+        'enfermedad': ['duelo anticipado', 'duelo', 'tanatologia'],
+        'otra': []
+    };
+
+    function isGoodMatch(specialties, focus) {
+        const kws = FOCUS_KEYWORDS[focus] || [];
+        if (!kws.length) return false;
+        const haystack = normalize((specialties || []).join(' '));
+        return kws.some(k => haystack.includes(normalize(k)));
+    }
+
+    async function loadDirectory() {
+        if (directoryCache) return directoryCache;
+        try {
+            const res = await fetch(DIRECTORY_URL, { headers: { accept: 'application/json' } });
+            if (!res.ok) return null;
+            const data = await res.json();
+            const dir = Array.isArray(data.directory) ? data.directory : [];
+            if (!dir.length) return null;
+            directoryCache = dir;
+            return directoryCache;
+        } catch (e) {
+            return null; // sin conexión / fetch bloqueado
+        }
+    }
+
+    function renderProCard(pro, match) {
+        const name = String(pro.full_name || 'Profesional').trim();
+        const initial = name.charAt(0).toUpperCase();
+        const specs = (pro.specialties || []).slice(0, 5);
+        const photo = pro.avatar_url
+            ? `<img src="${esc(pro.avatar_url)}" alt="Foto de ${esc(name)}" class="therapist-card__photo">`
+            : `<div class="therapist-card__avatar" aria-hidden="true">${esc(initial)}</div>`;
+        return `<a href="/app/#/register?role=patient" class="therapist-card therapist-card--link" title="Crear cuenta y agendar con ${esc(name)}">
+                ${photo}
+                <div class="therapist-card__info">
+                    ${match ? '<span class="therapist-card__badge">Mejor ajuste para ti</span>' : ''}
+                    <h4>${esc(name)}</h4>
+                    <p class="therapist-card__meta">✓ Cédula verificada por SOMOS CALMA</p>
+                    <div class="therapist-card__tags">
+                        ${specs.map(s => `<span class="tag">${esc(s)}</span>`).join('')}
+                    </div>
+                    <span class="therapist-card__cta">Elegir y crear mi cuenta →</span>
+                </div>
+            </a>`;
+    }
+
+    async function showResults() {
         steps.forEach(step => step.classList.remove('is-active'));
         if (result) {
             result.classList.add('is-active');
@@ -91,10 +157,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (prevBtn) prevBtn.style.display = 'none';
         if (nav) nav.style.display = 'none';
 
-        const matchedTherapists = getMatchedTherapists(answers);
-
         if (resultList) {
-            resultList.innerHTML = matchedTherapists.map(t => `
+            resultList.innerHTML = '<p class="text-center" style="color: var(--color-text-light);">Cargando perfiles…</p>';
+            const dir = await loadDirectory();
+            if (dir) {
+                const focus = answers.focus || 'otra';
+                const scored = dir.map(p => ({ p, match: isGoodMatch(p.specialties, focus) }));
+                // Mejor ajuste primero; el resto conserva el orden del directorio.
+                scored.sort((a, b) => (b.match ? 1 : 0) - (a.match ? 1 : 0));
+                resultList.innerHTML = scored.map(({ p, match }) => renderProCard(p, match)).join('');
+            } else {
+                // Fallback: fundadoras (comportamiento anterior, sin conexión).
+                resultList.innerHTML = getMatchedTherapists(answers).map(t => `
                 <a href="/app/#/register?role=patient" class="therapist-card therapist-card--link" title="Crear cuenta y agendar con ${t.name}">
                     <img src="${t.photo}" alt="Foto de ${t.name}" class="therapist-card__photo">
                     <div class="therapist-card__info">
@@ -108,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </a>
             `).join('');
+            }
         }
 
         updateProgress();

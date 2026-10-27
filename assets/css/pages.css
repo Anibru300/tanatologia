@@ -235,6 +235,17 @@ a.therapist-card--link:hover {
     font-size: 0.95rem;
 }
 
+.therapist-card__badge {
+    display: inline-block;
+    background: var(--color-primary-dark);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    margin-bottom: 0.5rem;
+}
+
 .therapist-card__avatar {
     width: 72px;
     height: 72px;
