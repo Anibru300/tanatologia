@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-25 noche: v1.9.7 — reporte de problemas + avance 60% de la configuración de WhatsApp)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-26 noche: v1.9.11 — fix bucle de actualización PWA en móvil, reporte de usuaria)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,8 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.7-beta.1`. Novedad: **botón "Reportar un problema"** en el dashboard principal de paciente y profesional — abre `ReportProblemModal` (`src/components/ReportProblemModal.tsx`): selector de tipo de falla (videollamada/citas/archivos/cuenta/otro) + descripción; envía vía `support-request` con asunto `[Problema] …` + navegador/fecha del usuario → cae en Soporte/Bandeja del admin y se responde al correo. Anterior: 1.9.6 fix `frame-src` de la meta-CSP (bloqueaba vista previa de PDFs de profesionales, correos HTML de la Bandeja y Daily.co — "Este contenido está bloqueado").
+- **Versión:** `1.9.11-beta.1` (lista para deploy vía push a main). Novedad: **fix del bucle "Actualizar" de la PWA en móvil** (reporte real de usuaria Android 10/Chrome: el banner volvía tras actualizar — bug conocido de workbox-window donde el `SKIP_WAITING` se pierde y el SW queda "waiting" para siempre; `PwaUpdatePrompt` ahora recarga en el primer `controllerchange`, reenvía `SKIP_WAITING` de respaldo, retoma solos actualizaciones a medias vía sessionStorage `sc_pwa_update_pending` máx. 3 intentos, y revisa update al volver de segundo plano). Detalle en AGENTS.md §17.
+- **Versión anterior:** `1.9.7-beta.1`. **botón "Reportar un problema"** en el dashboard principal de paciente y profesional — abre `ReportProblemModal` (`src/components/ReportProblemModal.tsx`): selector de tipo de falla (videollamada/citas/archivos/cuenta/otro) + descripción; envía vía `support-request` con asunto `[Problema] …` + navegador/fecha del usuario → cae en Soporte/Bandeja del admin y se responde al correo. Anterior: 1.9.6 fix `frame-src` de la meta-CSP (bloqueaba vista previa de PDFs de profesionales, correos HTML de la Bandeja y Daily.co — "Este contenido está bloqueado").
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
 - **En vivo:** https://somos-calma.com (sitio estático en raíz, GitHub Pages) y https://somos-calma.com/app/ (React, HashRouter, despliegue automático vía `.github/workflows/deploy-app.yml`).
@@ -35,9 +36,16 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-25 — Seguimiento de planes 4/6 + landing pública con capturas reales)
+## 3. Última sesión (2026-10-26 — Fix bucle de actualización PWA)
 
-### 3n. Madrugada — Seguimiento de programas de 4/6 sesiones (v1.9.8–v1.9.10)
+### 3o. Noche — Bucle "la actualizo y vuelve a aparecer" (v1.9.11-beta.1)
+
+**Reporte real:** Luz María Berenice Barajas Castorena <berenice.barajas24@gmail.com> vía "Reportar un problema" (26/10 22:28, Android 10, Chrome 155 móvil): "Me pide que actualice la versión, la actualizo y vuelve a aparecer".
+**Diagnóstico:** flujo `registerType: 'prompt'` de vite-plugin-pwa/workbox-window. El reload solo ocurría si el evento `controlling` llegaba con `isUpdate=true`; hay bug conocido (SO 58670453) donde el mensaje `SKIP_WAITING` se entrega al SW viejo o se pierde, el SW nuevo queda `waiting` eterno y al recargar `wasWaitingBeforeRegister` vuelve a disparar el banner en cada carga. En Android el SO congela/mata el SW y agrava la carrera.
+**Fix (solo `PwaUpdatePrompt.tsx` + bump 1.9.10→1.9.11):** (1) al aceptar, listener propio de `controllerchange` → recarga sin depender de `isUpdate`; (2) a los 6 s, reenvío directo `registration.waiting.postMessage(SKIP_WAITING)` + recarga forzada a los 7.5 s; (3) marca de sesión `sc_pwa_update_pending`/`sc_pwa_update_attempts` para retomar solos al recargar (máx. 3 intentos, luego limpiar y mostrar banner); (4) `onRegisteredSW` revisa `registration.update()` en `visibilitychange` y cada hora (Android no refetcha el SW al reanudar la PWA). Lint 0 errores (4 warnings preexistentes en otros archivos), tests 38/38, build OK.
+**Pendiente de esta sesión:** falta el push a main (deploy automático) y **responder a la usuaria** (sugerencia: cerrar la app por completo y reabrirla tras el deploy; si persiste, borrar datos del sitio en Chrome).
+
+### 3n. Madrugada (2026-10-25) — Seguimiento de programas de 4/6 sesiones (v1.9.8–v1.9.10)
 
 **Motivación (casos reales):** al elegir plan de 4/6 el wizard solo agendaba la 1ª sesión y las demás quedaban sin seguimiento.
 1. **Migración 035** `notify_program_followup`: al completarse una sesión de plan con sesiones pendientes y sin cita futura del mismo plan, notifica in-app a paciente ("Selecciona tu siguiente horario") y profesional ("Publica tu disponibilidad"). Aplicada en Cloud y probada con transacción + rollback (ambas notificaciones correctas, sin residuo).
