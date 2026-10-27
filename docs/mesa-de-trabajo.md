@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-27 madrugada: v1.9.11 DESPLEGADA — fix bucle de actualización PWA en móvil)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-27 madrugada: v1.9.11 DESPLEGADA y VERIFICADA — fix bucle de actualización PWA en móvil; usuaria respondida; fin de sesión)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -48,7 +48,9 @@
 - **Producción:** el `index.html` vivo sirve el bundle v1.9.11 con todos los marcadores del fix (`sc_pwa_update_pending`, `controllerchange`, `visibilitychange`); `sw.js` con handler `SKIP_WAITING` + `clientsClaim`; los **130/130 assets precacheados** responden 200.
 - **E2E real con Chrome headless** (script `.tools/review/pwa-e2e/e2e.cjs`, gitignored; servidor conmutable + puppeteer-core): **Fase 1** v1.9.10→v1.9.11 con el código previo (lo que vivirá la usuaria en su próxima actualización): banner → clic → recarga → bundle nuevo, sin bucle (4/4 PASS). **Fase 2** v1.9.11→v1.9.12 simulada (build real) con el código del fix (7/7 PASS): el clic deja la marca de sesión que sobrevive al reload; `onRegisteredSW` la limpia al quedar `waiting=null`; el banner no reaparece. La corrida capturó además la carrera real del reload (una recarga sirvió contenido viejo a los 2 s) y la **ruta de rescate la auto-resolvió a los 4 s** sin intervención del usuario — comportamiento diseñado validado.
 - Aprendizaje del E2E: un sim de versión hecho con `sed` sobre `index.html` **debe actualizar también la revisión del precache en `sw.js`** (si no, el SW nuevo sirve el HTML viejo del caché — falso negativo que costó diagnóstico).
-**Pendiente:** **responder a la usuaria** desde la Bandeja/Soporte del admin (borrador: pedirle cerrar la app por completo y reabrirla; si el aviso persiste, borrar datos del sitio en Chrome; sus citas y sesión no se ven afectadas).
+**Usuaria respondida (2026-10-27):** el dueño ya contestó el correo de Berenice desde la Bandeja. Sin pendientes de esta incidencia.
+
+**Cierre de sesión 2026-10-27 (fix completo y verificado):** commits `c54a65f` (fix v1.9.11) → `ce2690a` + `4b81554` (mesa) pusheados; working tree limpio en lo que toca a la plataforma (los untracked `VIDEOS TUTORIALES/`, `assets/images/platform$f.jpg`, `.tmp-*.mjs` de scripts y `supabase/` son artefactos preexistentes, no se commitean). Lo único que vivirá la usuaria: al reabrir la app pasará por el flujo de actualización normal (Fase 1 del E2E) y quedará en v1.9.11; sus siguientes actualizaciones usan el flujo blindado.
 
 ### 3n. Madrugada (2026-10-25) — Seguimiento de programas de 4/6 sesiones (v1.9.8–v1.9.10)
 
