@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-27 noche: mejoras BLOQUE 1 en página pública (testimonio real + sello SEP + CTA quiz) + v1.9.12 (aceptaciones legales) LISTAS, pendientes push; campaña ENVIADA (18+31, 0 fallos); webhook JaaS verificado)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-27 cierre: JORNADA COMPLETA — v1.9.14 en producción; 2 P0 cerrados (webhook JaaS verificado con tráfico real, campaña enviada 18+31); mejoras en sitio público y portal profesional; WhatsApp ~95% (solo falta aprobación de plantillas en Meta); mañana: retomar pendientes)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.11-beta.1` **DESPLEGADA** (commit `c54a65f`, push 2026-10-27 ~05:57 UTC; workflow `Build app React → /app` en success: lint + tests 38/38 + build + copia a `/app`). Novedad: **fix del bucle "Actualizar" de la PWA en móvil** (reporte real de usuaria Android 10/Chrome: el banner volvía tras actualizar — bug conocido de workbox-window donde el `SKIP_WAITING` se pierde y el SW queda "waiting" para siempre; `PwaUpdatePrompt` ahora recarga en el primer `controllerchange`, reenvía `SKIP_WAITING` de respaldo, retoma solos actualizaciones a medias vía sessionStorage `sc_pwa_update_pending` máx. 3 intentos, y revisa update al volver de segundo plano). Detalle en AGENTS.md §17.
+- **Versión:** `1.9.14-beta.1` **DESPLEGADA** (commit `00fa604`, push 2026-10-27 ~19:45 UTC; workflow success). Novedades del día: aceptaciones legales en el registro (v1.9.12), sección Recursos del profesional con certificación FMP + notificación 49/49 (v1.9.13) y vigencia automática de ofertas de formación (v1.9.14). Versión anterior: `1.9.11` (fix bucle PWA).
 - **Versión anterior:** `1.9.7-beta.1`. **botón "Reportar un problema"** en el dashboard principal de paciente y profesional — abre `ReportProblemModal` (`src/components/ReportProblemModal.tsx`): selector de tipo de falla (videollamada/citas/archivos/cuenta/otro) + descripción; envía vía `support-request` con asunto `[Problema] …` + navegador/fecha del usuario → cae en Soporte/Bandeja del admin y se responde al correo. Anterior: 1.9.6 fix `frame-src` de la meta-CSP (bloqueaba vista previa de PDFs de profesionales, correos HTML de la Bandeja y Daily.co — "Este contenido está bloqueado").
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
@@ -36,7 +36,26 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-27 — Webhook JaaS + campaña + mejoras + WhatsApp EN CURSO)
+## 3. Última sesión (2026-10-27 — JORNADA COMPLETA: 2 P0 cerrados, 4 versiones, WhatsApp al ~95%)
+
+### Resumen ejecutivo del día (todo verificado y desplegado)
+
+| # | Logro | Detalle corto |
+|---|-------|---------------|
+| 1 | ✅ **P0: webhook JaaS verificado con tráfico real** | Cita real 26-oct (Blanca × Mayra): 11 eventos completos en `video_call_events`, cita `completed` con duración real. La sala de prueba ignora por diseño (`no_appointment`) — ver 3p-A |
+| 2 | ✅ **P0: campaña a profesionistas ENVIADA** | "📅 Mantén tu agenda visible" → 18/18 verificados · "🌱 Falta un paso" → 31/31 pendientes, 0 fallos (`email_broadcasts`). Respuestas caerán en la Bandeja; seguimiento en 3-7 días (`/admin/disponibilidad` + `/admin/verificacion`) — ver 3q |
+| 3 | ✅ **v1.9.12 — aceptaciones legales en registro** | El checkbox guarda 3 filas en `legal_acceptances` (aviso 2026-10-03, términos 2026-09-03, consentimiento). E2E Cloud 6/6. Actualizar `LEGAL_DOC_VERSIONS` al cambiar legales — ver 3r |
+| 4 | ✅ **Sitio público — bloque 1 de mejoras** | Testimonio real de Mayra (index + profesionales, ⚠️ consentimiento pendiente), sello "cédula verificada en SEP" explicado, quiz con CTA al equipo, y matching con directorio en vivo (los 12 visibles; antes eran 2 hardcodeadas) — ver 3s |
+| 5 | ✅ **Datos saneados** | Carlos Urbina fuera del directorio (`is_visible=false`, cuenta intacta); cuentas de Victor Hugo: ¡eran 3! → borradas 2, quedó solo la verificada — ver 3s-E |
+| 6 | ✅ **v1.9.13 — Recursos + certificación FMP** | Página Recursos real con la Certificación en Psicoterapia de Juego (MCC) de la FMP (beca 100%, inicia 17-nov-2026, online); tarjeta en dashboard; notificación in-app **49/49 profesionales** — ver 3u |
+| 7 | ✅ **v1.9.14 — vigencia automática de ofertas** | Las ofertas vencen solas: pasada la fecha quedan "Finalizadas" (inscripción cerrada) como historial y la tarjeta del dashboard desaparece. FMP vence 2026-11-17 (hora CDMX). Tests del límite incluidos (43/43) |
+| 8 | 🔧 **WhatsApp al ~95%** | Número 477 849 1080 verificado, plataforma conectada a Meta (prueba 8/8), pago agregado, 4 plantillas recreadas tras 2 bugs de Meta (detalle 3t). **Falta: aprobación de plantillas (en revisión; oficial hasta 48 h), diagnóstico de entrega al 477 694 0272 y verificación del negocio** |
+| 9 | 🚫 **OpenWA descartado** | Gateway no oficial: su propio README lo prohíbe para salud/cumplimiento y advierte baneo. Se queda la API oficial — ver 3u |
+| 10 | ✅ **Regresiones** | `test-notification-broadcast.mjs` 8/8. `test-inbox.mjs` sigue esperando credenciales admin |
+
+**Commits del día:** `01fbcb3` (v1.9.12 + bloque 1 sitio) → `c56f29e` (matching en vivo) → `57530d2` (v1.9.13 Recursos) → `00fa604` (v1.9.14 vigencia) + `338e587`/`97ce23c` (docs y fix whatsapp-notify).
+
+**Para mañana (en orden):** 1) checar plantillas WhatsApp; si aprobadas → ejecutar `.tools/review/.tmp-test-wa-real.sh` (prueba real al tel del dueño). 2) Dueño: estado de la **verificación del negocio** en Meta + **consentimiento de Mayra**. 3) Revisar Bandeja (respuestas de la campaña). 4) Seguimiento campaña: `/admin/disponibilidad` y `/admin/verificacion`.
 
 ### 3t. Sesión 2026-10-27 (tarde-noche) — WhatsApp: número registrado, plantillas en revisión de Meta
 
@@ -60,6 +79,8 @@
 4. **Notificación in-app a los 49 profesionales** (type `admin_broadcast`, link `/profesional/recursos`, historial en `notification_broadcasts` 49/49 — SQL equivalente a la Edge Function, mismo patrón que el grupo de WhatsApp).
 Verificación: tsc ✓, oxlint 0 ✓, tests 38/38 ✓, build ✓, deploy verificado.
 
+**Seguimiento (v1.9.14, mismo día):** las ofertas de formación quedaron **data-driven con vigencia automática** (`src/features/professional/recursosData.ts`, campo `vigencia` YYYY-MM-DD inclusive hora CDMX + helpers `ofertaVigente`/`ofertasVigentes`/`vigenciaLegible`; la FMP vence 2026-11-17). Pasada la fecha: insignia "Finalizada", botones deshabilitados (sin inscripción) pero conservada como historial; la tarjeta del dashboard desaparece sola. Tests del límite de fecha incluidos (43/43). Para futuras ofertas: agregar bloque a `FORMACION_OFERTAS`.
+
 **Descartado por el dueño tras análisis (queda registrado): OpenWA** (`github.com/rmyndharis/OpenWA`) como alternativa no oficial — su propio README exige no usarlo para salud/cumplimiento y advierte riesgo de baneo permanente; nos quedamos con la API oficial de Meta.
 
 **MISTERIO ABIERTO (27-oct noche): los mensajes NO llegan al tel del dueño.** Envíos por API aceptados por Meta (devuelven `wamid`, número emisor CONNECTED/VERIFIED como "SOMOS CALMA", nombre resuelto `wa_id=5214776940272`), pero nada cae en el WhatsApp del 477 694 0272 (ni el panel de Meta de hace horas, ni Solicitudes). El dueño CONFIRMÓ que el número está agregado como destinatario de prueba y que el teléfono es el correcto. **Hipótesis principal: negocio aún NO verificado en Meta → modo desarrollo restringido; la verificación del negocio (iniciada 25-oct) es probablemente la llave** (acelera revisión de plantillas Y levanta restricciones de entrega). Checklist dejado al dueño: (1) confirmar/re-agregar 4776940272 como destinatario de prueba y ver si llega el CÓDIGO de verificación de Meta (prueba de fuego); (2) revisar en business.facebook.com → Configuración → Seguridad el estado de la verificación del negocio (¿aprobada/rechazada/pendiente?). Si fue rechazada hay que reenviar documentos. Sin diagnóstico de entrega NO lanzar la prueba real (quemaría mensajes sin llegar).
@@ -81,7 +102,7 @@ Verificación: tsc ✓, oxlint 0 ✓, tests 38/38 ✓, build ✓, deploy verific
 
 **E. Carlos Urbina fuera del directorio público (dato, no código).** El dueño pidió quitarlo de "Conoce a quienes te acompañan": se puso `is_visible=false` (UPDATE vía impersonación de admin con `SET LOCAL request.jwt.claims` — el trigger de 035 bloquea el cambio sin JWT de admin). Sale de la landing pública Y del directorio de la app; su cuenta queda intacta y se reactiva desde `/admin/profesionales`.
 
-### 3r. Sesión 2026-10-27 (noche) — Aceptaciones legales en registro (v1.9.12-beta.1, pendiente push)
+### 3r. Sesión 2026-10-27 (noche) — Aceptaciones legales en registro (v1.9.12, ✅ desplegada)
 
 **Hecho (pendiente solo commit/push → deploy automático):** el checkbox único del registro (aviso + términos + consentimiento de datos sensibles) ahora se guarda en `legal_acceptances` (evidencia legal LFPDPPP; pendiente P2 de la sesión 2026-10-03, tabla existente desde migración 005 sin uso). Nuevo `src/lib/legalAcceptances.ts`: inserta 3 filas con versión (privacy_notice `2026-10-03`, terms `2026-09-03`, sensitive_data_consent `2026-10-03` — hay que actualizar `LEGAL_DOC_VERSIONS` cada vez que se actualicen las páginas legales), upsert idempotente, best-effort (jamás tumba el registro); se llama desde `RegisterPage` tras confirmar sesión. Sin migración. Verificación: tsc ✓, oxlint 0 errores, tests 38/38, build ✓, **E2E en Cloud 6/6** (usuario temporal: insert con RLS propio, lectura, idempotencia; borrado vía SQL, 0 residuos en `legal_acceptances`). Usuarios existentes NO se backillean (no hay evidencia de su aceptación — solo vale desde el deploy en adelante).
 
@@ -106,7 +127,7 @@ Verificación: tsc ✓, oxlint 0 ✓, tests 38/38 ✓, build ✓, deploy verific
 - **Textos listos para copiar** (redactados 27-oct, voz de marca, links con hash): ver sección 4, pendiente P0-campaña. Recordatorios de envío: botón "Enviarme una prueba" primero, ConfirmDialog muestra audiencia/filtros/cantidad, historial con contadores queda en la página.
 - Nota: Lupita (Ma. Guadalupe Muñoz Campuzano, `psicologalupitamcampuzano@gmail.com`) está verificada pero SIN horarios y además tiene un correo sin responder en la Bandeja (19-oct) — si el dueño la contacta personal, contestar en la Bandeja es mejor que el comunicado masivo.
 
-## 3. Última sesión (2026-10-26 — Fix bucle de actualización PWA)
+### Histórico 2026-10-26 — Fix bucle de actualización PWA (v1.9.11)
 
 ### 3o. Noche — Bucle "la actualizo y vuelve a aparecer" (v1.9.11-beta.1)
 
