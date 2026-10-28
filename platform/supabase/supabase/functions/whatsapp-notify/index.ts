@@ -127,6 +127,8 @@ async function sendTemplate(recipient: Recipient, templateName: string): Promise
       components: [
         {
           type: "body",
+          // Meta rechazó las variables con nombre (2026-10): su sistema de
+          // revisión exige POSICIONALES {{1}},{{2}},{{3}} (ver docs/whatsapp-setup.md).
           parameters: [
             { type: "text", text: recipient.name },
             { type: "text", text: recipient.otherName },
