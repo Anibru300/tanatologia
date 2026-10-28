@@ -18,6 +18,8 @@ import {
   AlertCircle,
   MessageCircle,
   Bug,
+  GraduationCap,
+  BookOpen,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -158,6 +160,29 @@ export function ProfessionalDashboard() {
                   Unirme al grupo de WhatsApp
                 </Button>
               </a>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mb-8">
+          <Card className="border-l-4" style={{ borderLeftColor: '#C9A28E' }}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <GraduationCap size={20} className="text-accent-dark" />
+                Certificación gratuita: Psicoterapia de Juego (MCC)
+              </CardTitle>
+              <CardDescription>
+                La Federación Mexicana de Psicología abre becas del 100% (inscripción y mensualidades
+                gratis). Inicia el 17 de noviembre · online sincrónico.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link to="/profesional/recursos">
+                <Button variant="outline" className="gap-2">
+                  <BookOpen size={18} />
+                  Ver detalles en Recursos
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
