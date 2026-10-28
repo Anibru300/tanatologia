@@ -46,20 +46,10 @@ y los de prueba. El **número emisor** de prueba de Meta sirve para desarrollo.
 
 ## Paso 4 — Número de producción
 
-**Número designado de SOMOS-CALMA: 477 125 0075** (E.164: `+52 477 125 0075`).
+**Número designado de SOMOS-CALMA para la API: 477 849 1080** (E.164: `+52 477 849 1080`).
+**Decisión tomada (26-oct-2026, opción A): SIM nueva exclusiva para la API.** El 477 125 0075 NO se toca — sigue para atención humana de las fundadoras (botón flotante del sitio intacto).
 
-⚠️ **Conflicto a decidir antes de migrar:** hoy ese número está publicado en el sitio como
-botón flotante de WhatsApp (`wa.me/5214771250075`) para que pacientes/profesionales
-escriban directamente a las fundadoras. Al añadirlo a la API de Meta **deja de funcionar
-en la app de WhatsApp** (un número no puede estar en ambas). Opciones:
-1. **Dedicarlo 100% a la API** (avisos automáticos) y cambiar el botón del sitio a otro
-   medio de contacto humano (correo, teléfono o un número distinto).
-2. Dejar el número para contacto humano y **comprar una SIM/eSIM barata** solo para la API.
-3. Migrarlo y gestionar las respuestas humanas desde la consola de Meta (más manual).
-
-El número hay que **quitarlo de la app de WhatsApp** (si alguna vez se registró ahí) y
-añadirlo en la consola en **WhatsApp Manager → Configuración de la API → Agregar número
-de teléfono** (se verifica con un código por SMS/voz).
+⚠️ **Antes de agregarlo a Meta:** el chip NO debe tener WhatsApp activo en la app de consumidor (si alguna vez se registró, borrar esa cuenta de la app primero) — un número no puede estar en ambas. El número se agrega en **WhatsApp Manager → Configuración de la API → Agregar número de teléfono** (se verifica con un código por SMS/voz que llega al chip). Al verificarse, la consola muestra su **Phone Number ID** — pasarlo a quien opere para el secret `WHATSAPP_PHONE_NUMBER_ID` (paso 6).
 
 ## Paso 5 — Plantillas (aprobar antes de producción)
 
@@ -69,14 +59,16 @@ exactamente, o actualizar los secrets `WA_TEMPLATE_*`):
 
 | Nombre | Cuerpo (texto exacto) |
 |---|---|
-| `sc_cita_agendada` | Hola {{1}}, tu cita con {{2}} quedó agendada para el {{3}}. La videollamada se realiza desde la plataforma SOMOS-CALMA. |
-| `sc_recordatorio_24h` | Hola {{1}}, te recordamos que tu sesión con {{2}} es mañana: {{3}}. Te esperamos en SOMOS-CALMA. |
-| `sc_recordatorio_15m` | Hola {{1}}, tu sesión con {{2}} comienza en 15 minutos ({{3}}). Entra ahora a la app de SOMOS-CALMA para conectarte. |
-| `sc_cita_cancelada` | Hola {{1}}, tu cita con {{2}} del {{3}} fue cancelada. Si tienes dudas escríbenos a hola@somos-calma.com. |
+| `sc_cita_agendada_2` | Hola {{1}}, tu cita con {{2}} quedó agendada para el {{3}}. La videollamada se realiza desde la plataforma SOMOS-CALMA. |
+| `sc_recordatorio_24h_2` | Hola {{1}}, te recordamos que tu sesión con {{2}} es mañana: {{3}}. Te esperamos en SOMOS-CALMA. |
+| `sc_recordatorio_15m_2` | Hola {{1}}, tu sesión con {{2}} comienza en 15 minutos ({{3}}). Entra ahora a la app de SOMOS-CALMA para conectarte. |
+| `sc_cita_cancelada_2` | Hola {{1}}, tu cita con {{2}} del {{3}} fue cancelada. Si tienes dudas escríbenos a hola@somos-calma.com. |
 
+- ⚠️ **Los nombres llevan sufijo `_2` por bloqueo de Meta (oct-2026):** al borrar las plantillas iniciales, su cola de borrado se atascó horas ("no se puede agregar contenido en un nuevo Spanish (MEX) mientras se elimina el actual") y la única vía fue crearlas con nombre nuevo. Los secrets `WA_TEMPLATE_*` apuntan a los nombres `_2` (verificable con `supabase secrets list`). Si se recrean otra vez, crear con nombre nuevo y actualizar secrets.
+- ⚠️ **Meta (oct-2026) está en migración y es inconsistente:** el EDITOR de plantillas exige variables con nombre (`{{nombre}}`), pero el SISTEMA DE REVISIÓN rechaza esas mismas plantillas con "parámetros incorrectos" pidiendo POSICIONALES (`{{1}}`). **Usar SIEMPRE posicionales** (`{{1}}`, `{{2}}`, `{{3}}`) — las creadas con nombre serán rechazadas. Crear por API con `example.body_text` (ejemplo posicional).
 - `{{1}}` = primer nombre del destinatario, `{{2}}` = nombre del otro
   participante, `{{3}}` = fecha y hora (ej. "lunes 27/10/2026 18:00 h", hora del
-  Centro de México).
+  destinatario). Tipo de variable: **Texto** (no Número).
 - La aprobación tarda de minutos a ~48 h. Si Meta las rechaza, ajustar el
   texto (evitar pedir datos, incluir el nombre de la empresa, etc.).
 
