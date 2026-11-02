@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-01 noche: WhatsApp ✅ EN PRODUCCIÓN — plantillas `_3` activas en secrets, viejas `_2` borradas de Meta, migración 036 cableó `appointment_completed`, prueba E2E real 4/4 por triggers con limpieza total. Creada `sc_recordatorio_15m_3` con link de sala `{{4}}` PENDING (2 pasos al aprobarse). Falta: rotar token. Ver 3w)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-01 noche: WhatsApp ✅ EN PRODUCCIÓN (5 plantillas `_3`, E2E 4/4, commit `a49abd5`). **PRÓXIMA SESIÓN ~2026-11-03 (en 2 días):** revisar las 3 plantillas PENDING en Meta y cablear las aprobadas — checklist en 3w-x. También: rotar `WHATSAPP_TOKEN` (dueño). Ver 3w/3w-x)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -394,6 +394,23 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 8. ✅ Docs: `docs/whatsapp-setup.md`, `AGENTS.md` (ítem 21) y mesa actualizados.
 
 **Resta (en orden):** (a) **aprobarse `sc_recordatorio_15m_3`** → mismo día: agregar 4º parámetro por rol (`/#/paciente/sala/<id>` vs `/#/profesional/sala/<id>`) en `sendTemplate` de `whatsapp-notify` + `supabase secrets set WA_TEMPLATE_REMINDER_15M=sc_recordatorio_15m_3` (función primero, secret después, misma sesión — si no, Meta rechaza por conteo de parámetros) + prueba real; (a2) **aprobarse `sc_sesion_paciente_1` + `sc_sesion_profesional_1`** (creadas 01-11, visto bueno del dueño) → reemplazan a `sc_sesion_completada_3`: en `whatsapp-notify`, `appointment_completed` con plantilla y link **por rol** (secrets `WA_TEMPLATE_COMPLETED_PATIENT`/`WA_TEMPLATE_COMPLETED_PRO`) → prueba real → borrar `sc_sesion_completada_3`; (b) **rotar `WHATSAPP_TOKEN`** (pasó por el chat; el dueño lo genera en Meta → Usuarios del sistema y lo pasa para `supabase secrets set`).
+
+### 3w-x. Checklist para la próxima sesión (~2026-11-03, en 2 días)
+
+El dueño pidió seguir en dos días. Al retomar, en este orden:
+
+1. **Estado de las 3 plantillas PENDING** (token en `.tools/review/.tmp-wa-token`, var `WHATSAPP_TOKEN_TMP`; si caducó, pedir uno nuevo al dueño):
+   ```bash
+   cd .tools/review && source .tmp-wa-token && cd ../.. && \
+   WHATSAPP_TOKEN="$WHATSAPP_TOKEN_TMP" WHATSAPP_PHONE_NUMBER_ID=1332503789954530 WA_GRAPH_VERSION=v25.0 \
+   node .tools/review/test-wa-templates.mjs status
+   ```
+   IDs: `sc_recordatorio_15m_3`=`3201709756684468` · `sc_sesion_paciente_1`=`889336330933570` · `sc_sesion_profesional_1`=`1642256980725541`.
+2. **Por cada una APPROVED, cablear + probar + borrar la que reemplaza** (detalle exacto en `docs/whatsapp-setup.md` §Pendientes y en 3w):
+   - `sc_recordatorio_15m_3` → 4º parámetro (link sala por rol) en `sendTemplate` de `whatsapp-notify` → deploy función → `supabase secrets set WA_TEMPLATE_REMINDER_15M=sc_recordatorio_15m_3` (**función primero, secret después, misma sesión** — si no, Meta rechaza por conteo de parámetros) → prueba real al 477 694 0272 (`test-wa-templates.mjs send sc_recordatorio_15m_3`) → borrar `sc_recordatorio_15m_2_3`.
+   - `sc_sesion_paciente_1` + `sc_sesion_profesional_1` → en `whatsapp-notify`, tipo `appointment_completed` con plantilla y link **por rol** (paciente → `/#/paciente/citas`, profesional → `/#/profesional/citas`; nuevos secrets `WA_TEMPLATE_COMPLETED_PATIENT`/`WA_TEMPLATE_COMPLETED_PRO`) → deploy + secrets (misma sesión) → **prueba E2E real por triggers** (patrón de 3w: paciente tmp con tel del dueño × cita con Lupita, UPDATE a completed; verificar `net._http_response` y limpiar) → borrar `sc_sesion_completada_3`.
+3. **Rotar `WHATSAPP_TOKEN`**: el dueño genera token nuevo (Meta → Usuarios del sistema, permiso `whatsapp_business_messaging`) → `supabase secrets set WHATSAPP_TOKEN=<nuevo>` (desde `platform/supabase/`) → redeploy `whatsapp-notify` + `appointment-reminders`. El token actual pasó por el chat (28-oct).
+4. Si alguna sigue PENDING: esperar (la revisión tarda horas~48 h) y dejar la tarea programada para el día siguiente.
 
 ## 4. Pendientes activos (prioridad)
 
