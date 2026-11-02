@@ -16,6 +16,7 @@ Configuración de cuenta) **y** tienen teléfono válido:
 | Recordatorio 24 h antes | Paciente y profesional |
 | Aviso 15 min antes ("ya va a empezar") | Paciente y profesional |
 | Cita cancelada | Paciente y profesional |
+| Sesión completada (cierre de cita) | Paciente (CTA a reseña) |
 
 ## Paso 1 — Cuenta Meta Business y verificación (empezar YA, tarda días)
 
@@ -57,14 +58,21 @@ En **WhatsApp Manager → Gestión de plantillas → Crear plantilla**, categor�
 **Utilidad**, idioma **es-MX**, crear estas 4 (los nombres deben coincidir
 exactamente, o actualizar los secrets `WA_TEMPLATE_*`):
 
-| Nombre | Cuerpo (texto exacto) |
-|---|---|
-| `sc_cita_agendada_2` | Hola {{1}}, tu cita con {{2}} quedó agendada para el {{3}}. La videollamada se realiza desde la plataforma SOMOS-CALMA. |
-| `sc_recordatorio_24h_2` | Hola {{1}}, te recordamos que tu sesión con {{2}} es mañana: {{3}}. Te esperamos en SOMOS-CALMA. |
-| `sc_recordatorio_15m_2` | Hola {{1}}, tu sesión con {{2}} comienza en 15 minutos ({{3}}). Entra ahora a la app de SOMOS-CALMA para conectarte. |
-| `sc_cita_cancelada_2` | Hola {{1}}, tu cita con {{2}} del {{3}} fue cancelada. Si tienes dudas escríbenos a hola@somos-calma.com. |
+**✅ ESTADO 2026-11-01 — EN PRODUCCIÓN.** Las 5 plantillas corregidas `*_3` están APPROVED y los secrets `WA_TEMPLATE_*` ya apuntan a ellas (`sc_cita_agendada_2_3`, `sc_recordatorio_24h_2_3`, `sc_recordatorio_15m_2_3`, `sc_cita_cancelada_2_3`, `WA_TEMPLATE_COMPLETED=sc_sesion_completada_3`). Las viejas `*_2` y `sc_sesion_completada` (acentos corruptos por el script bash — **prohibido volver a usar `create-wa-templates.sh`; usar siempre Node**) fueron **eliminadas** de Meta. Prueba E2E real pasada (booked/cancelled/completed disparados por triggers, `sent:1, errors:[]`).
 
-- ⚠️ **Los nombres llevan sufijo `_2` por bloqueo de Meta (oct-2026):** al borrar las plantillas iniciales, su cola de borrado se atascó horas ("no se puede agregar contenido en un nuevo Spanish (MEX) mientras se elimina el actual") y la única vía fue crearlas con nombre nuevo. Los secrets `WA_TEMPLATE_*` apuntan a los nombres `_2` (verificable con `supabase secrets list`). Si se recrean otra vez, crear con nombre nuevo y actualizar secrets.
+| Nombre (activa) | Cuerpo (texto exacto) |
+|---|---|
+| `sc_cita_agendada_2_3` | Hola {{1}}, tu cita con {{2}} quedó agendada para el {{3}}. La videollamada se realiza desde la plataforma SOMOS-CALMA. |
+| `sc_recordatorio_24h_2_3` | Hola {{1}}, te recordamos que tu sesión con {{2}} es mañana: {{3}}. Te esperamos en SOMOS-CALMA. |
+| `sc_recordatorio_15m_2_3` | Hola {{1}}, tu sesión con {{2}} comienza en 15 minutos ({{3}}). Entra ahora a la app de SOMOS-CALMA para conectarte. |
+| `sc_cita_cancelada_2_3` | Hola {{1}}, tu cita con {{2}} del {{3}} fue cancelada. Si tienes dudas escríbenos a hola@somos-calma.com. |
+| `sc_sesion_completada_3` | Hola {{1}}, tu sesión con {{2}} del {{3}} fue completada. Gracias por confiar en SOMOS-CALMA. Entra a la plataforma para contarnos cómo te sentiste: tu reseña ayuda a otros a encontrar acompañamiento. |
+
+- **`sc_recordatorio_15m_3` (PENDIENTE de aprobación, creada 2026-11-01, ID Meta `3201709756684468`):** igual que la de 15 min pero con **`{{4}}` = link directo de la videollamada** (pedido del dueño: "da click a este link para entrar a tu videollamada"). Meta prohibe que la plantilla termine en variable, por eso cierra con "Te esperamos en SOMOS-CALMA.". **Cuando se apruebe:** (1) agregar el 4º parámetro (link por rol: `https://somos-calma.com/app/#/paciente/sala/<id>` o `/#/profesional/sala/<id>`) en `sendTemplate` de `whatsapp-notify`; (2) `supabase secrets set WA_TEMPLATE_REMINDER_15M=sc_recordatorio_15m_3`; (3) prueba real. Ojo al orden: desplegar la función primero y cambiar el secret después (o viceversa) deja una ventana donde la plantilla de 3 parámetros recibe 4 (o al revés) y Meta rechaza el envío — hacer ambos en la misma sesión.
+- **`sc_sesion_completada_3` (036):** avisa al paciente cuando la cita pasa a 'completed' (colgar del profesional o cron 031); cableada vía migración 036 (`dispatch_whatsapp('appointment_completed', ...)` en `notify_appointment_events`). Bienvenida/verificación/chat NO llevan plantilla a propósito: el opt-in cubre solo **avisos de cita**.
+- Guion de consulta/prueba/envío: `node .tools/review/test-wa-templates.mjs status|send` (lee token de `WHATSAPP_TOKEN` env; NO necesita la CLI vinculada si las variables van por env).
+
+- ⚠️ **Historia de nombres (oct-2026):** Meta atascó la cola de borrado de las plantillas iniciales y no permitía reutilizar nombres; por eso las copias corregidas llevan doble sufijo (`_2_3`). Los nombres ya están libres (borrado completado 2026-11-01) pero no vale la pena recrearlas: los secrets apuntan a los nombres actuales.
 - ⚠️ **Meta (oct-2026) está en migración y es inconsistente:** el EDITOR de plantillas exige variables con nombre (`{{nombre}}`), pero el SISTEMA DE REVISIÓN rechaza esas mismas plantillas con "parámetros incorrectos" pidiendo POSICIONALES (`{{1}}`). **Usar SIEMPRE posicionales** (`{{1}}`, `{{2}}`, `{{3}}`) — las creadas con nombre serán rechazadas. Crear por API con `example.body_text` (ejemplo posicional).
 - `{{1}}` = primer nombre del destinatario, `{{2}}` = nombre del otro
   participante, `{{3}}` = fecha y hora (ej. "lunes 27/10/2026 18:00 h", hora del
@@ -79,11 +87,12 @@ Con la CLI vinculada (`supabase link --project-ref qjwebikgrqtotqfipeqt`):
 ```bash
 supabase secrets set WHATSAPP_TOKEN=<token permanente del paso 2>
 supabase secrets set WHATSAPP_PHONE_NUMBER_ID=<Phone Number ID del paso 2>
-# Solo si los nombres de las plantillas difieren de los defaults:
-supabase secrets set WA_TEMPLATE_BOOKED=sc_cita_agendada
-supabase secrets set WA_TEMPLATE_REMINDER_24H=sc_recordatorio_24h
-supabase secrets set WA_TEMPLATE_REMINDER_15M=sc_recordatorio_15m
-supabase secrets set WA_TEMPLATE_CANCELLED=sc_cita_cancelada
+# Nombres de plantillas (los defaults del código ya traen los nombres `_3`):
+supabase secrets set WA_TEMPLATE_BOOKED=sc_cita_agendada_2_3
+supabase secrets set WA_TEMPLATE_REMINDER_24H=sc_recordatorio_24h_2_3
+supabase secrets set WA_TEMPLATE_REMINDER_15M=sc_recordatorio_15m_2_3
+supabase secrets set WA_TEMPLATE_CANCELLED=sc_cita_cancelada_2_3
+supabase secrets set WA_TEMPLATE_COMPLETED=sc_sesion_completada_3
 ```
 
 Redeployar las funciones para que tomen los secrets:
@@ -116,7 +125,7 @@ Meta cobra **por mensaje entregado** en México:
 | Servicio (respuestas libres) | $0.0085, pero **primeros 1,000/mes gratis por número** | ~$0.16 |
 | Marketing | $0.0397 | ~$0.73 |
 
-**Ejemplo real de la beta:** 100 citas/mes × 4 avisos × 2 personas = 800 mensajes de utilidad ≈ **$6.80 USD ≈ $125 MXN/mes** (variable: solo se paga lo enviado; sin mensualidad fija). Meta Business y la verificación son gratis; la SIM exclusiva para el número es un gasto aparte de celular (~$100–150 MXN/mes si se contrata plan básico).
+**Ejemplo real de la beta:** 100 citas/mes × 4 avisos × 2 personas = 800 mensajes de utilidad ≈ **$6.80 USD ≈ $125 MXN/mes** (más el aviso de sesión completada: +100 msgs ≈ +$16 MXN) (variable: solo se paga lo enviado; sin mensualidad fija). Meta Business y la verificación son gratis; la SIM exclusiva para el número es un gasto aparte de celular (~$100–150 MXN/mes si se contrata plan básico).
 
 ## Notas
 

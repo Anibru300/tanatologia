@@ -4,7 +4,7 @@
 //
 // Tipos soportados (type + appointment_id):
 //   appointment_booked | appointment_cancelled | appointment_reminder_24h |
-//   appointment_reminder_15m
+//   appointment_reminder_15m | appointment_completed (036)
 //
 // Invocada por: triggers vía pg_net (dispatch_whatsapp, header x-cron-secret)
 // y desde la Edge Function appointment-reminders (mismo header).
@@ -23,10 +23,11 @@ const WA_PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
 const GRAPH_VERSION = Deno.env.get("WA_GRAPH_VERSION") || "v21.0";
 
 const TEMPLATES = {
-  appointment_booked: Deno.env.get("WA_TEMPLATE_BOOKED") || "sc_cita_agendada",
-  appointment_cancelled: Deno.env.get("WA_TEMPLATE_CANCELLED") || "sc_cita_cancelada",
-  appointment_reminder_24h: Deno.env.get("WA_TEMPLATE_REMINDER_24H") || "sc_recordatorio_24h",
-  appointment_reminder_15m: Deno.env.get("WA_TEMPLATE_REMINDER_15M") || "sc_recordatorio_15m",
+  appointment_booked: Deno.env.get("WA_TEMPLATE_BOOKED") || "sc_cita_agendada_2_3",
+  appointment_cancelled: Deno.env.get("WA_TEMPLATE_CANCELLED") || "sc_cita_cancelada_2_3",
+  appointment_reminder_24h: Deno.env.get("WA_TEMPLATE_REMINDER_24H") || "sc_recordatorio_24h_2_3",
+  appointment_reminder_15m: Deno.env.get("WA_TEMPLATE_REMINDER_15M") || "sc_recordatorio_15m_2_3",
+  appointment_completed: Deno.env.get("WA_TEMPLATE_COMPLETED") || "sc_sesion_completada_3",
 };
 const SUPPORTED_TYPES = Object.keys(TEMPLATES);
 

@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-10-27 cierre: JORNADA COMPLETA — v1.9.14 en producción; 2 P0 cerrados (webhook JaaS verificado con tráfico real, campaña enviada 18+31); mejoras en sitio público y portal profesional; WhatsApp ~95% (solo falta aprobación de plantillas en Meta); mañana: retomar pendientes)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-01 noche: WhatsApp ✅ EN PRODUCCIÓN — plantillas `_3` activas en secrets, viejas `_2` borradas de Meta, migración 036 cableó `appointment_completed`, prueba E2E real 4/4 por triggers con limpieza total. Creada `sc_recordatorio_15m_3` con link de sala `{{4}}` PENDING (2 pasos al aprobarse). Falta: rotar token. Ver 3w)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -14,6 +14,7 @@
 - **Redes (2026-10-08):** página de Facebook activa: `https://www.facebook.com/profile.php?id=61594989341298` — enlazada en footer, sección de contacto del index y botón flotante (arriba de WhatsApp). URL central en `siteConfig.ts` → `contact.social.facebook`. Instagram/Linkedin aún vacíos.
 - **Teléfono oficial (2026-10-08):** 477 125 0075 · WhatsApp `5214771250075` (reemplazó al 477 254 1540 en sitio + app). El "Salir rápido" ya NO existe en el sitio estático (sí en el portal paciente de la app).
 - **Supabase Cloud:** proyecto `qjwebikgrqtotqfipeqt`. Migración más reciente: **035** (hardening de seguridad post-auditoría 2026-10-20; 034 = whatsapp_opt_in). Ninguna pendiente por aplicar.
+- **WhatsApp (2026-11-01, ✅ EN PRODUCCIÓN, ver 3w):** las 5 plantillas `_3` aprobadas y activas (secrets `WA_TEMPLATE_*` + `WA_TEMPLATE_COMPLETED` actualizados); las viejas `_2`/`sc_sesion_completada` corruptas **eliminadas de Meta**; migración **036** aplicada en Cloud (aviso `appointment_completed` al paciente al cerrar sesión); `whatsapp-notify` redeplegada. Prueba E2E real 4/4 disparada por triggers (booked/cancelled/completed, `sent:1, errors:[]`), residuos limpiados. **Pendiente:** `sc_recordatorio_15m_3` (link de sala `{{4}}`) PENDING en Meta → al aprobarse: 4º parámetro por rol en `whatsapp-notify` + secret `WA_TEMPLATE_REMINDER_15M` (misma sesión); rotar `WHATSAPP_TOKEN`. Script `.tools/review/test-wa-templates.mjs`. Doc: `docs/whatsapp-setup.md`.
 - **Seguridad (2026-10-20):** auditoría completa en `docs/auditoria-seguridad-2026-10-20.md` (remediada). Migración 035 aplicada en Cloud: REVOKE de EXECUTE en funciones SECURITY DEFINER internas (`dispatch_*`, `auto_complete_past_appointments`, `conversation_participants`, `can_chat` — verificado 42501 para autenticados), GUC de `submit_for_review` restaurado (la 014 lo había roto: ningún profesional podía enviar a revisión), `is_assigned_patient`/policy de reseñas ya exigen cita NO cancelada, `handle_new_user` defensivo (cast de whatsapp_opt_in + timezone restaurado). Edge Functions `send-email` (profesional solo escribe a pacientes con cita activa), `inbound-email` (allowlist INBOUND_RECIPIENTS), `user-emails`/`appointment-reminders`/`whatsapp-notify` (comparación timing-safe del CRON_SECRET) redeplegadas. Meta-CSP en app + 18 páginas legacy (la app la publica el workflow al push). Pruebas: `test-security-hardening.mjs` nuevo 13/13 + auth-flow 15/15. **Pendiente de seguridad:** C1 RESUELTO el mismo día — CRON_SECRET verificado distinto al expuesto y historial de git purgado (git filter-repo, 13 ramas, backup local; repo público decidido por el dueño). Restan: meta-CSP de /app entra al push (hecho) y pospuestos documentados en el reporte (M3 rate limit persistente/Turnstile, M6/M7/M10–M12).
 - **Deploy:** push a `main` → workflow compila `platform/web` y copia a `/app/`. Secrets ya configurados en GitHub Actions.
 
@@ -49,11 +50,13 @@
 | 5 | ✅ **Datos saneados** | Carlos Urbina fuera del directorio (`is_visible=false`, cuenta intacta); cuentas de Victor Hugo: ¡eran 3! → borradas 2, quedó solo la verificada — ver 3s-E |
 | 6 | ✅ **v1.9.13 — Recursos + certificación FMP** | Página Recursos real con la Certificación en Psicoterapia de Juego (MCC) de la FMP (beca 100%, inicia 17-nov-2026, online); tarjeta en dashboard; notificación in-app **49/49 profesionales** — ver 3u |
 | 7 | ✅ **v1.9.14 — vigencia automática de ofertas** | Las ofertas vencen solas: pasada la fecha quedan "Finalizadas" (inscripción cerrada) como historial y la tarjeta del dashboard desaparece. FMP vence 2026-11-17 (hora CDMX). Tests del límite incluidos (43/43) |
-| 8 | 🔧 **WhatsApp al ~95%** | Número 477 849 1080 verificado, plataforma conectada a Meta (prueba 8/8), pago agregado, 4 plantillas recreadas tras 2 bugs de Meta (detalle 3t). **Falta: aprobación de plantillas (en revisión; oficial hasta 48 h), diagnóstico de entrega al 477 694 0272 y verificación del negocio** |
+| 8 | 🔧 **WhatsApp al ~95%** | Número 477 849 1080 verificado, plataforma conectada a Meta (prueba 8/8), pago agregado, 4 plantillas recreadas tras 2 bugs de Meta (detalle 3t). **28-oct: 5ª plantilla `sc_sesion_completada` creada por API (ID 948089268086241, PENDING) — aviso al paciente al cerrar sesión + CTA a reseña.** Falta: aprobación de las 5 plantillas (en revisión; oficial hasta 48 h), diagnóstico de entrega al 477 694 0272 y verificación del negocio |
 | 9 | 🚫 **OpenWA descartado** | Gateway no oficial: su propio README lo prohíbe para salud/cumplimiento y advierte baneo. Se queda la API oficial — ver 3u |
 | 10 | ✅ **Regresiones** | `test-notification-broadcast.mjs` 8/8. `test-inbox.mjs` sigue esperando credenciales admin |
 
 **Commits del día:** `01fbcb3` (v1.9.12 + bloque 1 sitio) → `c56f29e` (matching en vivo) → `57530d2` (v1.9.13 Recursos) → `00fa604` (v1.9.14 vigencia) + `338e587`/`97ce23c` (docs y fix whatsapp-notify).
+
+**Cierre 2026-10-28 (mediodía):** análisis de cobertura → solo faltaba 1 plantilla de las relacionadas con citas (`sc_sesion_completada`: aviso al paciente al cerrar sesión + CTA a reseña; bienvenida/verificación/chat descartadas por alcance del opt-in "avisos de cita"). Creada por API (ID `948089268086241`, PENDING, sin rechazos en las 5). Token temporal del dueño guardado en `.tools/review/.tmp-wa-token` (caduca ~29-oct 12:40 h; si caduca, regenerar en la consola del dev). Guion reutilizable: `.tools/review/create-wa-templates.sh <EAA>`. **Pendiente inmediato:** vigilar aprobación de las 5 → prueba real (guion congelado) → cablear la 5ª en `whatsapp-notify` + trigger (pasos en whatsapp-setup.md).
 
 **Para mañana (en orden):** 1) checar plantillas WhatsApp; si aprobadas → ejecutar `.tools/review/.tmp-test-wa-real.sh` (prueba real al tel del dueño). 2) Dueño: estado de la **verificación del negocio** en Meta + **consentimiento de Mayra**. 3) Revisar Bandeja (respuestas de la campaña). 4) Seguimiento campaña: `/admin/disponibilidad` y `/admin/verificacion`.
 
@@ -348,6 +351,50 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 1. Android/Chrome: instalar desde el sitio y verificar banner de actualización en el próximo release.
 2. iOS/Safari: "Compartir → Agregar a inicio", validar icono y standalone.
 
+### 3v. Sesión 2026-10-28 (tarde) — WhatsApp: 4 plantillas aprobadas, pruebas reales OK, bug de acentos y recreación `_3`
+
+**Contexto:** el dueño avisó que Meta aprobó las plantillas. Con el token permanente (`EAA...`, pasó por el chat — ver seguridad abajo) se verificó por API el estado y se enviaron pruebas reales.
+
+**Hecho:**
+1. **Estado real de plantillas:** 4 `*_2` APPROVED + `sc_sesion_completada` PENDING.
+2. **Pruebas reales enviadas al cel del dueño (477 694 0272)** desde el número verificado **SOMOS CALMA** (Phone Number ID `1332503789954530`): las 4 aprobadas llegaron con wamid válido (c/u ~$0.0085 USD). La 5ª no se puede enviar hasta aprobarse (error 132001).
+3. **Bug encontrado en las pruebas:** los acentos salían como "?" ("qued?", "sesi?n", "escr?benos") — NO fue el envío (las variables del script Node llegaron bien, "México" se veía perfecto): el guion bash `create-wa-templates.sh` corrompió el UTF-8 al crear las plantillas el 26-oct y **Meta las guardó con acentos rotos**. Verificado leyendo `components` por API.
+4. **Meta no permite editar plantillas aprobadas ni pendientes** (errores 2388003/2388039: "solo se pueden editar si se rechazaron" / "solo puedes eliminar o agregar nueva") → se crearon las 5 copias corregidas con sufijo `_3` (Utilidad/es-MX/posicionales, con `example.body_text`), todas PENDING. El endpoint de edición es `POST /{versión}/{template_id}` (SIN WABA ID en la ruta) aunque aquí no aplicó.
+5. **Script nuevo `.tools/review/test-wa-templates.mjs`** (modos `status`, `send [plantilla]`, `send --create`): lee token de env `WHATSAPP_TOKEN` o secrets (ojo: `supabase secrets list` ahora devuelve hashes, no valores plaintext), deriva el Phone Number ID de la WABA, espaciado de 1.5 s entre envíos. **Prohibido volver a usar el guion bash para crear/editar plantillas** (corrompe UTF-8 en Windows).
+6. **Costos explicados al dueño:** los 1,000 msgs gratis/mes de Meta son SOLO de categoría Servicio (respuestas a usuario en ventana de 24 h); las plantillas de Utilidad (avisos de cita) siempre se cobran ~$0.16 MXN c/u entregado. Ejemplo beta: 100 citas × 4 avisos × 2 personas = 800 msgs ≈ $125 MXN/mes.
+7. **Mensaje para inversionistas redactado** (ya configurado y listo para marcha + costo por mensaje + estimado mensual ~$125 MXN a 100 citas).
+8. **Docs:** `docs/whatsapp-setup.md` actualizado (bug de acentos, nombres `_3`, script correcto, pasos de secrets tras aprobación).
+
+**Seguridad pendiente:** el token permanente pasó por el chat (y el temporal de `.tools/review/.tmp-wa-token` caduca ~29-oct) → **rotar en cuanto terminen las pruebas**: revocar en Meta (Usuarios del sistema) y `supabase secrets set WHATSAPP_TOKEN=<nuevo>`.
+
+**Para mañana (2026-10-29), en orden:**
+1. **Checar aprobación de las 5 plantillas `_3`** (`node .tools/review/test-wa-templates.mjs status`). Si APPROVED → (a) `supabase secrets set` de los 4 `WA_TEMPLATE_*` + crear `WA_TEMPLATE_COMPLETED=sc_sesion_completada_3`; (b) reenviar pruebas al 477 694 0272 y confirmar acentos; (c) opcional: borrar las `_2` viejas en WhatsApp Manager.
+2. **Cablear `sc_sesion_completada`** en código (migración 036 o extensión): entry en `TEMPLATES` de `whatsapp-notify` (lee `WA_TEMPLATE_COMPLETED`) + `dispatch_whatsapp('appointment_completed', ...)` en el trigger de cierre de cita (mismo patrón que cancelación en 034). Redeploy de la función.
+3. **Prueba E2E real**: `.tools/review/.tmp-test-wa-real.sh` (o vía script tmp de paciente) con cita real opt-in → verificar que el trigger manda el WhatsApp solo (sin pasar por el script manual).
+4. Rotar el token de Meta (seguridad).
+5. Pendientes del dueño sin moverse: verificación del negocio en Meta, consentimiento de Mayra, teléfono en página de Facebook, Bandeja.
+
+### 3w. Sesión 2026-11-01 — Plantillas `_3` aprobadas y verificadas; pruebas reales enviadas
+
+**Hecho:**
+1. **Las 5 plantillas `_3` quedaron APPROVED** en Meta (las 4 `_2` originales también siguen approved pero con acentos rotos — ignorarlas/borrarlas después).
+2. **Textos verificados por API** (`components` en el query de status): los BODY de las `_3` traen acentos correctos ("sesión", "escríbenos", "mañana", "reseña", "acompañamiento", "quedó"); las `_2` confirmado corruptas.
+3. **Script `.tools/review/test-wa-templates.mjs` actualizado:** ya no exige la CLI de Supabase si las variables vienen por env (try/catch en `supabase secrets list`); nombres de plantillas apuntan a las `_3`; el modo `status` ahora pide `components` para auditar acentos.
+4. **5 pruebas reales enviadas al cel del dueño (477 694 0272)** desde SOMOS CALMA: las 5 aceptadas por Meta con wamid válido, ~1.5 s de separación. El token temporal de `.tmp-wa-token` **siguió vivo** (sorprendentemente no caducó).
+5. **Pendiente la confirmación visual del dueño** (que lleguen los 5 y se vean bien los acentos en el teléfono).
+
+**Cierre de la sesión 2026-11-01 (noche) — TODO lo anterior quedó HECHO tras la confirmación del dueño:**
+1. ✅ Viejas eliminadas en Meta (`sc_cita_agendada_2`, `sc_recordatorio_24h_2`, `sc_recordatorio_15m_2`, `sc_cita_cancelada_2`, `sc_sesion_completada`).
+2. ✅ **Nueva plantilla `sc_recordatorio_15m_3`** (ID Meta `3201709756684468`, PENDING) con **`{{4}}` = link directo de la videollamada** (pedido del dueño: "da click a este link…"). Aprendizaje Meta: **la plantilla no puede terminar en variable** — cierra con "Te esperamos en SOMOS-CALMA.". Creada con Node (`.tools/review/create-wa-template-15m-link.mjs`), jamás con bash.
+3. ✅ Secrets actualizados: los 4 `WA_TEMPLATE_*` → nombres `_3` + nuevo `WA_TEMPLATE_COMPLETED=sc_sesion_completada_3`.
+4. ✅ **Migración 036** (`036_appointment_completed_whatsapp.sql`) aplicada en Cloud y verificada (`pg_get_functiondef` contiene `appointment_completed`).
+5. ✅ `whatsapp-notify` redeplegada con `appointment_completed` en TEMPLATES (defaults a nombres `_3`).
+6. ✅ **Prueba E2E real 4/4 disparada solo por triggers** (sin curl manual): paciente tmp con el tel del dueño (opt-in) × cita real con Lupita → INSERT `confirmed` mandó `appointment_booked`; UPDATE `cancelled` mandó `appointment_cancelled`; 2ª cita (slot "ahora") INSERT + UPDATE `completed` mandaron `appointment_booked` + `appointment_completed`. Verificado en `net._http_response`: los 4 con `200 {ok:true, sent:1, skipped:1, errors:[]}` (skipped = Lupita sin opt-in, correcto). Ojo operativo: `supabase db query` imprime bordes de tabla — parsear el UUID con query aparte, no con sed.
+7. ✅ Limpieza total verificada (0 citas/0 perfil tmp; slots de prueba borrados; notifs de Lupita de la última hora fuera).
+8. ✅ Docs: `docs/whatsapp-setup.md`, `AGENTS.md` (ítem 21) y mesa actualizados.
+
+**Resta (en orden):** (a) **aprobarse `sc_recordatorio_15m_3`** → mismo día: agregar 4º parámetro por rol (`/#/paciente/sala/<id>` vs `/#/profesional/sala/<id>`) en `sendTemplate` de `whatsapp-notify` + `supabase secrets set WA_TEMPLATE_REMINDER_15M=sc_recordatorio_15m_3` (función primero, secret después, misma sesión — si no, Meta rechaza por conteo de parámetros) + prueba real; (b) **rotar `WHATSAPP_TOKEN`** (pasó por el chat; el dueño lo genera en Meta → Usuarios del sistema y lo pasa para `supabase secrets set`).
+
 ## 4. Pendientes activos (prioridad)
 
 | # | Qué | Detalle | Estado |
@@ -369,7 +416,10 @@ Commits: `c96c51c` (PWA v1.1.0) → `1b3b5e5` (drawer) → `f053b56` (bottom nav
 | P1 | Re-grabar v1 y v5 | v1 tiene PII propia y de tercero; v5 muestra flujo que falló y explorador personal (aunque ambos fueron aprobados por decisión expresa del dueño, conviene re-grabar) | Decisión del cliente |
 | P2 | Decisión proveedor de video | Comparación JaaS vs Daily.co en `/admin/prueba-videollamada`; JaaS gratis hasta 25 MAU, después $99/300 MAU; plan futuro: Jitsi propio | Decisión del cliente |
 | P2 | Pagos | Solo cuando haya tracción. Requisito: tarjeta + PayPal + SPEI (Openpay cubre tarjeta+SPEI; PayPal aparte). El sitio ya lo anuncia como "próximamente" | Diferido |
-| P3 | WhatsApp recordatorios | **Número registrado en Meta (27-oct): 477 849 1080, Phone Number ID `1332503789954530`** (WABA vinculada). Secrets `WHATSAPP_TOKEN` (guardado 25-oct) + `WHATSAPP_PHONE_NUMBER_ID` + `WA_GRAPH_VERSION=v25.0` configurados; `whatsapp-notify` y `appointment-reminders` redeplegadas; **prueba técnica 8/8** (ya no da 501: auth 401, validación 400/404 contra la API real de Meta). **Falta para encender producción:** (1) dueño crea las 4 plantillas en WhatsApp Manager (textos exactos en `docs/whatsapp-setup.md`, categoría Utilidad/es-MX) y espera aprobación; (2) dueño agrega método de pago en Billing Hub (Meta lo exige para mensajes de utilidad — se cobra ~$0.16 MXN por mensaje entregado); (3) yo: cita de prueba real con opt-in → llega el WhatsApp. Destinatarios de prueba: celular del dueño agregado. Checklist completo: `docs/whatsapp-setup.md` | Pendiente (pasos 1-2: dueño) |
+| ~~P1~~ ✅ **EN PRODUCCIÓN 2026-11-01** | WhatsApp: encender producción | Plantillas `_3` activas, `_2` borradas, migración 036 aplicada, E2E real 4/4, docs al día (ver 3w). Restan 2 ítems nuevos abajo | Hecho |
+| P1 | **WhatsApp: activar plantilla 15m con link** | Esperar aprobación de `sc_recordatorio_15m_3` (PENDING) → 4º parámetro por rol en `whatsapp-notify` + `WA_TEMPLATE_REMINDER_15M=sc_recordatorio_15m_3` (misma sesión) + prueba real. Ver 3w | Pendiente (esperando Meta) |
+| P1 | **Rotar token de Meta WhatsApp** | El token permanente pasó por el chat 28-oct y sigue sin rotarse. El dueño genera token nuevo en Meta → Usuarios del sistema; `supabase secrets set WHATSAPP_TOKEN=<nuevo>` + redeploy de `whatsapp-notify` y `appointment-reminders`. Ojo: el temporal de `.tools/review/.tmp-wa-token` sigue vivo pero hay que suponerlo expuesto | Pendiente (seguridad) |
+
 | ~~P2~~ ✅ **HECHO 2026-10-27 (v1.9.12)** | Guardar aceptación del aviso en `legal_acceptances` | Implementado en `RegisterPage` + `src/lib/legalAcceptances.ts` (3 filas con versión: privacy_notice 2026-10-03, terms 2026-09-03, sensitive_data_consent 2026-10-03; upsert idempotente, best-effort). E2E Cloud 6/6. **Al actualizar las páginas legales, actualizar `LEGAL_DOC_VERSIONS`**. Ver 3r | Hecho (pendiente push) |
 | P3 | Revisión securityheaders.com | Pegar https://somos-calma.com y ver calificación de headers de seguridad (5 min, gratis) | Pendiente |
 | P3 | Skill `web-design-guidelines` de Vercel | Ya está en `.tmp` del repo clonado; copiar a `.kimi-code/skills/` si se quiere | Opcional |
