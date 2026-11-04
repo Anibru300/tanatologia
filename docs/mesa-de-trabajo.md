@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-01 noche: WhatsApp ✅ EN PRODUCCIÓN (5 plantillas `_3`, E2E 4/4, commit `a49abd5`). **PRÓXIMA SESIÓN ~2026-11-03 (en 2 días):** revisar las 3 plantillas PENDING en Meta y cablear las aprobadas — checklist en 3w-x. También: rotar `WHATSAPP_TOKEN` (dueño). Ver 3w/3w-x)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-03: plantillas WA con link ✅ ACTIVAS EN PRODUCCIÓN — las 3 aprobadas por Meta, secrets cableados, pruebas reales 3/3 OK, viejas borradas de Meta, token rotado. WhatsApp 100% cerrado: 6 plantillas APPROVED. Ver 3w)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -14,7 +14,7 @@
 - **Redes (2026-10-08):** página de Facebook activa: `https://www.facebook.com/profile.php?id=61594989341298` — enlazada en footer, sección de contacto del index y botón flotante (arriba de WhatsApp). URL central en `siteConfig.ts` → `contact.social.facebook`. Instagram/Linkedin aún vacíos.
 - **Teléfono oficial (2026-10-08):** 477 125 0075 · WhatsApp `5214771250075` (reemplazó al 477 254 1540 en sitio + app). El "Salir rápido" ya NO existe en el sitio estático (sí en el portal paciente de la app).
 - **Supabase Cloud:** proyecto `qjwebikgrqtotqfipeqt`. Migración más reciente: **035** (hardening de seguridad post-auditoría 2026-10-20; 034 = whatsapp_opt_in). Ninguna pendiente por aplicar.
-- **WhatsApp (2026-11-01, ✅ EN PRODUCCIÓN, ver 3w):** las 5 plantillas `_3` aprobadas y activas (secrets `WA_TEMPLATE_*` + `WA_TEMPLATE_COMPLETED` actualizados); las viejas `_2`/`sc_sesion_completada` corruptas **eliminadas de Meta**; migración **036** aplicada en Cloud (aviso `appointment_completed` al paciente al cerrar sesión); `whatsapp-notify` redeplegada. Prueba E2E real 4/4 disparada por triggers (booked/cancelled/completed, `sent:1, errors:[]`), residuos limpiados. **Pendiente (3 plantillas PENDING en Meta):** `sc_recordatorio_15m_3` (link de sala `{{4}}`) y el par de reseñas `sc_sesion_paciente_1` + `sc_sesion_profesional_1` (reemplazan a `sc_sesion_completada_3`: plantilla y link por rol) → al aprobarse cada una: parámetro por rol en `whatsapp-notify` + secrets (misma sesión) + prueba real; rotar `WHATSAPP_TOKEN`. Script `.tools/review/test-wa-templates.mjs`. Doc: `docs/whatsapp-setup.md`.
+- **WhatsApp (2026-11-03, ✅ 100% EN PRODUCCIÓN):** las 6 plantillas activas APPROVED (`sc_cita_agendada_2_3`, `sc_recordatorio_24h_2_3`, `sc_recordatorio_15m_3`, `sc_cita_cancelada_2_3`, `sc_sesion_paciente_1`, `sc_sesion_profesional_1`) y los secrets apuntan a ellas (`WA_TEMPLATE_REMINDER_15M` con `{{4}}` = link a la sala; `WA_TEMPLATE_COMPLETED_PATIENT`/`_PRO` con `{{4}}` = link a reseña por rol). Las viejas (`sc_recordatorio_15m_2_3`, `sc_sesion_completada_3`, `*_2`) **eliminadas de Meta**. `WHATSAPP_TOKEN` **rotado** 2026-11-03 (el anterior quedó expuesto). Pruebas reales 3/3 con wamid OK al tel del dueño; E2E por triggers 2026-11-01 (`sent:1, errors:[]`). Script `.tools/review/test-wa-templates.mjs`. Doc: `docs/whatsapp-setup.md`. **Nada pendiente de WhatsApp** salvo: verificación del negocio en Meta (modo de prueba hasta entonces; los usuarios reales solo reciben si el número del destinatario está en la lista de prueba o ya hay verificación) y vigilar costos (~$0.16 MXN/msg).
 - **Seguridad (2026-10-20):** auditoría completa en `docs/auditoria-seguridad-2026-10-20.md` (remediada). Migración 035 aplicada en Cloud: REVOKE de EXECUTE en funciones SECURITY DEFINER internas (`dispatch_*`, `auto_complete_past_appointments`, `conversation_participants`, `can_chat` — verificado 42501 para autenticados), GUC de `submit_for_review` restaurado (la 014 lo había roto: ningún profesional podía enviar a revisión), `is_assigned_patient`/policy de reseñas ya exigen cita NO cancelada, `handle_new_user` defensivo (cast de whatsapp_opt_in + timezone restaurado). Edge Functions `send-email` (profesional solo escribe a pacientes con cita activa), `inbound-email` (allowlist INBOUND_RECIPIENTS), `user-emails`/`appointment-reminders`/`whatsapp-notify` (comparación timing-safe del CRON_SECRET) redeplegadas. Meta-CSP en app + 18 páginas legacy (la app la publica el workflow al push). Pruebas: `test-security-hardening.mjs` nuevo 13/13 + auth-flow 15/15. **Pendiente de seguridad:** C1 RESUELTO el mismo día — CRON_SECRET verificado distinto al expuesto y historial de git purgado (git filter-repo, 13 ramas, backup local; repo público decidido por el dueño). Restan: meta-CSP de /app entra al push (hecho) y pospuestos documentados en el reporte (M3 rate limit persistente/Turnstile, M6/M7/M10–M12).
 - **Deploy:** push a `main` → workflow compila `platform/web` y copia a `/app/`. Secrets ya configurados en GitHub Actions.
 
@@ -37,9 +37,39 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-10-27 — JORNADA COMPLETA: 2 P0 cerrados, 4 versiones, WhatsApp al ~95%)
+## 3. Última sesión (2026-11-03 — Plantillas WA con link: ✅ ACTIVAS EN PRODUCCIÓN; lote completo cerrado)
 
-### Resumen ejecutivo del día (todo verificado y desplegado)
+### Resumen (todo verificado)
+
+| # | Hecho | Detalle |
+|---|-------|---------|
+| 1 | ✅ Estado en vivo (`test-wa-templates.mjs status`) | Las 3 plantillas de 4 parámetros **APPROVED** en Meta (`sc_recordatorio_15m_3`, `sc_sesion_paciente_1`, `sc_sesion_profesional_1`) |
+| 2 | ✅ Secrets cableados (`supabase secrets set`) | `WA_TEMPLATE_REMINDER_15M=sc_recordatorio_15m_3`, `WA_TEMPLATE_COMPLETED_PATIENT=sc_sesion_paciente_1`, `WA_TEMPLATE_COMPLETED_PRO=sc_sesion_profesional_1` + **rotación de `WHATSAPP_TOKEN`** (el anterior quedó expuesto) |
+| 3 | ✅ Pruebas reales 3/3 | `send sc_recordatorio_15m_3` / `sc_sesion_paciente_1` / `sc_sesion_profesional_1` → wamid OK al tel del dueño (477 694 0272); las 3 con sus 4 parámetros y links correctos |
+| 4 | ✅ Viejas eliminadas de Meta | `sc_recordatorio_15m_2_3` y `sc_sesion_completada_3` borradas por API (`success:true`); quedan **6 plantillas APPROVED** |
+| 5 | ✅ Smoke función desplegada | `whatsapp-notify` 401 sin cron secret (viva y protegida); los secrets son de runtime, no requirió redeploy |
+| 6 | ✅ Docs | `docs/whatsapp-setup.md` paso 5 (estado final), `AGENTS.md` ítem 21a, esta mesa |
+
+**WhatsApp queda 100% cerrado.** Nada pendiente salvo: verificación del negocio en Meta (trámite del dueño; modo de prueba limita destinatarios) y monitoreo de costos. Los cambios de código de 2026-11-02 seguían sin commit a propósito; ahora que las plantillas están aprobadas y cableadas, corresponde el commit del lote.
+
+### Histórico — 2026-11-02 (Plantillas WA con link: CÓDIGO DESPLEGADO, forward-compatible; sin commit a propósito)
+
+### Resumen (todo verificado)
+
+| # | Hecho | Detalle |
+|---|-------|---------|
+| 1 | ✅ Estado en vivo de plantillas (`test-wa-templates.mjs status`) | Las 5 de producción APPROVED; las 3 con link (`sc_recordatorio_15m_3`, `sc_sesion_paciente_1`, `sc_sesion_profesional_1`) siguen PENDING (creadas 2026-11-01, Meta tarda hasta ~48 h) |
+| 2 | ✅ `whatsapp-notify` reescrita y DESPLEGADA (Edge Function, no requiere migración) | 4º parámetro `{{4}}` (link) solo cuando la plantilla configurada NO es el default de 3 parámetros (`THREE_PARAM_DEFAULTS`): sin ventana desfasada secrets/código. Links por rol: 15 min → `…/app/#/{rol}/sala/<id>`; completada → `…/app/#/{rol}/citas`. Nuevos secrets `WA_TEMPLATE_COMPLETED_PATIENT`/`_PRO` (fallback a `WA_TEMPLATE_COMPLETED`). Con secrets actuales el comportamiento es byte a byte el de antes. Smoke post-deploy: 401 correcto |
+| 3 | ✅ Script de prueba ampliado | Las 3 plantillas nuevas con sus 4 parámetros ya en `TEMPLATES`/`VARS` de `.tools/review/test-wa-templates.mjs` (`send <nombre>`) |
+| 4 | ✅ Docs | `docs/whatsapp-setup.md` paso 5 (pasos de mañana reducidos a secrets + prueba + borrar vieja), `AGENTS.md` ítem 21a, esta mesa |
+
+**⏸️ SIN COMMIT a propósito** (orden del dueño): los cambios de hoy (`whatsapp-notify/index.ts`, `.tools/review/test-wa-templates.mjs`, docs) quedan en working tree hasta que las 3 plantillas estén aprobadas y cableadas — entonces se commitea todo junto (`git status`/`git diff` para revisar).
+
+**Mañana 2026-11-03:** (1) `node .tools/review/test-wa-templates.mjs status`; (2) por cada plantilla APPROVED: `supabase secrets set` correspondiente + `send <nombre>` (prueba real) + borrar la vieja en Meta (`sc_recordatorio_15m_2_3` y/o `sc_sesion_completada_3`); (3) commit de todo el lote. Si siguen PENDING, solo esperar (revisar al día siguiente). Pendiente del dueño: rotar `WHATSAPP_TOKEN`.
+
+### Histórico — 2026-10-27 (JORNADA COMPLETA: 2 P0 cerrados, 4 versiones, WhatsApp al ~95%)
+
+#### Resumen ejecutivo del día (todo verificado y desplegado)
 
 | # | Logro | Detalle corto |
 |---|-------|---------------|

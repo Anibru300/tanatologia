@@ -6,6 +6,13 @@
 //   appointment_booked | appointment_cancelled | appointment_reminder_24h |
 //   appointment_reminder_15m | appointment_completed (036)
 //
+// Plantillas con link ({{4}}, 2026-11): sc_recordatorio_15m_3 (link a la sala),
+// sc_sesion_paciente_1 / sc_sesion_profesional_1 (link a reseña por rol). El
+// 4º parámetro se agrega SOLO cuando el nombre de la plantilla configurada NO
+// es el default de 3 parámetros (THREE_PARAM_DEFAULTS): así se puede desplegar
+// la función antes de aprobar las plantillas y cambiar los secrets después sin
+// ventana desfasada (ver docs/whatsapp-setup.md, paso 5).
+//
 // Invocada por: triggers vía pg_net (dispatch_whatsapp, header x-cron-secret)
 // y desde la Edge Function appointment-reminders (mismo header).
 //
@@ -30,6 +37,40 @@ const TEMPLATES = {
   appointment_completed: Deno.env.get("WA_TEMPLATE_COMPLETED") || "sc_sesion_completada_3",
 };
 const SUPPORTED_TYPES = Object.keys(TEMPLATES);
+
+// Plantillas nuevas de 4 parámetros (con {{4}} = link), una por rol para
+// 'appointment_completed'. Vacías hasta que Meta las apruebe y se configuren
+// los secrets; mientras tanto se usa TEMPLATES.appointment_completed (3 params).
+const COMPLETED_PATIENT_TEMPLATE = Deno.env.get("WA_TEMPLATE_COMPLETED_PATIENT") || "";
+const COMPLETED_PRO_TEMPLATE = Deno.env.get("WA_TEMPLATE_COMPLETED_PRO") || "";
+
+// Defaults de 3 parámetros: si la plantilla efectiva ES este nombre, NO se
+// envía link (Meta rechaza parámetros de más). Cualquier otro nombre asume 4.
+const THREE_PARAM_DEFAULTS: Record<string, string> = {
+  appointment_reminder_15m: "sc_recordatorio_15m_2_3",
+  appointment_completed: "sc_sesion_completada_3",
+};
+
+type Role = "paciente" | "profesional";
+
+// Base de la app (HashRouter) para los links {{4}}.
+const APP_BASE = "https://somos-calma.com/app/#";
+
+// Plantilla efectiva por tipo y rol.
+function templateFor(type: string, role: Role): string {
+  if (type === "appointment_completed") {
+    return (role === "paciente" ? COMPLETED_PATIENT_TEMPLATE : COMPLETED_PRO_TEMPLATE) ||
+      TEMPLATES.appointment_completed;
+  }
+  return TEMPLATES[type as keyof typeof TEMPLATES];
+}
+
+// Link {{4}} según el tipo (solo los tipos con plantilla de 4 parámetros).
+function linkFor(type: string, role: Role, appointmentId: string): string | undefined {
+  if (type === "appointment_reminder_15m") return `${APP_BASE}/${role}/sala/${appointmentId}`;
+  if (type === "appointment_completed") return `${APP_BASE}/${role}/citas`;
+  return undefined;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -115,9 +156,18 @@ type Recipient = {
   name: string;
   otherName: string;
   whenPretty: string;
+  link?: string; // 4º parámetro {{4}}: solo plantillas nuevas de 4 parámetros
 };
 
 async function sendTemplate(recipient: Recipient, templateName: string): Promise<{ ok: boolean; error?: string }> {
+  // Meta rechazó las variables con nombre (2026-10): su sistema de
+  // revisión exige POSICIONALES {{1}},{{2}},{{3}} (ver docs/whatsapp-setup.md).
+  const parameters = [
+    { type: "text", text: recipient.name },
+    { type: "text", text: recipient.otherName },
+    { type: "text", text: recipient.whenPretty },
+    ...(recipient.link ? [{ type: "text", text: recipient.link }] : []),
+  ];
   const body = {
     messaging_product: "whatsapp",
     to: recipient.to.replace("+", ""),
@@ -125,18 +175,7 @@ async function sendTemplate(recipient: Recipient, templateName: string): Promise
     template: {
       name: templateName,
       language: { code: "es_MX" },
-      components: [
-        {
-          type: "body",
-          // Meta rechazó las variables con nombre (2026-10): su sistema de
-          // revisión exige POSICIONALES {{1}},{{2}},{{3}} (ver docs/whatsapp-setup.md).
-          parameters: [
-            { type: "text", text: recipient.name },
-            { type: "text", text: recipient.otherName },
-            { type: "text", text: recipient.whenPretty },
-          ],
-        },
-      ],
+      components: [{ type: "body", parameters }],
     },
   };
 
@@ -223,20 +262,21 @@ Deno.serve(async (req) => {
 
   const patientName = patient.full_name || patientUser?.full_name || "paciente";
   const proName = professional.full_name || proUser?.full_name || "tu profesional";
-  const templateName = TEMPLATES[type as keyof typeof TEMPLATES];
 
-  const candidates: { user: typeof patientUser; name: string; otherName: string; whenPretty: string }[] = [
+  const candidates: { user: typeof patientUser; name: string; otherName: string; whenPretty: string; role: Role }[] = [
     {
       user: patientUser,
       name: patientName.split(" ")[0],
       otherName: proName,
       whenPretty: tzPretty(appt.scheduled_at, safeTz(patientUser?.timezone)),
+      role: "paciente",
     },
     {
       user: proUser,
       name: proName.split(" ")[0],
       otherName: patientName,
       whenPretty: tzPretty(appt.scheduled_at, safeTz(proUser?.timezone)),
+      role: "profesional",
     },
   ];
 
@@ -253,7 +293,13 @@ Deno.serve(async (req) => {
       console.warn(`whatsapp-notify: teléfono inválido para perfil (cita ${appointmentId})`);
       continue;
     }
-    const result = await sendTemplate({ to, name: c.name, otherName: c.otherName, whenPretty: c.whenPretty }, templateName);
+    const templateName = templateFor(type, c.role);
+    // La plantilla recibe link solo si NO es el default de 3 parámetros
+    // (ver THREE_PARAM_DEFAULTS): evita la ventana desfasada secrets/código.
+    const link = templateName !== THREE_PARAM_DEFAULTS[type]
+      ? linkFor(type, c.role, appointmentId)
+      : undefined;
+    const result = await sendTemplate({ to, name: c.name, otherName: c.otherName, whenPretty: c.whenPretty, link }, templateName);
     if (result.ok) {
       stats.sent += 1;
     } else {
