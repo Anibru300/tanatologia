@@ -49,8 +49,9 @@
 | 4 | ✅ Viejas eliminadas de Meta | `sc_recordatorio_15m_2_3` y `sc_sesion_completada_3` borradas por API (`success:true`); quedan **6 plantillas APPROVED** |
 | 5 | ✅ Smoke función desplegada | `whatsapp-notify` 401 sin cron secret (viva y protegida); los secrets son de runtime, no requirió redeploy |
 | 6 | ✅ Docs | `docs/whatsapp-setup.md` paso 5 (estado final), `AGENTS.md` ítem 21a, esta mesa |
+| 7 | ✅ **E2E con tráfico real (nuevas plantillas)** | Cita tmp real (paciente+profesional tmp con tel del dueño, opt-in): `appointment_booked` por trigger ×2 + invocación directa `appointment_reminder_15m` ×2 y `appointment_completed` ×2 → **6/6 `sent`, `errors:[]`**; links `{{4}}` generados por rol correctos. Residuos eliminados (cita, slot, 2 auth.users) |
 
-**WhatsApp queda 100% cerrado.** Nada pendiente salvo: verificación del negocio en Meta (trámite del dueño; modo de prueba limita destinatarios) y monitoreo de costos. Los cambios de código de 2026-11-02 seguían sin commit a propósito; ahora que las plantillas están aprobadas y cableadas, corresponde el commit del lote.
+**WhatsApp queda 100% cerrado y probado.** Nada pendiente salvo: verificación del negocio en Meta (trámite del dueño; modo de prueba limita destinatarios) y monitoreo de costos. Los cambios de código de 2026-11-02 seguían sin commit a propósito; ahora que las plantillas están aprobadas y cableadas, corresponde el commit del lote.
 
 ### Histórico — 2026-11-02 (Plantillas WA con link: CÓDIGO DESPLEGADO, forward-compatible; sin commit a propósito)
 
