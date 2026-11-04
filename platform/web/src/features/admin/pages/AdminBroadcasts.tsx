@@ -236,6 +236,8 @@ export function AdminBroadcasts() {
   const [notice, setNotice] = useState('')
   const [sending, setSending] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  // Reenvío de un comunicado pendiente desde el historial.
+  const [resendTarget, setResendTarget] = useState<Broadcast | null>(null)
 
   // Selector de personas específicas
   const [userOptions, setUserOptions] = useState<UserOption[]>([])
@@ -412,6 +414,29 @@ export function AdminBroadcasts() {
       setSubject('')
       setBodyText('')
       setConfirmOpen(false)
+      await load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo enviar el comunicado.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  // Envía un comunicado que quedó pendiente (p. ej. creado desde SQL o un envío
+  // anterior que no se completó). Disponible desde el historial.
+  async function handleResend() {
+    if (!resendTarget) return
+    setSending(true)
+    setError('')
+    setNotice('')
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('send-broadcast', {
+        body: { broadcast_id: resendTarget.id },
+      })
+      if (invokeError) throw new Error(invokeError.message)
+      if (!data?.ok) throw new Error(data?.error || 'El envío falló.')
+      setNotice(`Comunicado enviado: ${data.sent} de ${data.recipients} destinatarios.`)
+      setResendTarget(null)
       await load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo enviar el comunicado.')
@@ -608,10 +633,35 @@ export function AdminBroadcasts() {
                 render: (row) => `${row.sent_count}/${row.recipient_count}` +
                   (row.failed_count > 0 ? ` (${row.failed_count} fallidos)` : ''),
               },
+              {
+                header: 'Acciones',
+                render: (row) =>
+                  row.status === 'pending' ? (
+                    <Button variant="outline" size="sm" onClick={() => setResendTarget(row)}>
+                      <Send size={14} className="mr-1" /> Enviar
+                    </Button>
+                  ) : null,
+              },
             ]}
           />
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={resendTarget !== null}
+        title="Enviar comunicado pendiente"
+        message={
+          <>
+            Se enviará <strong>“{resendTarget?.subject}”</strong> a su audiencia (
+            {resendTarget ? (AUDIENCE_LABELS[resendTarget.audience] ?? resendTarget.audience) : ''}). Esta acción no se
+            puede deshacer.
+          </>
+        }
+        confirmLabel="Enviar ahora"
+        loading={sending}
+        onConfirm={handleResend}
+        onCancel={() => setResendTarget(null)}
+      />
 
       <ConfirmDialog
         open={confirmOpen}
