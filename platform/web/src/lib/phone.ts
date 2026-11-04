@@ -1,11 +1,13 @@
-// Normalización de teléfonos a E.164 (México).
+// Normalización de teléfonos a E.164.
 // Mismo algoritmo que la Edge Function whatsapp-notify (Meta Cloud API):
 // mantener ambos en sincronía si cambia la lógica.
 
-// Normaliza a E.164 mexicano: quita todo lo que no sea dígito o '+'.
-// - Si ya trae '+', se respeta tal cual (cualquier país).
-// - Si no, asume México: quita el prefijo de marcación 045/044/01 o el '0'
-//   nacional, y acepta 10 dígitos (local), '1'+10 (celular) y '52'+10
+// Normaliza a E.164: quita todo lo que no sea dígito o '+'.
+// - Si ya trae '+', se respeta tal cual con su código de país (cualquier país,
+//   ej. +1 416 555 1234, +34 612 34 56 78): sirve para pacientes y
+//   profesionales fuera de México.
+// - Si no trae '+', asume México: quita el prefijo de marcación 045/044/01 o
+//   el '0' nacional, y acepta 10 dígitos (local), '1'+10 (celular) y '52'+10
 //   (ya con lada país).
 // Devuelve null si queda inválido (<10 o >15 dígitos).
 export function normalizeMxPhone(input: string | null | undefined): string | null {

@@ -10,7 +10,7 @@ export interface AuthContextType {
     password: string,
     fullName: string,
     role: UserRole,
-    whatsapp?: { phone: string | null; whatsappOptIn: boolean }
+    whatsapp: { phone: string; whatsappOptIn: boolean }
   ) => Promise<void>
   logout: () => void
 }

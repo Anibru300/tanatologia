@@ -8,8 +8,8 @@ import { Alert } from '@/components/ui/Alert'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
-import { User, Stethoscope, CheckCircle, MessageCircle } from 'lucide-react'
-import { isValidMxPhone, normalizeMxPhone } from '@/lib/phone'
+import { User, Stethoscope, CheckCircle } from 'lucide-react'
+import { normalizeMxPhone } from '@/lib/phone'
 import { recordSignupAcceptances } from '@/lib/legalAcceptances'
 
 export function RegisterPage() {
@@ -25,7 +25,6 @@ export function RegisterPage() {
   const [needsConfirmation, setNeedsConfirmation] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [phone, setPhone] = useState('')
-  const [whatsappOptIn, setWhatsappOptIn] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
 
@@ -52,16 +51,18 @@ export function RegisterPage() {
       setError('Debes aceptar el Aviso de Privacidad y los Términos y Condiciones para continuar.')
       return
     }
-    if (whatsappOptIn && !isValidMxPhone(phone)) {
-      setError('El teléfono para avisos por WhatsApp no es válido. Usa 10 dígitos o el formato +52 seguido de la lada.')
+    // Teléfono obligatorio: es el canal de avisos de cita (WhatsApp).
+    const normalizedPhone = normalizeMxPhone(phone)
+    if (!normalizedPhone) {
+      setError('El teléfono no es válido. Si estás en México usa 10 dígitos; si estás fuera, incluye el código de país con + (ej. +1 416 555 1234).')
       return
     }
 
     setIsLoading(true)
     try {
       await register(email, password, fullName, role, {
-        phone: normalizeMxPhone(phone),
-        whatsappOptIn,
+        phone: normalizedPhone,
+        whatsappOptIn: true,
       })
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
@@ -182,33 +183,19 @@ export function RegisterPage() {
                 />
               </div>
               <div>
-                <Label>Teléfono (opcional)</Label>
+                <Label>Teléfono (obligatorio)</Label>
                 <Input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+52 55 1234 5678"
+                  required
                 />
                 <p className="text-xs text-text-light mt-1">
-                  Solo lo usamos para avisarte sobre tus citas.
+                  Lo usamos para enviarte avisos de tus citas por WhatsApp. Si estás fuera de
+                  México, escríbelo con código de país (ej. +1, +34, +54).
                 </p>
               </div>
-              <label className="flex items-start gap-3 text-sm text-text-light cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={whatsappOptIn}
-                  onChange={(e) => setWhatsappOptIn(e.target.checked)}
-                  disabled={phone.trim() !== '' && !isValidMxPhone(phone)}
-                  className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary disabled:opacity-50"
-                />
-                <span className="flex items-start gap-2">
-                  <MessageCircle size={16} className="mt-0.5 shrink-0 text-success-dark" />
-                  <span>
-                    Quiero recibir avisos de mis citas por <strong>WhatsApp</strong> (nueva cita,
-                    recordatorios y cancelaciones) en este número.
-                  </span>
-                </span>
-              </label>
               {error && <Alert variant="error" className="p-3 rounded-sm">{error}</Alert>}
               <label className="flex items-start gap-3 text-sm text-text-light cursor-pointer">
                 <input

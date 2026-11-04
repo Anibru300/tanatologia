@@ -9,7 +9,7 @@ import { Mail, KeyRound, Trash2, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/useAuth'
 import { getMyProfile, updateProfile } from '@/features/profiles/profilesService'
-import { isValidMxPhone, normalizeMxPhone } from '@/lib/phone'
+import { normalizeMxPhone } from '@/lib/phone'
 
 interface AccountSettingsProps {
   profilePath?: string
@@ -33,12 +33,12 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const [waPhone, setWaPhone] = useState('')
-  const [waOptIn, setWaOptIn] = useState(false)
   const [waLoaded, setWaLoaded] = useState(false)
   const [waLoading, setWaLoading] = useState(false)
   const [waMessage, setWaMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  // Precargar teléfono y opt-in desde el perfil
+  // Precargar teléfono desde el perfil (los avisos por WhatsApp van activados por
+  // defecto desde 037: con teléfono válido registrado, siempre se reciben).
   useEffect(() => {
     if (!user?.id) return
     let cancelled = false
@@ -46,7 +46,6 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
       .then(({ profile }) => {
         if (cancelled) return
         setWaPhone(profile.phone ?? '')
-        setWaOptIn(profile.whatsapp_opt_in)
       })
       .catch(() => undefined)
       .finally(() => {
@@ -146,15 +145,11 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
     if (!user?.id) return
     const trimmed = waPhone.trim()
     const normalized = normalizeMxPhone(trimmed)
-    if (waOptIn && !normalized) {
+    if (trimmed !== '' && !normalized) {
       setWaMessage({
         type: 'error',
-        text: 'Para activar los avisos por WhatsApp necesitas un teléfono válido (10 dígitos o +52 seguido de la lada).',
+        text: 'El teléfono no tiene un formato válido. Si estás en México usa 10 dígitos; si estás fuera, incluye el código de país con + (ej. +1 416 555 1234).',
       })
-      return
-    }
-    if (!waOptIn && trimmed !== '' && !normalized) {
-      setWaMessage({ type: 'error', text: 'El teléfono no tiene un formato válido. Déjalo vacío o usa +52 seguido de la lada.' })
       return
     }
 
@@ -163,14 +158,15 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
       await updateProfile(user.id, {
         full_name: user.fullName,
         phone: normalized ?? (trimmed === '' ? null : trimmed),
-        whatsapp_opt_in: waOptIn && normalized !== null,
+        // Avisos activados por defecto (037): solo se apagan si se borra el teléfono.
+        whatsapp_opt_in: normalized !== null,
       })
       if (normalized) setWaPhone(normalized)
       setWaMessage({
         type: 'success',
-        text: waOptIn
+        text: normalized
           ? 'Listo. Recibirás avisos de tus citas por WhatsApp.'
-          : 'Actualizado. Ya no recibirás avisos por WhatsApp.',
+          : 'Actualizado. Sin teléfono no podemos enviarte avisos por WhatsApp.',
       })
     } catch (err) {
       setWaMessage({
@@ -285,8 +281,9 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
             Avisos por WhatsApp
           </CardTitle>
           <CardDescription>
-            Recibe en WhatsApp los avisos de tus citas: nueva cita, recordatorio 24 horas
-            antes, aviso 15 minutos antes y cancelaciones.
+            Con tu teléfono registrado recibes en WhatsApp los avisos de tus citas: nueva cita,
+            recordatorio 24 horas antes, aviso 15 minutos antes (con link a tu videollamada),
+            cancelaciones y cierre de sesión. Si estás fuera de México, escríbelo con +código de país.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -300,18 +297,6 @@ export function AccountSettings({ profilePath, profileLabel }: AccountSettingsPr
                 placeholder="+52 55 1234 5678"
               />
             </div>
-            <label className="flex items-start gap-3 text-sm text-text-light cursor-pointer">
-              <input
-                type="checkbox"
-                checked={waOptIn}
-                onChange={(e) => setWaOptIn(e.target.checked)}
-                disabled={waPhone.trim() !== '' && !isValidMxPhone(waPhone)}
-                className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary disabled:opacity-50"
-              />
-              <span>
-                Quiero recibir avisos de mis citas por <strong>WhatsApp</strong> en este número.
-              </span>
-            </label>
             {waMessage && (
               <Alert variant={waMessage.type} className="p-3 rounded-sm">
                 {waMessage.text}

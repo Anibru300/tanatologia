@@ -155,7 +155,7 @@ export function ProfessionalProfile() {
       const normalizedPhone = normalizeMxPhone(phone)
       if (phone.trim() !== '' && !normalizedPhone) {
         setSaveStatus('error')
-        setSaveMessage('El teléfono no tiene un formato válido. Usa 10 dígitos o +52 seguido de la lada.')
+        setSaveMessage('El teléfono no tiene un formato válido. Si estás en México usa 10 dígitos; si estás fuera, incluye el código de país con + (ej. +1 416 555 1234).')
         return
       }
       await updateProfile(user.id, {

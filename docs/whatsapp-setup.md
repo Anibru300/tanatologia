@@ -136,6 +136,6 @@ Meta cobra **por mensaje entregado** en México:
 - El opt-in se guarda en `profiles.whatsapp_opt_in` (default `false`); el
   teléfono se normaliza a E.164 (`+52...`) en `src/lib/phone.ts` y en la Edge
   Function (mismo algoritmo en ambos lados).
-- Si un envío falla (plantilla rechazada, número fuera de lista de prueba,
-  token vencido), el error queda en los logs de la función y **nunca** tumba la
-  cita ni el correo.
+- ⚠️ **Verificación del negocio NO es requisito para operar con usuarios reales** (regla vigente de Meta 2026). El número de producción registrado (con método de pago) puede enviar a **250 usuarios únicos por período móvil de 24 h** sin verificación — volumen muy superior al de la beta. La verificación desbloquea 2,000+/día, el nombre de empresa visible en el chat y la insignia; hacerla cuando haya CSF a la mano. (El límite de "5 números de prueba" aplica SOLO al número de prueba gratuito de Meta, no al número de producción.)
+- ⚠️ **Usuarios fuera de México:** el teléfono acepta formato internacional con `+` y código de país (p. ej. `+1 416...`, `+34 612...`); `normalizeMxPhone` respeta cualquier número que empiece con `+`. Sin `+` se asume México. El costo por mensaje varía por país destino (tarifas de Meta por utilidad). La hora de los avisos ya va en la `timezone` del destinatario.
+- Si un envío falla (plantilla rechazada, token vencido), el error queda en los logs de la función y **nunca** tumba la cita ni el correo.

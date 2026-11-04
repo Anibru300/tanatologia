@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-03: plantillas WA con link ✅ ACTIVAS EN PRODUCCIÓN — las 3 aprobadas por Meta, secrets cableados, pruebas reales 3/3 OK, viejas borradas de Meta, token rotado. WhatsApp 100% cerrado: 6 plantillas APPROVED. Ver 3w)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-03 noche: v1.9.15 LISTA (WhatsApp siempre activo, teléfono obligatorio en registro, soporte internacional) — migración 037 YA APLICADA EN CLOUD; falta commit+push para deploy del build. Ver 3x)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.14-beta.1` **DESPLEGADA** (commit `00fa604`, push 2026-10-27 ~19:45 UTC; workflow success). Novedades del día: aceptaciones legales en el registro (v1.9.12), sección Recursos del profesional con certificación FMP + notificación 49/49 (v1.9.13) y vigencia automática de ofertas de formación (v1.9.14). Versión anterior: `1.9.11` (fix bucle PWA).
+- **Versión:** `1.9.15-beta.1` **EN DISCO + MIGRACIÓN 037 APLICADA EN CLOUD; FALTA COMMIT+PUSH** (deploy del build). Novedades: avisos WhatsApp sin opt-in (siempre activos con teléfono), teléfono obligatorio en registro, hints internacionales (+código de país). Última desplegada: `1.9.14` (commit `00fa604`).
 - **Versión anterior:** `1.9.7-beta.1`. **botón "Reportar un problema"** en el dashboard principal de paciente y profesional — abre `ReportProblemModal` (`src/components/ReportProblemModal.tsx`): selector de tipo de falla (videollamada/citas/archivos/cuenta/otro) + descripción; envía vía `support-request` con asunto `[Problema] …` + navegador/fecha del usuario → cae en Soporte/Bandeja del admin y se responde al correo. Anterior: 1.9.6 fix `frame-src` de la meta-CSP (bloqueaba vista previa de PDFs de profesionales, correos HTML de la Bandeja y Daily.co — "Este contenido está bloqueado").
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
@@ -37,7 +37,22 @@
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
-## 3. Última sesión (2026-11-03 — Plantillas WA con link: ✅ ACTIVAS EN PRODUCCIÓN; lote completo cerrado)
+## 3. Última sesión (2026-11-03 noche — v1.9.15: WhatsApp siempre activo + teléfono obligatorio + internacional; migración 037 en Cloud, falta push)
+
+### Resumen (todo verificado)
+
+| # | Hecho | Detalle |
+|---|-------|---------|
+| 1 | ✅ Migración 037 aplicada en Cloud | `whatsapp_opt_in DEFAULT TRUE` (verificado en information_schema) + `handle_new_user()` opt-in = (teléfono presente) |
+| 2 | ✅ Registro con teléfono obligatorio | `RegisterPage`: campo requerido, validación con mensaje internacional; `AuthContext`/`AuthProvider`: `register()` exige `{phone, whatsappOptIn}` |
+| 3 | ✅ Checkbox de opt-in eliminado | `RegisterPage` y `AccountSettings`: la tarjeta de WhatsApp ya no tiene toggle; con teléfono válido los avisos van activados, borrarlo los apaga |
+| 4 | ✅ Internacional | El algoritmo E.164 ya respetaba `+código de país`; se actualizaron hints (RegisterPage, AccountSettings, PatientProfile, ProfessionalProfile) y el doc de `phone.ts`. La hora de avisos ya iba por `profiles.timezone` |
+| 5 | ✅ Límite Meta corregido en docs | Sin verificación: 250 usuarios únicos/24 h con número de producción (los "5 de prueba" son solo del número de prueba de Meta). Verificación recomendada solo para escalar |
+| 6 | ✅ E2E Cloud | Registro tmp con teléfono → perfil `whatsapp_opt_in=true` (usuario eliminado). Tests 43/43 · tsc 0 errores · build OK · v1.9.15 |
+
+**Falta:** commit + push (dispara deploy de /app). Backfill NO: los usuarios existentes conservan su opt-in actual (decisión: solo aplica a registros nuevos).
+
+### Histórico — 2026-11-03 (Plantillas WA con link: ✅ ACTIVAS EN PRODUCCIÓN; lote completo cerrado)
 
 ### Resumen (todo verificado)
 

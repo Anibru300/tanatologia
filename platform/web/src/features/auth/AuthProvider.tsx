@@ -123,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     fullName: string,
     role: UserRole,
-    whatsapp?: { phone: string | null; whatsappOptIn: boolean }
+    whatsapp: { phone: string; whatsappOptIn: boolean }
   ) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -133,13 +133,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // para crear el perfil atómicamente dentro de la misma transacción.
         // `timezone` (zona horaria IANA del navegador) alimenta la geografía aproximada
         // del panel Admin (país/ciudad), sin usar IP.
-        // `phone`/`whatsapp_opt_in` habilitan los avisos de cita por WhatsApp (migración 034).
+        // `phone` habilita los avisos de cita por WhatsApp (migración 034/037): el
+        // opt-in ya no es opcional — con teléfono registrado los avisos van activados.
         data: {
           full_name: fullName,
           role,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || undefined,
-          phone: whatsapp?.phone ?? undefined,
-          whatsapp_opt_in: whatsapp?.whatsappOptIn ?? undefined,
+          phone: whatsapp.phone,
+          whatsapp_opt_in: whatsapp.whatsappOptIn,
         },
       },
     })
