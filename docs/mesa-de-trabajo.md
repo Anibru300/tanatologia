@@ -50,7 +50,7 @@
 | 5 | ✅ Límite Meta corregido en docs | Sin verificación: 250 usuarios únicos/24 h con número de producción (los "5 de prueba" son solo del número de prueba de Meta). Verificación recomendada solo para escalar |
 | 6 | ✅ E2E Cloud | Registro tmp con teléfono → perfil `whatsapp_opt_in=true` (usuario eliminado). Tests 43/43 · tsc 0 errores · build OK · v1.9.15 |
 
-**Falta:** commit + push (dispara deploy de /app). Backfill NO: los usuarios existentes conservan su opt-in actual (decisión: solo aplica a registros nuevos).
+**v1.9.15 DESPLEGADA** (commit `f90cefe`, push 2026-11-03; workflow compila /app). **Aviso in-app enviado a los 39 usuarios sin teléfono** (11 pacientes + 28 profesionales, type `admin_broadcast`, link a Configuración por rol, historial en `notification_broadcasts` 39/39): se les pide agregar su número para activar los avisos por WhatsApp. Backfill NO: los usuarios existentes conservan su opt-in actual (decisión del dueño: las reglas nuevas solo aplican a registros nuevos).
 
 ### Histórico — 2026-11-03 (Plantillas WA con link: ✅ ACTIVAS EN PRODUCCIÓN; lote completo cerrado)
 
