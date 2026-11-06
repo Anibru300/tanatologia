@@ -2341,7 +2341,7 @@ body.page-with-bg::after {
 /* === GALERÍA DE INSPIRACIÓN === */
 .gallery-inspiration {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
     align-items: start;
 }
@@ -2465,7 +2465,7 @@ body.page-with-bg::after {
 
 /* === TESTIMONIOS CON FONDO === */
 .section--testimonios-bg {
-    background-image: linear-gradient(rgba(247, 245, 242, 0.82), rgba(247, 245, 242, 0.86)), url('../images/ventana-ciudad.png');
+    background-image: linear-gradient(rgba(247, 245, 242, 0.82), rgba(247, 245, 242, 0.86)), url('../images/profesional-trabajando.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -2477,7 +2477,7 @@ body.page-with-bg::after {
 
 /* === SEGURIDAD CON FONDO === */
 .section--safety-bg {
-    background-image: linear-gradient(rgba(247, 245, 242, 0.85), rgba(247, 245, 242, 0.90)), url('../images/frase-batalla-dark.png');
+    background-image: linear-gradient(rgba(247, 245, 242, 0.85), rgba(247, 245, 242, 0.90)), url('../images/frase-batalla-dark.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;

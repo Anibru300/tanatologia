@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-03 noche: JORNADA COMPLETA — WhatsApp 100% operativo (6 plantillas, links, sin opt-in, internacional), v1.9.15+v1.9.16 desplegadas, migración 037 en Cloud, anuncio enviado (in-app 72/72 + correo por el dueño), cuota Resend gratis (100/día) alcanzada y gestionada. Ver 3x)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-05 tarde: auditoría de imágenes del sitio, ver 3y · chequeo de salud 3x · histórico 2026-11-03 noche: JORNADA COMPLETA — WhatsApp 100% operativo (6 plantillas, links, sin opt-in, internacional), v1.9.15+v1.9.16 desplegadas, migración 037 en Cloud, anuncio enviado (in-app 72/72 + correo por el dueño), cuota Resend gratis (100/día) alcanzada y gestionada. Ver 3x)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -36,6 +36,30 @@
 - **Directorio paciente solo con agendables (1.5.6):** `getProfessionalProfiles()` ahora filtra además a profesionistas con ≥1 `availability_slot` futuro — el paciente solo ve verificados + visibles + **con disponibilidad publicada** (antes veía verificados sin horarios, directorio "fantasma"). Aplica al directorio y al selector de `BookAppointment` (mismo consumidor). Texto de directorio vacío actualizado.
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
+
+### 3y. Sesión 2026-11-05 (tarde) — Auditoría de imágenes del sitio público: 3 fotos nuevas + 5ª frase + optimización de peso
+
+**Pedido del dueño:** auditoría de la página pública, cambiar imágenes viejas por nuevas sin duplicados. Decisión: reemplazar las 3 fotos 1408×768, agregar la frase nueva como 5ª tarjeta, y optimizar todo a JPEG/WebP.
+
+**Hecho (verificado con 9 capturas headless desktop+móvil en `.tools/review/shot-img/`):**
+1. **Duplicado eliminado:** `assets/images/platform$f.jpg` (idéntica byte-a-byte a `platform/paciente-terapeutas.jpg`, artefacto de expansión de variable `$f` en un script; sin referencias) — borrada.
+2. **Mapeo aplicado:** `profesional-espacio.png`→`profesional-escritorio.jpg` (sección "espacio seguro"), `ventana-ciudad.png`→`profesional-trabajando.jpg` ("consulta o programa" + fondo testimonios en main.css + entender-el-duelo og+img), `ventana-atardecer.png`→`profesional-jardin.jpg` ("elige tu momento" + og/twitter/JSON-LD de index/pacientes/matching/recursos + nosotros). Alts actualizados a descripciones reales (antes decían "ventana"/"atardecer").
+3. **5ª frase:** `frase-descanso.webp` ("No hay descanso más profundo…" Dra. Lupita, diente de león) agregada a `.gallery-inspiration`; el grid pasó de 3 a 2 columnas (móvil sigue 1 col; antes 3+1 quedaba desbalanceado).
+4. **Optimización:** las 6 fotos/ventanas PNG (1.9–2.4 MB c/u) → JPEG q85/WebP q85-92 (174–440 KB). Las 4 frases + `frase-batalla-dark` → WebP (209–722 KB, eran 1.9–2.5 MB). `equipo-comunidad.jpg` re-comprimida y resizeada a 1200w (1000K→300K). **La carpeta `assets/images` bajó de 29 MB a 15 MB; la home de ~15 MB a ~3 MB en imágenes.**
+5. **Borradas** (git rm): ventana-ciudad.png, ventana-atardecer.png, profesional-espacio.png, frase-{batalla,victoria,sanar,pedir-ayuda}.png, frase-batalla-dark.png. Referencias verificadas en 0 sitios tras el cambio.
+6. **⚠️ No publicar nunca** `recursos/fotos-pagina/diente-de-leon-istock-watermark.jpg` (marca de agua iStock). Los originales pesados quedan en `recursos/fotos-pagina/` (material no publicado, por diseño).
+7. Script reutilizable: `.tools/review/shot-img-cambios.cjs` (servidor `python -m http.server 8899` + puppeteer-core; rutas de salida relativas al cwd de `.tools/review`).
+
+**Pendiente de esta sesión:** commit+push (deploy de Pages al instante; el push también redeployaría la app por tocar `platform/web` — esta sesión NO tocó platform/web, solo sitio estático + assets).
+
+### 3x. Chequeo de salud 2026-11-05 (todo operando; tráfico real detectado)
+
+- Sitio 200 / app 200; producción en v1.9.16; cron de recordatorios punteando cada 10 min (`failed:0`).
+- **Cita real mañana 6-nov 21:00 CDMX:** Veronica Garcia (paciente, registro 28-oct) × Berenice Barajas (profesional). Creada 31-oct ("Consulta aislada"). A las 20:00 CDMX el cron mandó **recordatorio 24h: 2 correos (failed:0) + WhatsApp a Veronica** (opt-in true, +52 221 338 3704; Berenice sin opt-in, correcto). El WhatsApp sale por `fetch` interno de `appointment-reminders` → `whatsapp-notify` (NO aparece en `net._http_response`; los únicos renglones ahí son los pings del cron).
+- **Chat real hoy:** Berenice escribió "Gracias!" a las 16:51 CDMX.
+- **3 profesionales verificados** en revisión 3-5 nov (uno aprobado el 4-nov); 3 registros nuevos desde el 1-nov (2 profesionales con opt-in, 1 paciente sin opt-in — registrada antes del deploy de 037).
+- 16/16 comunicados `sent` en histórico; 142 visitas registradas desde 1-nov.
+- Ojo de lectura SQL: `appointments.patient_profile_id` → `patient_profiles.id` (subperfil), NO a `profiles.id` — un join directo da NULL y asusta de gratis.
 
 ## 3. Última sesión (2026-11-03 — JORNADA COMPLETA: WhatsApp 100% operativo + v1.9.15/1.9.16 + anuncio a usuarios)
 
