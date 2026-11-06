@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-05 noche: mejoras sitio público CLS+SEO+FAQ, ver 3z · imágenes 3y · histórico 2026-11-03 noche: JORNADA COMPLETA — WhatsApp 100% operativo (6 plantillas, links, sin opt-in, internacional), v1.9.15+v1.9.16 desplegadas, migración 037 en Cloud, anuncio enviado (in-app 72/72 + correo por el dueño), cuota Resend gratis (100/día) alcanzada y gestionada. Ver 3x)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-05 noche: JORNADA COMPLETA sitio público — resumen en §3 · UX móvil 3A · CLS/SEO/fuentes 3z · imágenes 3y · salud 3x · histórico 2026-11-03): JORNADA COMPLETA — WhatsApp 100% operativo (6 plantillas, links, sin opt-in, internacional), v1.9.15+v1.9.16 desplegadas, migración 037 en Cloud, anuncio enviado (in-app 72/72 + correo por el dueño), cuota Resend gratis (100/día) alcanzada y gestionada. Ver 3x)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -38,6 +38,32 @@
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
 **EXTRA (misma sesión, mismo dueño):** migración de fuentes del sitio estático a Poppins auto-alojado (pendiente 3z). Los 4 woff2 (400/500/600/700, ~22 KB, mismos archivos que la app) copiados a `assets/fonts/`; `@font-face` en main.css; los 3 links de Google Fonts (2 preconnect + css2) reemplazados por 2 preloads locales en las 16 páginas (script `.tools/review/local_fonts.py`). El peso 800 no se usa en el CSS estático (solo 500/700 + 400/600 vía variables). Verificado con Chrome headless **bloqueando fonts.googleapis/gstatic**: las 4 fuentes cargan locales y el render es idéntico. La meta-CSP sigue permitiendo gstatic (inofensivo; limpieza opcional futura).
+
+## 3. Última sesión — JORNADA 2026-11-05 (sitio público, 4 commits: salud + imágenes + SEO + UX móvil)
+
+**Resumen del día (todo verificado con capturas headless y/o producción):**
+
+| Hora | Entrega | Detalle | Commit |
+|---|---|---|---|
+| Mañana | Chequeo de salud (3x) | Plataforma operando; cita real 6-nov (Veronica×Berenice), recordatorios 24h reales (correos 2/2 + WhatsApp real a paciente opt-in), chat real, 3 registros nuevos | — |
+| Tarde | Imágenes (3y) | 3 fotos nuevas de la profesional + 5ª frase (Dra. Lupita); assets/images **29→15 MB**, home **~15→~3 MB**; duplicado `platform$f.jpg` eliminado; 9 PNG pesados retirados | `f785e79` |
+| Noche | CLS + SEO + fuentes (3z) | `width`/`height` en 26 imágenes; artículos de Recursos enlazados en index+paci; FAQ con FAQPage schema; sitemap lastmod; **Poppins auto-alojada** (adiós Google Fonts en las 16 páginas) | `40c5b91` |
+| Noche | UX móvil (3A) | Atención al Cliente de píldora a botón circular; footer con aire (padding 9.5rem) para que los flotantes no tapen el texto legal; enlaces del footer más táctiles | este commit |
+
+**Datos rápidos del día:** 73 usuarios; cita real mañana 6-nov 21:00 CDMX (Veronica Garcia × Berenice Barajas) = primer uso en producción de sala JaaS + plantillas WhatsApp con link; un profesional verificado el 4-nov.
+
+### Histórico del día — 3A. UX móvil del sitio público: flotantes vs footer
+
+**Auditoría con Chrome headless 390×844 (isMobile+touch) en index, pacientes, profesionales y un artículo:** sin overflow horizontal en ninguna; menú hamburguesa (`.nav__toggle` → `.nav__menu.is-active` dropdown) y panel de atención funcionando.
+
+**Problema encontrado:** al llegar al footer, 4 flotantes fijos (back-to-top, Atención al Cliente píldora ~230px ancho, Facebook y WhatsApp) **tapaban el texto legal** (copyright + crédito Kevin MacLeod ilegibles) y los enlaces del footer medían ~21px de alto (targets táctiles pequeños).
+
+**Fixes (un solo bloque `@media (max-width: 768px)` al final de main.css):**
+1. `.atencion-bot__toggle` pasa de píldora ancha a **botón circular 52px con solo ícono** (la `.atencion-bot__label` se oculta; el `aria-label` ya existía). El panel del bot sigue ancho completo (`calc(100vw - 2rem)`), ahora anclado sobre el botón circular.
+2. `.footer` gana `padding-bottom: 9.5rem` en móvil → ningún flotante tapa su contenido al scroll final (con y sin CTA bar; verificado en index y pacientes con capturas `mfix-*`).
+3. Enlaces del footer: `inline-block` + `padding: 0.35rem 0` + `min-height: 32px`.
+
+Verificado con capturas `mfix-index-bottom`, `mfix-pacientes-bottom`, `mfix-menu`, `mfix-atencion` en `.tools/review/shot-img/`. El back-to-top ya quedó bien posicionado sobre el botón circular sin cambios (su `bottom: 5.5rem` calculado previamente coincide).
 
 ### 3z. Sesión 2026-11-05 (noche) — Mejoras sitio público: CLS, SEO de artículos y FAQ en index
 

@@ -2603,3 +2603,34 @@ body.page-with-bg::after {
         padding: 1.5rem 1.25rem;
     }
 }
+
+
+/* === MEJORAS DE INTERACCIÓN MÓVIL: flotantes vs footer (2026-11-05) === */
+@media (max-width: 768px) {
+    /* Atención al Cliente: de píldora ancha a botón circular con solo ícono —
+       la píldora tapaba el texto del footer y ocupaba ~230px de ancho */
+    .atencion-bot__toggle {
+        width: 52px;
+        height: 52px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .atencion-bot__label {
+        display: none;
+    }
+
+    /* El footer deja aire abajo para que NINGÚN flotante (WhatsApp/Facebook/
+       Atención/Subir) tape su contenido al llegar al final de la página */
+    .footer {
+        padding-bottom: 9.5rem;
+    }
+
+    /* Enlaces del footer más táctiles (antes ~21px de alto) */
+    .footer a {
+        display: inline-block;
+        padding: 0.35rem 0;
+        min-height: 32px;
+    }
+}
