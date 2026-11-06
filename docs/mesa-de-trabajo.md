@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-05 tarde: auditoría de imágenes del sitio, ver 3y · chequeo de salud 3x · histórico 2026-11-03 noche: JORNADA COMPLETA — WhatsApp 100% operativo (6 plantillas, links, sin opt-in, internacional), v1.9.15+v1.9.16 desplegadas, migración 037 en Cloud, anuncio enviado (in-app 72/72 + correo por el dueño), cuota Resend gratis (100/día) alcanzada y gestionada. Ver 3x)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-05 noche: mejoras sitio público CLS+SEO+FAQ, ver 3z · imágenes 3y · histórico 2026-11-03 noche: JORNADA COMPLETA — WhatsApp 100% operativo (6 plantillas, links, sin opt-in, internacional), v1.9.15+v1.9.16 desplegadas, migración 037 en Cloud, anuncio enviado (in-app 72/72 + correo por el dueño), cuota Resend gratis (100/día) alcanzada y gestionada. Ver 3x)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -36,6 +36,22 @@
 - **Directorio paciente solo con agendables (1.5.6):** `getProfessionalProfiles()` ahora filtra además a profesionistas con ≥1 `availability_slot` futuro — el paciente solo ve verificados + visibles + **con disponibilidad publicada** (antes veía verificados sin horarios, directorio "fantasma"). Aplica al directorio y al selector de `BookAppointment` (mismo consumidor). Texto de directorio vacío actualizado.
 - **Reseñas:** paciente→profesional (públicas anónimas), profesional→paciente (privadas).
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
+
+**EXTRA (misma sesión, mismo dueño):** migración de fuentes del sitio estático a Poppins auto-alojado (pendiente 3z). Los 4 woff2 (400/500/600/700, ~22 KB, mismos archivos que la app) copiados a `assets/fonts/`; `@font-face` en main.css; los 3 links de Google Fonts (2 preconnect + css2) reemplazados por 2 preloads locales en las 16 páginas (script `.tools/review/local_fonts.py`). El peso 800 no se usa en el CSS estático (solo 500/700 + 400/600 vía variables). Verificado con Chrome headless **bloqueando fonts.googleapis/gstatic**: las 4 fuentes cargan locales y el render es idéntico. La meta-CSP sigue permitiendo gstatic (inofensivo; limpieza opcional futura).
+
+### 3z. Sesión 2026-11-05 (noche) — Mejoras sitio público: CLS, SEO de artículos y FAQ en index
+
+**Paquete técnico:**
+1. **CLS (Core Web Vital):** `width`/`height` agregados a las 26 imágenes de las 17 páginas estáticas (script reutilizable `.tools/review/add_img_dims.py` + dimensiones reales vía ffprobe; la única sin dims es el placeholder del lightbox con `src=""`, correcto). Antes 23/23 sin dimensiones.
+2. **Sitemap:** `<lastmod>2026-11-05</lastmod>` en las 15 URLs (antes sin fechas). XML validado.
+3. **LCP:** la primera imagen visible del index (`profesional-escritorio.jpg`) cambió de `loading="lazy"` a `fetchpriority="high"`.
+4. Canonical: verificado, las 17 páginas ya tenían canonical correcto (index → `/`, sin `/index.html`).
+
+**Paquete contenido:**
+5. **Artículos de Recursos enlazados** (tenían 6 visitas en 30 días, era un activo muerto): nueva sección "Lectura para tu camino" con las 3 tarjetas de artículos + "Ver todos los recursos" en el **index** (tras la galería de frases) y en **pacientes.html** (tras Especialidades, antes del equipo).
+6. **FAQ en el index:** sección "Resolvemos tus dudas" con 4 preguntas reales (costo, verificación SEP, formato de sesiones, confidencialidad) usando el componente `.faq` acordeón existente (main.css + main.js, sin CSS nuevo) + **FAQPage JSON-LD** en el head (rich snippets; el contenido es visible, cumple la guía de Google).
+
+Verificado con capturas headless desktop+móvil (`.tools/review/shot-img/10-13`). Ojo descubierto pero NO tocado: el sitio estático aún carga Poppins desde Google Fonts (gstatic) — la app ya usa woff2 auto-alojados; candidato a futura mejora (privacidad + velocidad + que funcione sin conexión a Google).
 
 ### 3y. Sesión 2026-11-05 (tarde) — Auditoría de imágenes del sitio público: 3 fotos nuevas + 5ª frase + optimización de peso
 

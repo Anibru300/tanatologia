@@ -31,6 +31,35 @@
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "¿Cuánto cuesta una sesión?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Cada profesional define su propia tarifa, entre $150 y $350 MXN por sesión de 60 minutos, y tú se la pagas directamente. Somos Calma no cobra ningún cargo durante la Beta." }
+            },
+            {
+                "@type": "Question",
+                "name": "¿Las profesionales están verificadas?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Sí. Revisamos cédula profesional, título e identificación de cada profesional; la cédula se consulta directamente en el registro público de la SEP antes de publicar un perfil en el directorio." }
+            },
+            {
+                "@type": "Question",
+                "name": "¿Cómo son las sesiones?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Son videollamadas seguras de 60 minutos desde donde estés (México, Estados Unidos y Latinoamérica). Recibes recordatorios por correo y WhatsApp 24 horas y 15 minutos antes, con el enlace directo a tu sala." }
+            },
+            {
+                "@type": "Question",
+                "name": "¿Mi información es confidencial?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Sí. Las sesiones son privadas y tus datos se tratan conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares." }
+            }
+        ]
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "SOMOS-CALMA",
         "url": "https://somos-calma.com/",
@@ -105,9 +134,8 @@
         })();
     </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" href="assets/fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/poppins-700.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body class="page-with-bg">
@@ -120,7 +148,7 @@
             <div class="container">
                 <div class="hero__grid grid grid--2">
                     <div class="hero__logo">
-                        <img src="assets/images/logo.jpeg" alt="Somos Calma" class="hero__logo-img">
+                        <img src="assets/images/logo.jpeg" alt="Somos Calma" class="hero__logo-img" width="1083" height="799">
                     </div>
                     <div class="hero__content">
                         <span class="hero__eyebrow">Tu acompañante de 7 a.m. a 11 p.m.</span>
@@ -166,7 +194,7 @@
                 <div class="founders-grid">
                     <article class="founder-card">
                         <button type="button" class="founder-card__photo-btn" data-video-src="assets/images/fundadoras/bienvenida.mp4" data-video-title="Dra. Lupita Muñoz Campuzano · Fundadora" aria-label="Reproducir video de Dra. Lupita Muñoz Campuzano">
-                            <img src="assets/images/fundadoras/lupita.jpg" alt="Dra. Lupita Muñoz Campuzano, fundadora de Somos Calma" class="founder-card__photo" loading="lazy">
+                            <img src="assets/images/fundadoras/lupita.jpg" alt="Dra. Lupita Muñoz Campuzano, fundadora de Somos Calma" class="founder-card__photo" loading="lazy" width="1023" height="1537">
                             <span class="founder-card__play" aria-hidden="true">▶</span>
                         </button>
                         <h3>Dra. Lupita Muñoz Campuzano</h3>
@@ -178,7 +206,7 @@
                     </article>
                     <article class="founder-card">
                         <button type="button" class="founder-card__photo-btn" data-video-src="assets/images/fundadoras/edith.mp4" data-video-title="Dra. Edith González Huerta · Fundadora" aria-label="Reproducir video de Dra. Edith González Huerta">
-                            <img src="assets/images/fundadoras/edith.jpg" alt="Dra. Edith González Huerta, fundadora de Somos Calma" class="founder-card__photo" loading="lazy">
+                            <img src="assets/images/fundadoras/edith.jpg" alt="Dra. Edith González Huerta, fundadora de Somos Calma" class="founder-card__photo" loading="lazy" width="1023" height="1538">
                             <span class="founder-card__play" aria-hidden="true">▶</span>
                         </button>
                         <h3>Dra. Edith González Huerta</h3>
@@ -206,7 +234,7 @@
                         <a href="/app/#/register?role=patient" class="btn btn--primary">Comenzar mi proceso</a>
                     </div>
                     <div class="illustration-box">
-                        <img src="assets/images/meditacion.jpg" alt="Persona meditando en la calma de su hogar: tu proceso empieza en casa" loading="lazy">
+                        <img src="assets/images/meditacion.jpg" alt="Persona meditando en la calma de su hogar: tu proceso empieza en casa" loading="lazy" width="612" height="408">
                     </div>
                 </div>
             </div>
@@ -222,7 +250,7 @@
                     </p>
                 </div>
                 <div class="how-it-works__visual">
-                    <img src="assets/images/profesional-escritorio.jpg" alt="Profesional de Somos Calma en su espacio tranquilo de trabajo" loading="lazy">
+                    <img src="assets/images/profesional-escritorio.jpg" alt="Profesional de Somos Calma en su espacio tranquilo de trabajo" fetchpriority="high" width="1408" height="768">
                 </div>
                 <div class="grid grid--3">
                     <article class="card">
@@ -263,7 +291,7 @@
                         <a href="#membresias" class="btn btn--primary">Conocer la Beta</a>
                     </div>
                     <div class="illustration-box">
-                        <img src="assets/images/profesional-trabajando.jpg" alt="Profesional de Somos Calma trabajando con calma, acompañándote a tu ritmo estés donde estés" loading="lazy">
+                        <img src="assets/images/profesional-trabajando.jpg" alt="Profesional de Somos Calma trabajando con calma, acompañándote a tu ritmo estés donde estés" loading="lazy" width="1408" height="768">
                     </div>
                 </div>
             </div>
@@ -273,7 +301,7 @@
             <div class="container">
                 <div class="feature">
                     <div class="illustration-box">
-                        <img src="assets/images/equipo-comunidad.jpg" alt="Círculo de personas en comunidad, la red profesional de Somos Calma" loading="lazy">
+                        <img src="assets/images/equipo-comunidad.jpg" alt="Círculo de personas en comunidad, la red profesional de Somos Calma" loading="lazy" width="1200" height="900">
                     </div>
                     <div class="feature__content">
                         <span class="section__eyebrow">Para profesionales</span>
@@ -302,7 +330,7 @@
                     <p class="section__subtitle">Desde una sola sesión hasta un programa guiado, todo por internet, en la Beta.</p>
                 </div>
                 <div class="section__visual section__visual--rounded">
-                    <img src="assets/images/profesional-jardin.jpg" alt="Profesional de Somos Calma sonriendo en un espacio tranquilo: elige lo que tu momento necesita" loading="lazy">
+                    <img src="assets/images/profesional-jardin.jpg" alt="Profesional de Somos Calma sonriendo en un espacio tranquilo: elige lo que tu momento necesita" loading="lazy" width="1408" height="768">
                 </div>
                 <div class="pricing">
                     <article class="pricing__card">
@@ -358,18 +386,48 @@
                 </div>
                 <div class="gallery-inspiration">
                     <figure class="gallery-inspiration__item">
-                        <img src="assets/images/frase-batalla.webp" alt="Después de cada batalla, regálate un momento de paz." loading="lazy">
+                        <img src="assets/images/frase-batalla.webp" alt="Después de cada batalla, regálate un momento de paz." loading="lazy" width="1920" height="1280">
                     </figure>
                     <figure class="gallery-inspiration__item">
-                        <img src="assets/images/frase-descanso.webp" alt="No hay descanso más profundo que el que nace después de haber enfrentado aquello que parecía imposible. Dra. Lupita Muñoz Campuzano" loading="lazy">
+                        <img src="assets/images/frase-descanso.webp" alt="No hay descanso más profundo que el que nace después de haber enfrentado aquello que parecía imposible. Dra. Lupita Muñoz Campuzano" loading="lazy" width="1920" height="1280">
                     </figure>
                     <figure class="gallery-inspiration__item gallery-inspiration__item--vertical">
-                        <img src="assets/images/frase-victoria.webp" alt="La verdadera victoria no es evitar los problemas..." loading="lazy">
+                        <img src="assets/images/frase-victoria.webp" alt="La verdadera victoria no es evitar los problemas..." loading="lazy" width="1280" height="1920">
                     </figure>
                     <figure class="gallery-inspiration__item">
-                        <img src="assets/images/frase-sanar.webp" alt="Sanar no significa que el dolor nunca existió. Dra. Edith González Huerta" loading="lazy">
+                        <img src="assets/images/frase-sanar.webp" alt="Sanar no significa que el dolor nunca existió. Dra. Edith González Huerta" loading="lazy" width="1920" height="1280">
                     </figure>
                 </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Recursos gratuitos</span>
+                    <h2 class="section__title">Lectura para tu camino</h2>
+                    <p class="section__subtitle">Artículos escritos por nuestro equipo para acompañarte entre sesiones.</p>
+                </div>
+                <div class="grid grid--3">
+                    <article class="card">
+                        <h3>Entender el duelo</h3>
+                        <p>Qué emociones son normales tras una pérdida y en qué momento conviene buscar acompañamiento profesional.</p>
+                        <a href="pages/recursos/entender-el-duelo.html" class="btn btn--outline" style="margin-top: 1rem;">Leer artículo</a>
+                    </article>
+                    <article class="card">
+                        <h3>Primeros auxilios para la ansiedad</h3>
+                        <p>Técnicas inmediatas para calmar la respiración y el cuerpo cuando la ansiedad aprieta en el momento.</p>
+                        <a href="pages/recursos/ansiedad-primeros-auxilios.html" class="btn btn--outline" style="margin-top: 1rem;">Leer artículo</a>
+                    </article>
+                    <article class="card">
+                        <h3>Descansar en el duelo</h3>
+                        <p>Una rutina nocturna amable para reconstruir tu descanso mientras atraviesas una pérdida.</p>
+                        <a href="pages/recursos/rutina-de-sueno-en-el-duelo.html" class="btn btn--outline" style="margin-top: 1rem;">Leer artículo</a>
+                    </article>
+                </div>
+                <p style="text-align:center; margin-top: 1.5rem;">
+                    <a href="pages/recursos.html" class="btn btn--outline">Ver todos los recursos</a>
+                </p>
             </div>
         </section>
 
@@ -413,6 +471,33 @@
             </div>
         </section>
 
+        <section class="section">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Preguntas frecuentes</span>
+                    <h2 class="section__title">Resolvemos tus dudas</h2>
+                </div>
+                <div class="faq" style="max-width: 800px; margin: 0 auto;">
+                    <div class="faq__item">
+                        <h3 class="faq__question">¿Cuánto cuesta una sesión?</h3>
+                        <p class="faq__answer">Cada profesional define su propia tarifa, entre $150 y $350 MXN por sesión de 60 minutos, y tú se la pagas directamente. Somos Calma no cobra ningún cargo durante la Beta.</p>
+                    </div>
+                    <div class="faq__item">
+                        <h3 class="faq__question">¿Las profesionales están verificadas?</h3>
+                        <p class="faq__answer">Sí. Revisamos cédula profesional, título e identificación de cada profesional; la cédula se consulta directamente en el registro público de la SEP antes de publicar un perfil en el directorio.</p>
+                    </div>
+                    <div class="faq__item">
+                        <h3 class="faq__question">¿Cómo son las sesiones?</h3>
+                        <p class="faq__answer">Son videollamadas seguras de 60 minutos desde donde estés (México, Estados Unidos y Latinoamérica). Recibes recordatorios por correo y WhatsApp 24 horas y 15 minutos antes, con el enlace directo a tu sala.</p>
+                    </div>
+                    <div class="faq__item">
+                        <h3 class="faq__question">¿Mi información es confidencial?</h3>
+                        <p class="faq__answer">Sí. Las sesiones son privadas y tus datos se tratan conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares. Puedes consultar el detalle en nuestro Aviso de Privacidad.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="contacto" class="section section--glass">
             <div class="container">
                 <div class="section__header">
@@ -421,7 +506,7 @@
                     <p class="section__subtitle">Escríbenos y te respondemos en menos de 24 horas.</p>
                 </div>
                 <div class="section__visual section__visual--rounded">
-                    <img src="assets/images/frase-pedir-ayuda.webp" alt="Está bien no estar bien; pide ayuda siempre. Dra. Lupita Muñoz Campuzano" loading="lazy">
+                    <img src="assets/images/frase-pedir-ayuda.webp" alt="Está bien no estar bien; pide ayuda siempre. Dra. Lupita Muñoz Campuzano" loading="lazy" width="1920" height="1280">
                 </div>
                 <form class="form" style="margin: 0 auto;" id="contact-form" novalidate>
                     <div class="form__group">

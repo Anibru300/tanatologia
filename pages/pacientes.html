@@ -77,9 +77,8 @@
         ]
     }
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" href="../assets/fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="../assets/fonts/poppins-700.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/pages.css">
 </head>
@@ -131,25 +130,25 @@
                 <div class="shots-grid">
                     <div>
                         <div class="shot-frame">
-                            <img src="../assets/images/platform/paciente-dashboard.jpg" alt="Panel de paciente de Somos Calma: próxima sesión, programa, historial y accesos rápidos" loading="lazy">
+                            <img src="../assets/images/platform/paciente-dashboard.jpg" alt="Panel de paciente de Somos Calma: próxima sesión, programa, historial y accesos rápidos" loading="lazy" width="2160" height="1350">
                         </div>
                         <p class="shot-frame__caption">Tu panel: próxima sesión, programa e historial en un vistazo</p>
                     </div>
                     <div>
                         <div class="shot-frame">
-                            <img src="../assets/images/platform/paciente-agendar.jpg" alt="Agendamiento de Somos Calma: consulta aislada o programas de 4 o 6 sesiones en pasos guiados" loading="lazy">
+                            <img src="../assets/images/platform/paciente-agendar.jpg" alt="Agendamiento de Somos Calma: consulta aislada o programas de 4 o 6 sesiones en pasos guiados" loading="lazy" width="2160" height="1350">
                         </div>
                         <p class="shot-frame__caption">Agenda en 4 pasos: elige tu acompañamiento, terapeuta y horario</p>
                     </div>
                     <div>
                         <div class="shot-frame shot-frame--phone">
-                            <img src="../assets/images/platform/paciente-terapeutas.jpg" alt="Directorio de terapeutas verificados de Somos Calma en el celular, con tarifas y especialidades" loading="lazy">
+                            <img src="../assets/images/platform/paciente-terapeutas.jpg" alt="Directorio de terapeutas verificados de Somos Calma en el celular, con tarifas y especialidades" loading="lazy" width="1350" height="1500">
                         </div>
                         <p class="shot-frame__caption">El directorio en tu celular, con tarifas claras por sesión</p>
                     </div>
                     <div>
                         <div class="shot-frame shot-frame--phone">
-                            <img src="../assets/images/platform/paciente-movil.jpg" alt="Panel de paciente de Somos Calma en el celular con navegación inferior" loading="lazy">
+                            <img src="../assets/images/platform/paciente-movil.jpg" alt="Panel de paciente de Somos Calma en el celular con navegación inferior" loading="lazy" width="780" height="1688">
                         </div>
                         <p class="shot-frame__caption">La misma plataforma, cómoda desde tu teléfono</p>
                     </div>
@@ -265,6 +264,36 @@
                         <p>Espacio para explorar el sentido de la vida, el miedo a la muerte y los cambios profundos.</p>
                     </article>
                 </div>
+            </div>
+        </section>
+
+        <section class="section section--alt">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__eyebrow">Recursos gratuitos</span>
+                    <h2 class="section__title">Lectura para tu camino</h2>
+                    <p class="section__subtitle">Guías escritas por nuestro equipo para acompañarte en tu proceso.</p>
+                </div>
+                <div class="grid grid--3">
+                    <article class="card">
+                        <h3>Entender el duelo</h3>
+                        <p>Qué emociones son normales tras una pérdida y cuándo pedir ayuda.</p>
+                        <a href="recursos/entender-el-duelo.html" class="btn btn--outline" style="margin-top: 1rem;">Leer artículo</a>
+                    </article>
+                    <article class="card">
+                        <h3>Primeros auxilios para la ansiedad</h3>
+                        <p>Técnicas inmediatas para calmar el cuerpo cuando la ansiedad aprieta.</p>
+                        <a href="recursos/ansiedad-primeros-auxilios.html" class="btn btn--outline" style="margin-top: 1rem;">Leer artículo</a>
+                    </article>
+                    <article class="card">
+                        <h3>Descansar en el duelo</h3>
+                        <p>Una rutina nocturna amable para reconstruir tu descanso.</p>
+                        <a href="recursos/rutina-de-sueno-en-el-duelo.html" class="btn btn--outline" style="margin-top: 1rem;">Leer artículo</a>
+                    </article>
+                </div>
+                <p style="text-align:center; margin-top: 1.5rem;">
+                    <a href="recursos.html" class="btn btn--outline">Ver todos los recursos</a>
+                </p>
             </div>
         </section>
 
