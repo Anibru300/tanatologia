@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.17-beta.1` **EN DISCO LOCAL — pendiente commit/push para deploy** (colgar ya no es irreversible + diagnósticos de audio; ver §3). Última desplegada: `1.9.16` (commit `24f686a`, push 2026-11-03).
+- **Versión:** `1.9.17-beta.1` **DESPLEGADA** (commit `b1217b5`, push 2026-11-10; workflow success; bundle en producción verificado sirviendo 1.9.17). Incidente de videollamada resuelto: colgar ya no es irreversible + diagnósticos de audio (migración 038 en Cloud, `jaas-token` redeplegada, 45/45 vitest + 32/32 E2E). Ver §3. **Anterior:** `1.9.16` (`24f686a`).
 - **Versión anterior:** `1.9.7-beta.1`. **botón "Reportar un problema"** en el dashboard principal de paciente y profesional — abre `ReportProblemModal` (`src/components/ReportProblemModal.tsx`): selector de tipo de falla (videollamada/citas/archivos/cuenta/otro) + descripción; envía vía `support-request` con asunto `[Problema] …` + navegador/fecha del usuario → cae en Soporte/Bandeja del admin y se responde al correo. Anterior: 1.9.6 fix `frame-src` de la meta-CSP (bloqueaba vista previa de PDFs de profesionales, correos HTML de la Bandeja y Daily.co — "Este contenido está bloqueado").
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
@@ -58,8 +58,9 @@
 **Verificación:** vitest 45/45 (videoSession: completed dentro/fuera de prórroga, filterUpcomingSessions incluye completed recién) · lint 0 errores · build OK · `test-jaas.mjs` **32/32** en Cloud (rejoin dentro→200, fuera→409, RPC participante→204+fila persistida, ajena→400, tipo inválido→400; ojo: el primer run dio 31/32 por propagación lenta del deploy de Deno — esperar ~1 min tras deploy antes de correrlo). Cleanup: 0 usuarios de prueba residuales.
 
 **Pendiente de esta sesión:**
-- Commit+push de v1.9.17 para deploy (pendiente luz verde del dueño).
-- **Dueño: enviar respuesta a Beatriz** desde `/admin/bandeja` (borrador listo en `docs/borrador-respuesta-beatriz-2026-11-10.md`): explica el fallo, anuncia los fixes, da los pasos para la reposición (publicar slot en Disponibilidad + paciente agenda por el chat) y la checklist de audio para la próxima. Decisión de negocio pendiente: ¿la sesión 1 cuenta como consumida o se compensa?
+- ✅ **Deploy hecho** (workflow success, producción verificada en 1.9.17).
+- ✅ **Dueño envió la respuesta a Beatriz** desde la Bandeja (10-nov noche).
+- ✅ **Decisión de negocio:** la sesión 1 del programa de 4 **sí cuenta como consumida** (decisión del dueño, 10-nov noche); la profesional puede dar reposición publicando un slot como cualquier siguiente sesión del plan.
 
 ### Histórico — JORNADA 2026-11-05 (sitio público, 4 commits: salud + imágenes + SEO + UX móvil)
 

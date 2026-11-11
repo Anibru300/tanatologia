@@ -76,8 +76,8 @@ ORDER BY occurred_at;
 
 ## 6. Pendientes / decisiones del dueño
 
-1. **Enviar respuesta a Beatriz** desde `/admin/bandeja` — borrador listo en `docs/borrador-respuesta-beatriz-2026-11-10.md` (explica el fallo, anuncia fixes, pasos de reposición y checklist de audio).
-2. **Decisión de negocio:** la sesión 1 del programa quedó `completed` sin haberse dado. Opciones: reposición normal (profesional publica slot → paciente agenda; queda dentro del `program_4`) o ajuste manual del registro para que no cuente como consumida.
+1. ✅ **Respuesta a Beatriz enviada** por el dueño desde la Bandeja (10-nov noche); borrador en `docs/borrador-respuesta-beatriz-2026-11-10.md`.
+2. ✅ **Decisión de negocio (10-nov noche): la sesión 1 del programa SÍ cuenta como consumida.** La profesional puede dar reposición publicando un slot en Disponibilidad y pidiendo a la paciente agendar por el chat (queda dentro del `program_4` según el conteo vigente).
 3. Vigilar los primeros `DIAG_*` reales en producción para confirmar que el logging funciona con tráfico real (la próxima cita con videollamada).
 4. (Pospuesto, no pedido) Mostrar los diagnósticos de audio de forma amigable en `/admin/citas`; hoy solo se consultan por SQL.
 
