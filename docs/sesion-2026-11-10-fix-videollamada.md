@@ -78,7 +78,12 @@ ORDER BY occurred_at;
 
 1. ✅ **Respuesta a Beatriz enviada** por el dueño desde la Bandeja (10-nov noche); borrador en `docs/borrador-respuesta-beatriz-2026-11-10.md`.
 2. ✅ **Decisión de negocio (10-nov noche): la sesión 1 del programa SÍ cuenta como consumida.** La profesional puede dar reposición publicando un slot en Disponibilidad y pidiendo a la paciente agendar por el chat (queda dentro del `program_4` según el conteo vigente).
-3. Vigilar los primeros `DIAG_*` reales en producción para confirmar que el logging funciona con tráfico real (la próxima cita con videollamada).
+3. **Vigilar los primeros `DIAG_*` reales** en producción para confirmar que el logging funciona con tráfico real (la próxima cita con videollamada). Chequeo rápido tras cada sesión:
+   ```sql
+   SELECT occurred_at, event_type, participant_name FROM video_call_events
+   WHERE appointment_id = '<uuid de la cita>' ORDER BY occurred_at;
+   ```
+   (En `/admin/citas` la columna Videollamada sigue igual; los `DIAG_*` se consultan por SQL.) Ojo: si una sesión se cae o hay reporte de audio, ésta es la primer fuente de diagnóstico.
 4. (Pospuesto, no pedido) Mostrar los diagnósticos de audio de forma amigable en `/admin/citas`; hoy solo se consultan por SQL.
 
 ## 7. Archivos tocados
