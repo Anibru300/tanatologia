@@ -5,11 +5,18 @@
  * Reglas de negocio:
  * - La sala se abre EARLY_JOIN_MINUTES antes de la hora agendada.
  * - Se puede entrar hasta LATE_GRACE_MINUTES después de que termina la sesión.
- * - Citas canceladas, completadas o no-show nunca son accesibles.
+ * - Citas canceladas o no-show nunca son accesibles.
+ * - Una cita 'completed' (p. ej. el profesional colgó) admite REINGRESO durante
+ *   REJOIN_GRACE_MINUTES después de la hora de término: colgar por error, para
+ *   reintentar el audio o por una caída no debe cerrar la sesión para siempre
+ *   (incidente 2026-11-10: la profesional colgó para arreglar el audio y ambos
+ *   quedaron fuera; la sesión se tuvo que mover a WhatsApp personal).
  */
 
 export const EARLY_JOIN_MINUTES = 15
 export const LATE_GRACE_MINUTES = 15
+/** Prórroga para reingresar a una cita ya 'completed' (minutos tras la hora de término). */
+export const REJOIN_GRACE_MINUTES = 30
 
 export type SessionStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'
 
@@ -37,11 +44,21 @@ export function sessionEndWithGrace(session: SessionTiming): number {
   )
 }
 
+/** Timestamp (ms) hasta el cual se puede REINGRESAR a una cita 'completed'. */
+export function completedRejoinUntil(session: SessionTiming): number {
+  return (
+    new Date(session.scheduled_at).getTime() +
+    (session.duration_minutes + REJOIN_GRACE_MINUTES) * MINUTE_MS
+  )
+}
+
 export function getJoinWindowState(session: SessionTiming, now: Date): JoinWindowState {
-  if (session.status === 'cancelled' || session.status === 'completed' || session.status === 'no_show') {
+  if (session.status === 'cancelled' || session.status === 'no_show') {
     return 'ended'
   }
-  if (now.getTime() > sessionEndWithGrace(session)) {
+  // 'completed': accesible solo dentro de la prórroga de reingreso.
+  const limit = session.status === 'completed' ? completedRejoinUntil(session) : sessionEndWithGrace(session)
+  if (now.getTime() > limit) {
     return 'ended'
   }
   return minutesUntilStart(session, now) <= EARLY_JOIN_MINUTES ? 'joinable' : 'too_early'
@@ -53,7 +70,8 @@ export function isJoinable(session: SessionTiming, now: Date): boolean {
 
 /**
  * Filtra y ordena las próximas sesiones con acceso a sala: pendientes o
- * confirmadas que no hayan superado su tolerancia final, de más próxima a más lejana.
+ * confirmadas que no hayan superado su tolerancia final, más las 'completed'
+ * aún dentro de su prórroga de reingreso, de más próxima a más lejana.
  */
 export function filterUpcomingSessions<T extends SessionTiming>(
   sessions: T[],
@@ -61,11 +79,13 @@ export function filterUpcomingSessions<T extends SessionTiming>(
   limit = 5
 ): T[] {
   return sessions
-    .filter(
-      (s) =>
+    .filter((s) => {
+      if (s.status === 'completed') return now.getTime() <= completedRejoinUntil(s)
+      return (
         (s.status === 'pending' || s.status === 'confirmed') &&
         now.getTime() <= sessionEndWithGrace(s)
-    )
+      )
+    })
     .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at))
     .slice(0, limit)
 }

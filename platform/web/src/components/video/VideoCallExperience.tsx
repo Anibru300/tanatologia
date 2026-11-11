@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { PhoneOff } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { DeviceCheck } from './DeviceCheck'
 import { JitsiMeetingRoom } from './JitsiMeetingRoom'
 import { fetchJaasToken, type JaasResult, type JaasToken } from '@/lib/jaasService'
+import { REJOIN_GRACE_MINUTES } from '@/lib/videoSession'
+import { supabase } from '@/lib/supabase'
 
 interface VideoCallExperienceProps {
   roomName: string
@@ -53,6 +56,28 @@ export function VideoCallExperience({
   const [jaas, setJaas] = useState<JaasToken | null>(null)
   /** Motivo por el que no hay token JaaS (fallback a meet.jit.si de 5 min). */
   const [jaasWarning, setJaasWarning] = useState<string | null>(null)
+  /** Confirmación antes de colgar (solo profesionales, que cierran la cita). */
+  const [confirmHangup, setConfirmHangup] = useState(false)
+
+  // Diagnósticos de videollamada: eventos de audio/ingreso del propio cliente
+  // persistidos en video_call_events (migración 038) para rastrear después
+  // problemas como "la paciente no escuchaba" (p. ej. quién tenía el micrófono
+  // silenciado y cuándo). Best-effort: jamás rompe la llamada.
+  const handleDiagnostic = useCallback(
+    (eventType: string, detail?: Record<string, unknown>) => {
+      if (!appointmentId) return
+      void supabase
+        .rpc('log_video_diagnostic', {
+          p_appointment_id: appointmentId,
+          p_event_type: eventType,
+          p_detail: detail ?? null,
+        })
+        .then(({ error }) => {
+          if (error) console.error('[videollamada] diagnóstico:', error.message)
+        })
+    },
+    [appointmentId],
+  )
 
   useEffect(() => {
     if (!appointmentId && !fetchToken) return
@@ -89,7 +114,18 @@ export function VideoCallExperience({
   }, [appointmentId, fetchToken, roomName])
 
   const handleExit = () => {
-    // La señal de colgar solo aplica si realmente estuvo en la llamada
+    // Colgar cierra la cita (onHangup, solo del lado profesional): pedir
+    // confirmación primero. Colgar por error o para reintentar el audio es
+    // común; la prórroga de reingreso (REJOIN_GRACE_MINUTES) lo hace reversible.
+    if (joined && onHangup) {
+      setConfirmHangup(true)
+      return
+    }
+    onExit()
+  }
+
+  const confirmExit = () => {
+    setConfirmHangup(false)
     if (joined) onHangup?.()
     onExit()
   }
@@ -114,6 +150,7 @@ export function VideoCallExperience({
             startWithVideoMuted={videoMuted}
             jaas={jaas ?? undefined}
             onReadyToClose={handleExit}
+            onDiagnostic={handleDiagnostic}
           />
         ) : (
           <div className="h-full overflow-y-auto">
@@ -145,6 +182,24 @@ export function VideoCallExperience({
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmHangup}
+        title="¿Finalizar la sesión?"
+        message={
+          <span>
+            Al colgar, la cita se marcará como completada. Aun así, tú y tu paciente
+            podrán reingresar a la sala durante los {REJOIN_GRACE_MINUTES} minutos
+            siguientes a la hora de término de la sesión por si necesitan retomarla;
+            después ya no será posible.
+          </span>
+        }
+        confirmLabel="Finalizar sesión"
+        cancelLabel="Seguir en la llamada"
+        destructive
+        onConfirm={confirmExit}
+        onCancel={() => setConfirmHangup(false)}
+      />
     </div>
   )
 }

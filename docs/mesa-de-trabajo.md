@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-05 noche: JORNADA COMPLETA sitio público — resumen en §3 · UX móvil 3A · CLS/SEO/fuentes 3z · imágenes 3y · salud 3x · histórico 2026-11-03): JORNADA COMPLETA — WhatsApp 100% operativo (6 plantillas, links, sin opt-in, internacional), v1.9.15+v1.9.16 desplegadas, migración 037 en Cloud, anuncio enviado (in-app 72/72 + correo por el dueño), cuota Resend gratis (100/día) alcanzada y gestionada. Ver 3x)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-10 noche: INCIDENTE videollamada resuelto — colgar ya no es irreversible + diagnósticos de audio (v1.9.17 lista para deploy, migración 038 en Cloud, jaas-token redeplegada, 45/45 vitest + 32/32 E2E). Ver §3) 
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.16-beta.1` **DESPLEGADA** (último commit `24f686a`, push 2026-11-03; workflow success; `/app` sirve 1.9.16 y el chunk de Comunicados con el botón Enviar verificado en el servidor). `1.9.15` (commit `f90cefe`): WhatsApp sin opt-in + teléfono obligatorio + internacional. `1.9.16` (commit `f244365`): botón **Enviar** para comunicados `pending` en el historial de `/admin/comunicados` (antes solo se podían enviar comunicados nuevos).
+- **Versión:** `1.9.17-beta.1` **EN DISCO LOCAL — pendiente commit/push para deploy** (colgar ya no es irreversible + diagnósticos de audio; ver §3). Última desplegada: `1.9.16` (commit `24f686a`, push 2026-11-03).
 - **Versión anterior:** `1.9.7-beta.1`. **botón "Reportar un problema"** en el dashboard principal de paciente y profesional — abre `ReportProblemModal` (`src/components/ReportProblemModal.tsx`): selector de tipo de falla (videollamada/citas/archivos/cuenta/otro) + descripción; envía vía `support-request` con asunto `[Problema] …` + navegador/fecha del usuario → cae en Soporte/Bandeja del admin y se responde al correo. Anterior: 1.9.6 fix `frame-src` de la meta-CSP (bloqueaba vista previa de PDFs de profesionales, correos HTML de la Bandeja y Daily.co — "Este contenido está bloqueado").
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
@@ -39,7 +39,27 @@
 
 **EXTRA (misma sesión, mismo dueño):** migración de fuentes del sitio estático a Poppins auto-alojado (pendiente 3z). Los 4 woff2 (400/500/600/700, ~22 KB, mismos archivos que la app) copiados a `assets/fonts/`; `@font-face` en main.css; los 3 links de Google Fonts (2 preconnect + css2) reemplazados por 2 preloads locales en las 16 páginas (script `.tools/review/local_fonts.py`). El peso 800 no se usa en el CSS estático (solo 500/700 + 400/600 vía variables). Verificado con Chrome headless **bloqueando fonts.googleapis/gstatic**: las 4 fuentes cargan locales y el render es idéntico. La meta-CSP sigue permitiendo gstatic (inofensivo; limpieza opcional futura).
 
-## 3. Última sesión — JORNADA 2026-11-05 (sitio público, 4 commits: salud + imágenes + SEO + UX móvil)
+## 3. Última sesión — 2026-11-10 (noche): INCIDENTE real de videollamada resuelto — colgar ya no es irreversible + diagnósticos de audio (v1.9.17, migración 038)
+
+**Caso:** Beatriz Adriana Vázquez Ocampo (profesional verificada, iPhone/Safari) reportó por Soporte (20:06 CDMX): "Finalicé la llamada ya que la Px no escuchaba y ya no me da acceso". Reconstrucción desde `video_call_events` + `audit_logs` + chat:
+
+- Cita 10-nov 20:00 CDMX (sesión 1 de programa `program_4` "Programa Salud Mental", paciente Arehime Lizeth Nicolas Hernandez). Sala creada 20:00:05, Beatriz entró 20:00:09, paciente entró/salió/reentró 3 veces (20:00:54, 20:01:36, LEFT 20:02:20) intentando arreglar el audio.
+- 20:03:24 Beatriz colgó → `onHangup` marcó la cita `completed` **al instante** (timestamp exacto del UPDATE en audit_logs) → UI + `jaas-token` (409) bloquearon el reingreso a AMBOS.
+- 20:05:10 paciente intentó reentrar → sala destruida. 20:06–20:08 se pasaron números por el chat interno y **la sesión terminó en el WhatsApp personal de la profesional** (3er escape de sesión a WhatsApp: antes Lidia Vera 16/10 y Estefanía 22/10).
+- Causa raíz del bloqueo: diseño — colgar era irreversible (sin confirmación, sin gracia de reingreso). El audio en sí no se pudo determinar (sin telemetría; por eso el punto (c)).
+
+**Fix (v1.9.17, todo verificado):**
+1. **ConfirmDialog "¿Finalizar la sesión?"** en `VideoCallExperience` antes de colgar (solo profesional) + botón rojo nativo de Jitsi oculto (`toolbarButtons` sin `hangup`) — la única salida es el botón de la app.
+2. **Prórroga de reingreso 30 min** (`REJOIN_GRACE_MINUTES`, `completedRejoinUntil()` en `videoSession.ts`): cita `completed` reingresable hasta término+30 en salas paciente/profesional, listas de citas (botón Entrar) y barra del chat. `jaas-token` acepta `completed` dentro de la ventana (409 fuera) — **redeploy hecho**. `handleHangup` ya no re-marca si ya está `completed` (los triggers llevan guardia `IS DISTINCT FROM`, sin notificaciones duplicadas).
+3. **Diagnósticos de audio (migración 038 en Cloud):** RPC `log_video_diagnostic()` (SECURITY DEFINER, solo participantes, EXECUTE solo authenticated — ojo: Supabase da EXECUTE por default a anon/authenticated/service_role; hay que REVOKE a anon explícito). El cliente loguea `joined/left/audio_muted/audio_unmuted/video_muted/video_unmuted` a `video_call_events` como `DIAG_*`; `getCallFacts` los ignora para duración. Rastreo: `SELECT * FROM video_call_events WHERE appointment_id='…' ORDER BY occurred_at`.
+
+**Verificación:** vitest 45/45 (videoSession: completed dentro/fuera de prórroga, filterUpcomingSessions incluye completed recién) · lint 0 errores · build OK · `test-jaas.mjs` **32/32** en Cloud (rejoin dentro→200, fuera→409, RPC participante→204+fila persistida, ajena→400, tipo inválido→400; ojo: el primer run dio 31/32 por propagación lenta del deploy de Deno — esperar ~1 min tras deploy antes de correrlo). Cleanup: 0 usuarios de prueba residuales.
+
+**Pendiente de esta sesión:**
+- Commit+push de v1.9.17 para deploy (pendiente luz verde del dueño).
+- **Dueño: enviar respuesta a Beatriz** desde `/admin/bandeja` (borrador listo en `docs/borrador-respuesta-beatriz-2026-11-10.md`): explica el fallo, anuncia los fixes, da los pasos para la reposición (publicar slot en Disponibilidad + paciente agenda por el chat) y la checklist de audio para la próxima. Decisión de negocio pendiente: ¿la sesión 1 cuenta como consumida o se compensa?
+
+### Histórico — JORNADA 2026-11-05 (sitio público, 4 commits: salud + imágenes + SEO + UX móvil)
 
 **Resumen del día (todo verificado con capturas headless y/o producción):**
 

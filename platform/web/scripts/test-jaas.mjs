@@ -167,9 +167,102 @@ check('TestRoom: sala inválida → 400', r.status === 400, `status ${r.status}`
 r = await fn({ testRoom: 'sala-prueba-jaas' })
 check('TestRoom: sin sesión → 401', r.status === 401, `status ${r.status}`)
 
+// --- Prórroga de reingreso (fix incidente 2026-11-10) + diagnósticos (038) ---
+
+// Helper: ejecutar SQL remoto (mismo patrón que el verify del setup)
+function sql(stmt) {
+  const f = `.tmp-jaas-sql-${ts}.sql`
+  writeFileSync(f, stmt)
+  const out = execSync(`cd ../supabase && supabase db query --linked -f "${process.cwd()}/${f}"`, { stdio: 'pipe' }).toString()
+  rmSync(f)
+  return out
+}
+
+// 11. Cita 'completed' DENTRO de la prórroga (término + 30 min) → token permitido.
+// Empezó hace 5 min y dura 60: su término+prórroga vence en ~85 min.
+const rejoinStart = new Date(Date.now() - 5 * 60_000)
+r = await api('/rest/v1/availability_slots', {
+  method: 'POST', token: proLogin.access_token,
+  body: {
+    professional_profile_id: proProfileId,
+    slot_start: new Date(rejoinStart.getTime() - 10 * 60_000).toISOString(),
+    slot_end: new Date(rejoinStart.getTime() + 70 * 60_000).toISOString(),
+  },
+})
+const rejoinSlotId = r.json?.[0]?.id
+check('Setup: slot pasado-inmediato creado', r.status === 201 && !!rejoinSlotId, `status ${r.status}`)
+r = await api('/rest/v1/appointments', {
+  method: 'POST', token: patLogin.access_token,
+  body: {
+    patient_profile_id: patProfileId,
+    professional_profile_id: proProfileId,
+    scheduled_at: rejoinStart.toISOString(),
+    duration_minutes: 60,
+    session_type: 'single',
+    status: 'confirmed',
+    notes: 'e2e jaas rejoin',
+  },
+})
+const rejoinApptId = r.json?.[0]?.id
+check('Setup: cita rejoin agendada', r.status === 201 && !!rejoinApptId, `status ${r.status}`)
+// Cerrarla por SQL (ya empezó, el guardián 031 no se opone; simula onHangup)
+sql(`UPDATE public.appointments SET status = 'completed' WHERE id = '${rejoinApptId}';`)
+r = await fn({ appointmentId: rejoinApptId }, patLogin.access_token)
+check('Reingreso: completed dentro de la prórroga → 200/501', r.status === 200 || r.status === 501, `status ${r.status}`)
+
+// 12. RPC log_video_diagnostic: participante inserta; cita ajena y event_type inválido → 400
+r = await api('/rest/v1/rpc/log_video_diagnostic', {
+  method: 'POST', token: proLogin.access_token,
+  body: { p_appointment_id: rejoinApptId, p_event_type: 'audio_muted', p_detail: { muted: true } },
+})
+check('Diagnóstico: profesional participante → 204', r.status === 204 || r.status === 200, `status ${r.status}`)
+const diagCount = sql(`SELECT count(*) AS n FROM public.video_call_events WHERE appointment_id = '${rejoinApptId}' AND event_type = 'DIAG_AUDIO_MUTED';`)
+const diagN = (diagCount.match(/\n\s*│\s*(\d+)\s*│/) || [])[1]
+check('Diagnóstico: fila DIAG_AUDIO_MUTED persistida', diagN === '1', `n=${diagN}`)
+r = await api('/rest/v1/rpc/log_video_diagnostic', {
+  method: 'POST', token: patLogin.access_token,
+  body: { p_appointment_id: '00000000-0000-0000-0000-000000000000', p_event_type: 'audio_muted' },
+})
+check('Diagnóstico: cita ajena → 400', r.status === 400, `status ${r.status}`)
+r = await api('/rest/v1/rpc/log_video_diagnostic', {
+  method: 'POST', token: patLogin.access_token,
+  body: { p_appointment_id: rejoinApptId, p_event_type: 'MAL TIPO!' },
+})
+check('Diagnóstico: event_type inválido → 400', r.status === 400, `status ${r.status}`)
+
+// 13. Cita 'completed' FUERA de la prórroga (terminó hace >30 min) → 409
+const oldStart = new Date(Date.now() - 3 * 3600_000)
+r = await api('/rest/v1/availability_slots', {
+  method: 'POST', token: proLogin.access_token,
+  body: {
+    professional_profile_id: proProfileId,
+    slot_start: new Date(oldStart.getTime() - 10 * 60_000).toISOString(),
+    slot_end: new Date(oldStart.getTime() + 70 * 60_000).toISOString(),
+  },
+})
+const oldSlotId = r.json?.[0]?.id
+check('Setup: slot antiguo creado', r.status === 201 && !!oldSlotId, `status ${r.status}`)
+r = await api('/rest/v1/appointments', {
+  method: 'POST', token: patLogin.access_token,
+  body: {
+    patient_profile_id: patProfileId,
+    professional_profile_id: proProfileId,
+    scheduled_at: oldStart.toISOString(),
+    duration_minutes: 60,
+    session_type: 'single',
+    status: 'confirmed',
+    notes: 'e2e jaas fuera de prórroga',
+  },
+})
+const oldApptId = r.json?.[0]?.id
+check('Setup: cita antigua agendada', r.status === 201 && !!oldApptId, `status ${r.status}`)
+sql(`UPDATE public.appointments SET status = 'completed' WHERE id = '${oldApptId}';`)
+r = await fn({ appointmentId: oldApptId }, patLogin.access_token)
+check('Reingreso: completed fuera de la prórroga → 409', r.status === 409, `status ${r.status}`)
+
 // Cleanup (statement por statement: el CLI puede no ejecutar varios en un solo -f)
 const cleanupStmts = [
-  `DELETE FROM public.appointments WHERE id = '${apptId ?? '00000000-0000-0000-0000-000000000000'}';`,
+  `DELETE FROM public.appointments WHERE id IN ('${apptId ?? '00000000-0000-0000-0000-000000000000'}', '${rejoinApptId ?? '00000000-0000-0000-0000-000000000000'}', '${oldApptId ?? '00000000-0000-0000-0000-000000000000'}');`,
   `DELETE FROM public.availability_slots WHERE professional_profile_id = '${proProfileId ?? '00000000-0000-0000-0000-000000000000'}';`,
   `DELETE FROM auth.users WHERE email IN ('${PAT}','${PRO}');`,
   `SELECT count(*) AS restantes FROM auth.users WHERE email LIKE 'jaas-%@test.somos-calma.com';`,

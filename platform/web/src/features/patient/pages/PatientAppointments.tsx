@@ -21,6 +21,7 @@ import {
   submitProfessionalReview,
 } from '@/features/reviews/reviewsService'
 import { getProfileIdBySubprofile } from '@/features/messages/messagesService'
+import { completedRejoinUntil } from '@/lib/videoSession'
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -184,7 +185,10 @@ export function PatientAppointments() {
                       <MessageSquare size={14} />
                       Mensaje
                     </Button>
-                    {apt.status === 'confirmed' && apt.video_link && (
+                    {(apt.status === 'confirmed' ||
+                      (apt.status === 'completed' &&
+                        Date.now() <= completedRejoinUntil(apt))) &&
+                      apt.video_link && (
                       <Link to={`/paciente/sala/${apt.id}`}>
                         <Button size="sm" className="gap-1">
                           <Video size={16} />

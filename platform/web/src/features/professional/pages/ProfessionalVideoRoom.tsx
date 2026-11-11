@@ -15,7 +15,7 @@ import {
   type Appointment,
 } from '@/features/appointments/appointmentsService'
 import { useAuth } from '@/features/auth/useAuth'
-import { filterUpcomingSessions } from '@/lib/videoSession'
+import { filterUpcomingSessions, getJoinWindowState } from '@/lib/videoSession'
 
 export function ProfessionalVideoRoom() {
   const { appointmentId } = useParams<{ appointmentId?: string }>()
@@ -107,17 +107,18 @@ export function ProfessionalVideoRoom() {
 
   const roomName = activeRoom || appointment?.video_link
 
-  // Cita en estado final: no se puede volver a entrar (espejo del portal del
-  // paciente). La sala manual (activeRoom) no se ve afectada.
+  // Cita fuera de su ventana de acceso: no se puede (re)entrar. Las 'completed'
+  // aún admiten reingreso durante REJOIN_GRACE_MINUTES tras su término (colgar
+  // por error o para reintentar el audio no cierra la sesión para siempre).
+  // La sala manual (activeRoom) no se ve afectada.
   const appointmentEnded =
-    !activeRoom &&
-    appointment &&
-    ['cancelled', 'completed', 'no_show'].includes(appointment.status)
+    !activeRoom && appointment && getJoinWindowState(appointment, new Date()) === 'ended'
 
   // Al colgar una cita real, cerrarla (el cron horario es la red de seguridad
-  // si esto falla; el trigger 031 impide completar antes de la hora).
+  // si esto falla; el trigger 031 impide completar antes de la hora). Si ya
+  // estaba completada (reingreso dentro de la prórroga), no repetir el UPDATE.
   const handleHangup = () => {
-    if (activeRoom || !appointment) return
+    if (activeRoom || !appointment || appointment.status === 'completed') return
     updateAppointmentStatus(appointment.id, 'completed').catch((err) =>
       console.error('marcar cita completada:', err instanceof Error ? err.message : err)
     )

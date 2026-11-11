@@ -307,9 +307,13 @@ export async function getCallFacts(appointmentIds: string[]): Promise<Map<string
   if (error) throw new Error(error.message)
 
   const grouped = new Map<string, { joined: Set<string>; first: string | null; last: string | null; destroyed: boolean }>()
+  // Solo los eventos de ciclo de vida del webhook JaaS definen los hechos;
+  // los DIAG_* (mute/audio del cliente, migración 038) no mueven duración.
+  const LIFECYCLE_EVENTS = new Set(['ROOM_CREATED', 'PARTICIPANT_JOINED', 'PARTICIPANT_LEFT', 'ROOM_DESTROYED'])
   for (const row of (data || []) as Record<string, unknown>[]) {
     const id = String(row.appointment_id)
     const g = grouped.get(id) || { joined: new Set<string>(), first: null, last: null, destroyed: false }
+    if (!LIFECYCLE_EVENTS.has(String(row.event_type))) continue
     const at = String(row.occurred_at)
     if (row.event_type === 'PARTICIPANT_JOINED' && row.participant_jid) {
       g.joined.add(String(row.participant_jid))

@@ -28,6 +28,11 @@ interface JitsiMeetingRoomProps {
    */
   jaas?: { jwt: string; appId: string; domain: string }
   onReadyToClose?: () => void
+  /**
+   * Diagnósticos del propio cliente (ingreso/salida y estado de micrófono/cámara).
+   * Se persisten en video_call_events vía RPC para rastrear problemas de audio.
+   */
+  onDiagnostic?: (eventType: string, detail?: Record<string, unknown>) => void
 }
 
 type LoadState = 'loading' | 'ready' | 'failed'
@@ -48,6 +53,7 @@ export function JitsiMeetingRoom({
   startWithVideoMuted = false,
   jaas,
   onReadyToClose,
+  onDiagnostic,
 }: JitsiMeetingRoomProps) {
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [reloadKey, setReloadKey] = useState(0)
@@ -108,6 +114,23 @@ export function JitsiMeetingRoom({
       disableInviteFunctions: true,
       hideConferenceSubject: true,
       defaultLanguage: 'es',
+      // Ocultar el botón rojo de colgar de la barra de Jitsi: la única salida
+      // es el botón "Colgar" de la app, que pide confirmación y avisa de la
+      // prórroga de reingreso (colgar accidental era irreversible).
+      toolbarButtons: [
+        'microphone',
+        'camera',
+        'desktop',
+        'chat',
+        'raisehand',
+        'participants',
+        'tileview',
+        'videoquality',
+        'fullscreen',
+        'settings',
+        'stats',
+        'shortcuts',
+      ],
       // Calidad: preferir 1080p (la cámara cae a 720p/480p si no puede).
       // OJO: minHeightForQualityLvl debe ir ANIDADO dentro de videoQuality;
       // suelto en configOverwrite es ignorado (error común de Jitsi).
@@ -145,6 +168,15 @@ export function JitsiMeetingRoom({
       setLoadState('ready')
       // Cuando cualquier participante cuelga desde la barra de Jitsi.
       externalApi.addListener('videoConferenceLeft', () => onReadyToClose?.())
+      // Diagnósticos de audio/ingreso del propio cliente (rastreo post-incidente).
+      externalApi.addListener('videoConferenceJoined', () => onDiagnostic?.('joined'))
+      externalApi.addListener('videoConferenceLeft', () => onDiagnostic?.('left'))
+      externalApi.addListener('audioMuteStatusChanged', ({ muted }: { muted: boolean }) =>
+        onDiagnostic?.(muted ? 'audio_muted' : 'audio_unmuted', { muted })
+      )
+      externalApi.addListener('videoMuteStatusChanged', ({ muted }: { muted: boolean }) =>
+        onDiagnostic?.(muted ? 'video_muted' : 'video_unmuted', { muted })
+      )
     },
     onReadyToClose,
   }

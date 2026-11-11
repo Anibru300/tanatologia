@@ -172,7 +172,7 @@ export function ConversationThread({ conversation, myUserId, myRole, mySubprofil
   // salir antes sin dar por terminada la sesión). El cron horario (migración
   // 031) completa cualquier cita que esta señal no alcance.
   const handleHangup = () => {
-    if (myRole !== 'professional' || !videoSession) return
+    if (myRole !== 'professional' || !videoSession || videoSession.status === 'completed') return
     updateAppointmentStatus(videoSession.id, 'completed').catch((err) =>
       console.error('marcar cita completada:', err instanceof Error ? err.message : err)
     )

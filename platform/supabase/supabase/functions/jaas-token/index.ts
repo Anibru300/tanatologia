@@ -16,7 +16,12 @@ import { createClient } from "jsr:@supabase/supabase-js@^2";
 //   JAAS_PRIVATE_KEY → clave privada PEM (RSA) descargada de la consola JaaS
 //   JAAS_DOMAIN      → opcional, por defecto "8x8.vc"
 
+// Estados que siempre admiten token. Una cita 'completed' también lo admite
+// dentro de la prórroga de reingreso (REJOIN_GRACE_MINUTES tras la hora de
+// término): colgar por error, para reintentar el audio o una caída de red no
+// deben cerrar la sesión para siempre (incidente 2026-11-10).
 const ALLOWED_STATUS = ["pending", "confirmed"];
+const REJOIN_GRACE_MINUTES = 30;
 
 // CORS: la función se invoca desde el navegador (supabase.functions.invoke),
 // cuyo preflight OPTIONS hay que responder con los headers explícitamente.
@@ -123,14 +128,19 @@ Deno.serve(async (req) => {
   } else {
     const { data: appt, error: apptError } = await supabase
       .from("appointments")
-      .select("id, video_link, status, professional_profile_id")
+      .select("id, video_link, status, professional_profile_id, scheduled_at, duration_minutes")
       .eq("id", appointmentId)
       .single();
     if (apptError || !appt?.video_link) {
       return json({ error: "Cita no encontrada" }, 404);
     }
     if (!ALLOWED_STATUS.includes(appt.status)) {
-      return json({ error: "La cita no está activa" }, 409);
+      const rejoinUntil =
+        new Date(appt.scheduled_at).getTime() +
+        (Number(appt.duration_minutes) + REJOIN_GRACE_MINUTES) * 60_000;
+      if (appt.status !== "completed" || Date.now() > rejoinUntil) {
+        return json({ error: "La cita no está activa" }, 409);
+      }
     }
 
     // ¿Es el profesional de la cita? → moderador de la sala.

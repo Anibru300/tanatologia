@@ -17,6 +17,7 @@ import {
 } from '@/features/appointments/appointmentsService'
 import { RatingDialog } from '@/features/reviews/RatingDialog'
 import { getProfileIdBySubprofile } from '@/features/messages/messagesService'
+import { completedRejoinUntil } from '@/lib/videoSession'
 import {
   getRatedAppointmentIdsForProfessional,
   submitPatientReview,
@@ -232,7 +233,10 @@ export function ProfessionalAppointments() {
                             <MessageSquare size={14} />
                             Mensaje
                           </Button>
-                          {a.video_link && !['completed', 'cancelled', 'no_show'].includes(a.status) && (
+                          {a.video_link &&
+                            (a.status === 'confirmed' ||
+                              a.status === 'pending' ||
+                              (a.status === 'completed' && now.getTime() <= completedRejoinUntil(a))) && (
                             <Link to={`/profesional/sala/${a.id}`}>
                               <Button size="sm" variant="primary" className="gap-1">
                                 <Video size={16} />

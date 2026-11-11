@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   EARLY_JOIN_MINUTES,
   LATE_GRACE_MINUTES,
+  REJOIN_GRACE_MINUTES,
+  completedRejoinUntil,
   filterUpcomingSessions,
   formatTimeUntilStart,
   getJoinWindowState,
@@ -43,12 +45,27 @@ describe('getJoinWindowState', () => {
     expect(getJoinWindowState(s, new Date(atGraceEnd.getTime() + 1))).toBe('ended')
   })
 
-  it.each(['cancelled', 'completed', 'no_show'] as const)(
+  it.each(['cancelled', 'no_show'] as const)(
     'nunca permite entrar a una cita %s',
     (status) => {
       expect(getJoinWindowState(session(0, { status }), NOW)).toBe('ended')
     }
   )
+
+  it('una cita completed admite reingreso hasta REJOIN_GRACE_MINUTES después de su término', () => {
+    const s = session(0, { status: 'completed' })
+    // La cita duró 50 min: aún dentro de término + 30 min de prórroga.
+    expect(getJoinWindowState(s, new Date(NOW.getTime() + 25 * MINUTE))).toBe('joinable')
+    const rejoinEnd = new Date(completedRejoinUntil(s))
+    expect(getJoinWindowState(s, rejoinEnd)).toBe('joinable')
+    expect(getJoinWindowState(s, new Date(rejoinEnd.getTime() + 1))).toBe('ended')
+  })
+
+  it('una cita completed fuera de la prórroga queda cerrada para siempre', () => {
+    expect(
+      getJoinWindowState(session(-(50 + REJOIN_GRACE_MINUTES + 1), { status: 'completed' }), NOW)
+    ).toBe('ended')
+  })
 
   it('las citas pendientes también son accesibles en su ventana', () => {
     expect(isJoinable(session(5, { status: 'pending' }), NOW)).toBe(true)
@@ -70,6 +87,12 @@ describe('filterUpcomingSessions', () => {
   it('mantiene dentro de la lista una sesión en curso', () => {
     const ongoing = session(-10)
     expect(filterUpcomingSessions([ongoing], NOW)).toEqual([ongoing])
+  })
+
+  it('incluye una cita completed aún dentro de la prórroga de reingreso', () => {
+    const justFinished = session(-55, { status: 'completed' }) // terminó hace 5 min
+    const longAgo = session(-(50 + REJOIN_GRACE_MINUTES + 10), { status: 'completed' })
+    expect(filterUpcomingSessions([justFinished, longAgo], NOW)).toEqual([justFinished])
   })
 
   it('respeta el límite', () => {
