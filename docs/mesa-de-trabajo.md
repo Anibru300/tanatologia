@@ -41,6 +41,8 @@
 
 ## 3. Última sesión — 2026-11-10 (noche): INCIDENTE real de videollamada resuelto — colgar ya no es irreversible + diagnósticos de audio (v1.9.17, migración 038)
 
+**Expediente completo de la sesión:** `docs/sesion-2026-11-10-fix-videollamada.md` (línea de tiempo, causas, cambios, verificación y pendientes).
+
 **Caso:** Beatriz Adriana Vázquez Ocampo (profesional verificada, iPhone/Safari) reportó por Soporte (20:06 CDMX): "Finalicé la llamada ya que la Px no escuchaba y ya no me da acceso". Reconstrucción desde `video_call_events` + `audit_logs` + chat:
 
 - Cita 10-nov 20:00 CDMX (sesión 1 de programa `program_4` "Programa Salud Mental", paciente Arehime Lizeth Nicolas Hernandez). Sala creada 20:00:05, Beatriz entró 20:00:09, paciente entró/salió/reentró 3 veces (20:00:54, 20:01:36, LEFT 20:02:20) intentando arreglar el audio.
