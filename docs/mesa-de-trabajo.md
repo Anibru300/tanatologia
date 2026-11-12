@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.18-beta.1` **EN CLOUD PERO NO PUSHEADA** (backend sí: migración 039 + funciones `availability-alert`/`availability-notify`/`public-directory` con `id` ya en Cloud y E2E 17/17). Commit pendiente: al push, el workflow publica la app y el sitio. **Anterior desplegada:** `1.9.17` (`b1217b5`).
+- **Versión:** `1.9.18-beta.1` **DESPLEGADA** (commits `c4cdae6` + `5f9d741`, push 2026-11-12 madrugada; workflow success tras fix del paso de tests en CI — los tests que importan `supabase` necesitan los secrets también en el step de Vitest; bundle `index-CzbXABBa.js` en producción verificado sirviendo 1.9.18; sitio estático con formulario Avíname en vivo). **Anterior:** `1.9.17` (`b1217b5`).
 - **Versión anterior:** `1.9.7-beta.1`. **botón "Reportar un problema"** en el dashboard principal de paciente y profesional — abre `ReportProblemModal` (`src/components/ReportProblemModal.tsx`): selector de tipo de falla (videollamada/citas/archivos/cuenta/otro) + descripción; envía vía `support-request` con asunto `[Problema] …` + navegador/fecha del usuario → cae en Soporte/Bandeja del admin y se responde al correo. Anterior: 1.9.6 fix `frame-src` de la meta-CSP (bloqueaba vista previa de PDFs de profesionales, correos HTML de la Bandeja y Daily.co — "Este contenido está bloqueado").
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
@@ -54,7 +54,7 @@
 
 **Incidente de diagnóstico (1 h perdida, queda el aprendizaje):** `public-directory` "no actualizaba" tras 3 redeploys — parecía la caché de edge de Supabase (GET con `Cache-Control`, no se purga sola), se llegó a renombrar la función a `directory`… y la causa real era **el `select()` sin la columna `id`**: el código nuevo corrió siempre, pero `row.id` era `undefined` y `JSON.stringify` lo omite. Se revirtió el renombrado (función `directory` borrada de Cloud y del repo), se agregó `id` al select y funcionó a la primera. **Lección anotada en AGENTS (ítem 24): ante un "deploy que no toma efecto", revisar el PROPIO código antes de culpar a la caché.**
 
-**Estado:** backend en Cloud ✓ · app y sitio estático **publican al push** (workflow). Sin migraciones pendientes.
+**Estado:** ✅ **DESPLEGADO Y VERIFICADO EN PRODUCCIÓN** (app 1.9.18 + sitio estático; backend en Cloud). Sin migraciones pendientes.
 
 ## Chequeo 2026-11-11 (tarde-noche): todo operando (solo lectura)
 
