@@ -43,6 +43,20 @@ export type Appointment = {
 }
 
 export async function getProfessionalProfiles(): Promise<ProfessionalProfile[]> {
+  const { bookable } = await getDirectoryProfessionals()
+  return bookable
+}
+
+// Directorio completo en una sola carga: divide a los profesionales
+// verificados+visibles entre "agendables" (con ≥1 slot futuro, se muestran
+// arriba con botón Agendar) y "próximamente" (sin horarios publicados, se
+// muestran abajo con "Avísame cuando abra agenda", migración 039). El
+// selector de BookAppointment sigue usando getProfessionalProfiles (solo
+// agendables) gracias al wrapper de arriba.
+export async function getDirectoryProfessionals(): Promise<{
+  bookable: ProfessionalProfile[]
+  upcoming: ProfessionalProfile[]
+}> {
   const { data, error } = await supabase
     .from('professional_profiles')
     .select(
@@ -55,12 +69,10 @@ export async function getProfessionalProfiles(): Promise<ProfessionalProfile[]> 
     throw new Error(error.message)
   }
 
-  // El paciente solo debe ver profesionistas que SÍ se pueden agendar:
-  // verificados + visibles (filtro de arriba) y con al menos un horario
-  // futuro publicado. La RLS de availability_slots ya permite a cualquier
-  // usuario autenticado leer slots de profesionales verificados (008/026).
+  // La RLS de availability_slots ya permite a cualquier usuario autenticado
+  // leer slots de profesionales verificados (008/026).
   const allProfiles = (data || []) as Record<string, unknown>[]
-  if (allProfiles.length === 0) return []
+  if (allProfiles.length === 0) return { bookable: [], upcoming: [] }
 
   const { data: slotsData, error: slotsError } = await supabase
     .from('availability_slots')
@@ -73,32 +85,36 @@ export async function getProfessionalProfiles(): Promise<ProfessionalProfile[]> 
   }
 
   const withFutureSlots = new Set((slotsData || []).map((s) => String(s.professional_profile_id)))
-  const profiles = allProfiles.filter((p) => withFutureSlots.has(String(p.id)))
-  const avatarMap = await getProfessionalAvatarMap(profiles.map((p) => String(p.profile_id)))
+  const bookableRows = allProfiles.filter((p) => withFutureSlots.has(String(p.id)))
+  const upcomingRows = allProfiles.filter((p) => !withFutureSlots.has(String(p.id)))
+  const avatarMap = await getProfessionalAvatarMap(allProfiles.map((p) => String(p.profile_id)))
 
-  return (profiles as Record<string, unknown>[]).map((row) => {
-    return {
-      id: String(row.id),
-      profile_id: String(row.profile_id),
-      full_name: row.full_name ? String(row.full_name) : 'Profesional',
-      specialties: (row.specialties as string[]) || [],
-      session_price: Number(row.session_price),
-      program_4_price: Number(row.program_4_price),
-      program_6_price: Number(row.program_6_price),
-      verification_status: String(row.verification_status),
-      is_visible: Boolean(row.is_visible),
-      rating: Number(row.rating),
-      rating_count: Number(row.rating_count || 0),
-      bio: row.bio ? String(row.bio) : undefined,
-      education: row.education ? String(row.education) : undefined,
-      university: row.university ? String(row.university) : undefined,
-      professional_title: row.professional_title ? String(row.professional_title) : undefined,
-      languages: (row.languages as string[]) || [],
-      years_experience: row.years_experience !== null && row.years_experience !== undefined ? Number(row.years_experience) : null,
-      approach: row.approach ? String(row.approach) : undefined,
-      avatar_url: avatarMap.get(String(row.profile_id)) ?? null,
-    }
+  const toProfile = (row: Record<string, unknown>): ProfessionalProfile => ({
+    id: String(row.id),
+    profile_id: String(row.profile_id),
+    full_name: row.full_name ? String(row.full_name) : 'Profesional',
+    specialties: (row.specialties as string[]) || [],
+    session_price: Number(row.session_price),
+    program_4_price: Number(row.program_4_price),
+    program_6_price: Number(row.program_6_price),
+    verification_status: String(row.verification_status),
+    is_visible: Boolean(row.is_visible),
+    rating: Number(row.rating),
+    rating_count: Number(row.rating_count || 0),
+    bio: row.bio ? String(row.bio) : undefined,
+    education: row.education ? String(row.education) : undefined,
+    university: row.university ? String(row.university) : undefined,
+    professional_title: row.professional_title ? String(row.professional_title) : undefined,
+    languages: (row.languages as string[]) || [],
+    years_experience: row.years_experience !== null && row.years_experience !== undefined ? Number(row.years_experience) : null,
+    approach: row.approach ? String(row.approach) : undefined,
+    avatar_url: avatarMap.get(String(row.profile_id)) ?? null,
   })
+
+  return {
+    bookable: bookableRows.map(toProfile),
+    upcoming: upcomingRows.map(toProfile),
+  }
 }
 
 // Avatar de los profesionales vía RPC SECURITY DEFINER (migración 027): la RLS

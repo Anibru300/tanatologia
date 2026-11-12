@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
 
   const { data: professionals, error: profError } = await supabase
     .from("professional_profiles")
-    .select("specialties, profiles!professional_profiles_profile_id_fkey(full_name, avatar_url)")
+    .select("id, specialties, profiles!professional_profiles_profile_id_fkey(full_name, avatar_url)")
     .eq("verification_status", "verified")
     .eq("is_visible", true)
     .order("created_at", { ascending: true })
@@ -71,6 +71,10 @@ Deno.serve(async (req) => {
   const directory = (professionals ?? []).map((row) => {
     const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
     return {
+      // id del subperfil: lo necesita el alta de "Avísame cuando abra agenda"
+      // (availability-alert). Es el mismo identificador que ve el paciente en
+      // la app al abrir el perfil para agendar.
+      id: row.id,
       full_name: profile?.full_name ?? "Profesional",
       avatar_url: profile?.avatar_url ?? null,
       specialties: row.specialties ?? [],

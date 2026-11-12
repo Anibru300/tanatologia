@@ -16,6 +16,7 @@ import {
   isOverlapError,
   type AvailabilitySlot,
 } from '@/features/availability/availabilityService'
+import { getPendingAlertCount } from '@/features/appointments/availabilityAlertsService'
 
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'] // semana inicia en lunes
 
@@ -55,6 +56,7 @@ export function ProfessionalAvailability() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [verificationStatus, setVerificationStatus] = useState<string | null>(null)
+  const [waitingPatients, setWaitingPatients] = useState(0)
 
   const today = startOfToday()
   const [viewMonth, setViewMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
@@ -80,6 +82,10 @@ export function ProfessionalAvailability() {
     getMyProfile(user.id)
       .then(({ professionalProfile }) => {
         setVerificationStatus(professionalProfile?.verification_status ?? null)
+        // Pacientes que dejaron su correo en "Avísame cuando abra agenda" (039).
+        if (professionalProfile) {
+          getPendingAlertCount(professionalProfile.id).then(setWaitingPatients).catch(() => {})
+        }
       })
       .catch(() => {})
     getMyAvailability(user.id)
@@ -204,6 +210,14 @@ export function ProfessionalAvailability() {
             Los pacientes solo podrán agendar en los horarios que publiques aquí.
           </p>
         </div>
+
+        {waitingPatients > 0 && (
+          <Alert variant="info" className="mb-6 p-3 rounded-sm">
+            💚 <strong>{waitingPatients === 1 ? '1 paciente dejó' : `${waitingPatients} pacientes dejaron`} su correo</strong>{' '}
+            para que les avises cuando publiques horarios. En cuanto agregues tu primera disponibilidad,
+            les enviaremos el aviso automáticamente.
+          </Alert>
+        )}
 
         {error && <Alert variant="error" className="mb-6 p-3 rounded-sm">{error}</Alert>}
         {success && (

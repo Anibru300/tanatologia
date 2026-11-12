@@ -455,6 +455,22 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/public-directory/index.ts"
 
+[functions.availability-alert]
+enabled = true
+# Función PÚBLICA: alta de "Avísame cuando abra agenda" (app y sitio estático,
+# anónimo o autenticado). Rate-limit por IP + validación de profesional
+# verificado/visible; inserta con service role (la tabla no acepta inserts
+# directos por RLS). Idempotente por UNIQUE (profesional, correo).
+verify_jwt = false
+entrypoint = "./functions/availability-alert/index.ts"
+
+[functions.availability-notify]
+enabled = true
+# Función INTERNA: correos "ya puedes agendar" a quienes esperan a un
+# profesional. La invoca el trigger 039 vía pg_net con x-cron-secret (timing-safe).
+verify_jwt = false
+entrypoint = "./functions/availability-notify/index.ts"
+
 [functions.user-emails]
 enabled = true
 # Función INTERNA: correos transaccionales (bienvenida, cancelación, verificación)

@@ -7,8 +7,12 @@ import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { Star, Search, Filter, Calendar, Award, CheckCircle, GraduationCap, Languages, Briefcase, Sparkles, MessageSquareQuote } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
-import { getProfessionalProfiles, type ProfessionalProfile } from '@/features/appointments/appointmentsService'
+import { getDirectoryProfessionals, type ProfessionalProfile } from '@/features/appointments/appointmentsService'
+import { createAvailabilityAlert, isValidAlertEmail } from '@/features/appointments/availabilityAlertsService'
 import { useAuth } from '@/features/auth/useAuth'
+import { Alert } from '@/components/ui/Alert'
+import { Input } from '@/components/ui/Input'
+import { Bell } from 'lucide-react'
 import { getMyIntake } from '@/features/intake/intakeService'
 import { suggestedSpecialties } from '@/features/intake/intakeContent'
 import { getProfessionalReviewsPublic, type ProfessionalReviewPublic } from '@/features/reviews/reviewsService'
@@ -63,20 +67,30 @@ export function TherapistDirectory() {
   const [search, setSearch] = useState('')
   const [specialty, setSpecialty] = useState('Todas')
   const [therapists, setTherapists] = useState<ProfessionalProfile[]>([])
+  const [upcoming, setUpcoming] = useState<ProfessionalProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState<ProfessionalProfile | null>(null)
   const [intakeSpecs, setIntakeSpecs] = useState<string[]>([])
   const [useIntakeMatch, setUseIntakeMatch] = useState(false)
 
+  // "Avísame cuando abra agenda" (migración 039)
+  const [alertTarget, setAlertTarget] = useState<ProfessionalProfile | null>(null)
+  const [alertEmail, setAlertEmail] = useState('')
+  const [alertSending, setAlertSending] = useState(false)
+  const [alertDone, setAlertDone] = useState<'' | 'saved' | 'duplicate'>('')
+  const [alertError, setAlertError] = useState('')
+  const [alertSigned, setAlertSigned] = useState<Set<string>>(new Set())
+
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    Promise.all([getProfessionalProfiles(), user ? getMyIntake(user.id) : Promise.resolve(null)])
-      .then(([data, intake]) => {
+    Promise.all([getDirectoryProfessionals(), user ? getMyIntake(user.id) : Promise.resolve(null)])
+      .then(({ 0: directory, 1: intake }) => {
         if (cancelled) return
         // Orden: mejor calificación primero
-        setTherapists([...data].sort((a, b) => b.rating - a.rating))
+        setTherapists([...directory.bookable].sort((a, b) => b.rating - a.rating))
+        setUpcoming(directory.upcoming)
         if (intake) {
           const specs = suggestedSpecialties(intake)
           if (specs.length > 0) {
@@ -96,19 +110,46 @@ export function TherapistDirectory() {
     }
   }, [user])
 
-  const filtered = useMemo(() => {
-    return therapists.filter((t) => {
-      const name = t.full_name.toLowerCase()
-      const specs = (t.specialties || []).join(' ').toLowerCase()
-      const matchesSearch = name.includes(search.toLowerCase()) || specs.includes(search.toLowerCase())
-      const matchesSpecialty = specialty === 'Todas' || (t.specialties || []).some((s) => s.toLowerCase().includes(specialty.toLowerCase()))
-      const matchesIntake =
-        !useIntakeMatch ||
-        intakeSpecs.length === 0 ||
-        (t.specialties || []).some((s) => intakeSpecs.some((i) => i.toLowerCase() === s.toLowerCase()))
-      return matchesSearch && matchesSpecialty && matchesIntake
-    })
-  }, [therapists, search, specialty, useIntakeMatch, intakeSpecs])
+  const openAlert = (pro: ProfessionalProfile) => {
+    setAlertTarget(pro)
+    setAlertEmail(user?.email ?? '')
+    setAlertDone('')
+    setAlertError('')
+  }
+
+  const submitAlert = async () => {
+    if (!alertTarget) return
+    if (!isValidAlertEmail(alertEmail)) {
+      setAlertError('Ingresa un correo válido.')
+      return
+    }
+    setAlertSending(true)
+    setAlertError('')
+    try {
+      const { duplicate } = await createAvailabilityAlert(alertTarget.id, alertEmail)
+      setAlertDone(duplicate ? 'duplicate' : 'saved')
+      setAlertSigned((prev) => new Set(prev).add(alertTarget.id))
+    } catch (err) {
+      setAlertError(err instanceof Error ? err.message : 'No se pudo guardar tu solicitud. Intenta más tarde.')
+    } finally {
+      setAlertSending(false)
+    }
+  }
+
+  const matchesFilters = (t: ProfessionalProfile) => {
+    const name = t.full_name.toLowerCase()
+    const specs = (t.specialties || []).join(' ').toLowerCase()
+    const matchesSearch = name.includes(search.toLowerCase()) || specs.includes(search.toLowerCase())
+    const matchesSpecialty = specialty === 'Todas' || (t.specialties || []).some((s) => s.toLowerCase().includes(specialty.toLowerCase()))
+    const matchesIntake =
+      !useIntakeMatch ||
+      intakeSpecs.length === 0 ||
+      (t.specialties || []).some((s) => intakeSpecs.some((i) => i.toLowerCase() === s.toLowerCase()))
+    return matchesSearch && matchesSpecialty && matchesIntake
+  }
+
+  const filtered = useMemo(() => therapists.filter(matchesFilters), [therapists, search, specialty, useIntakeMatch, intakeSpecs])
+  const filteredUpcoming = useMemo(() => upcoming.filter(matchesFilters), [upcoming, search, specialty, useIntakeMatch, intakeSpecs])
 
   if (loading) {
     return (
@@ -200,7 +241,7 @@ export function TherapistDirectory() {
           </CardContent>
         </Card>
 
-        {therapists.length === 0 ? (
+        {therapists.length === 0 && upcoming.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto rounded-full bg-bg-alt flex items-center justify-center mb-4">
               <Award size={32} className="text-text-light" />
@@ -216,6 +257,7 @@ export function TherapistDirectory() {
           </div>
         ) : (
           <>
+            {therapists.length > 0 && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((t) => (
                 <Card key={t.id} className="flex flex-col hover:shadow-lg transition-shadow">
@@ -266,8 +308,9 @@ export function TherapistDirectory() {
                 </Card>
               ))}
             </div>
+            )}
 
-            {filtered.length === 0 && (
+            {therapists.length > 0 && filtered.length === 0 && (
               <div className="text-center py-16">
                 <div className="w-16 h-16 mx-auto rounded-full bg-bg-alt flex items-center justify-center mb-4">
                   <Search size={32} className="text-text-light" />
@@ -278,6 +321,73 @@ export function TherapistDirectory() {
                   <Button variant="outline" onClick={() => setUseIntakeMatch(false)}>Ver todos los profesionales</Button>
                 )}
               </div>
+            )}
+
+            {upcoming.length > 0 && (
+              <section className="mt-12" aria-label="Profesionales próximamente disponibles">
+                <div className="mb-6 text-center max-w-2xl mx-auto">
+                  <h2 className="text-2xl font-bold text-text mb-2">Próximamente disponibles</h2>
+                  <p className="text-text-light">
+                    Estos profesionales ya están verificados y están por publicar sus horarios.
+                    Deja tu correo y te avisaremos en cuanto puedas agendar con ellos.
+                  </p>
+                </div>
+                {filteredUpcoming.length === 0 ? (
+                  <p className="text-center text-text-light py-8">
+                    Ninguno coincide con tu búsqueda actual. Prueba con otros filtros.
+                  </p>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredUpcoming.map((t) => (
+                      <Card key={t.id} className="flex flex-col hover:shadow-lg transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-start justify-between mb-4">
+                            <Avatar src={t.avatar_url} name={t.full_name} size="md" />
+                            <Badge variant="info">Próximamente</Badge>
+                          </div>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            {t.professional_title ? `${t.professional_title} ` : ''}{t.full_name}
+                            {t.verification_status === 'verified' && <CheckCircle size={16} className="text-success-dark" />}
+                          </CardTitle>
+                          <CardDescription>{(t.specialties || []).slice(0, 2).join(' · ') || 'Acompañamiento emocional'}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-1 flex flex-col">
+                          <p className="text-text-light text-sm mb-4 flex-1 line-clamp-3">{t.bio || 'Especialista en acompañamiento emocional y tanatología.'}</p>
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {(t.specialties || []).slice(0, 3).map((s) => (
+                              <Badge key={s} variant="default">
+                                {s}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex flex-col items-start mt-auto gap-3">
+                            <span className="text-lg font-bold text-primary-dark">
+                              {t.session_price !== null ? formatMXN(t.session_price) : 'Precio por definir'}
+                            </span>
+                            <span className="text-xs text-text-light">por sesión de 60 min</span>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" onClick={() => setSelected(t)}>
+                                Ver perfil
+                              </Button>
+                              {alertSigned.has(t.id) ? (
+                                <Button size="sm" variant="ghost" disabled>
+                                  <CheckCircle size={16} className="text-success-dark mr-1" />
+                                  Te avisaremos
+                                </Button>
+                              ) : (
+                                <Button size="sm" variant="secondary" onClick={() => openAlert(t)}>
+                                  <Bell size={16} className="mr-1" />
+                                  Avísame
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </section>
             )}
           </>
         )}
@@ -391,20 +501,80 @@ export function TherapistDirectory() {
             </div>
 
             <div className="flex gap-3">
-              <Button
-                className="flex-1 gap-2"
-                onClick={() => {
-                  setSelected(null)
-                  navigate('/paciente/agendar', { state: { therapistId: selected.id } })
-                }}
-              >
-                <Calendar size={18} />
-                Agendar cita
-              </Button>
+              {upcoming.some((u) => u.id === selected.id) ? (
+                <Button
+                  className="flex-1 gap-2"
+                  variant="secondary"
+                  onClick={() => {
+                    setSelected(null)
+                    openAlert(selected)
+                  }}
+                >
+                  <Bell size={18} />
+                  Avísame cuando abra agenda
+                </Button>
+              ) : (
+                <Button
+                  className="flex-1 gap-2"
+                  onClick={() => {
+                    setSelected(null)
+                    navigate('/paciente/agendar', { state: { therapistId: selected.id } })
+                  }}
+                >
+                  <Calendar size={18} />
+                  Agendar cita
+                </Button>
+              )}
               <Button variant="outline" className="flex-1" onClick={() => setSelected(null)}>
                 Cerrar
               </Button>
             </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={alertTarget !== null}
+        onClose={() => setAlertTarget(null)}
+        title="Avísame cuando abra agenda"
+        className="max-w-md"
+      >
+        {alertTarget && (
+          <div className="space-y-4">
+            {alertDone === '' ? (
+              <>
+                <p className="text-text-light text-sm">
+                  Te enviaremos un correo en cuanto{' '}
+                  <strong className="text-text">{alertTarget.full_name}</strong> publique sus horarios y
+                  puedas agendar tu primera sesión. Solo te avisaremos una vez.
+                </p>
+                {alertError && <Alert variant="error">{alertError}</Alert>}
+                <Input
+                  type="email"
+                  label="Tu correo electrónico"
+                  placeholder="tucorreo@ejemplo.com"
+                  value={alertEmail}
+                  onChange={(e) => setAlertEmail(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') submitAlert()
+                  }}
+                />
+                <div className="flex gap-3 pt-2">
+                  <Button className="flex-1" onClick={submitAlert} disabled={alertSending}>
+                    {alertSending ? 'Guardando…' : 'Avisarme'}
+                  </Button>
+                  <Button variant="outline" className="flex-1" onClick={() => setAlertTarget(null)}>
+                    Cancelar
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <Alert variant="success">
+                {alertDone === 'duplicate'
+                  ? 'Ya tenías registrado tu correo para este profesional. Te avisaremos en cuanto abra su agenda.'
+                  : 'Listo 💚 Te avisaremos por correo en cuanto este profesional publique sus horarios.'}
+              </Alert>
+            )}
           </div>
         )}
       </Modal>

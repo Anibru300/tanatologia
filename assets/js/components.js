@@ -248,10 +248,61 @@
                         '<p class="pro-dir__name">' + esc(name) + '</p>' +
                         '<div class="pro-dir__specs">' + chips + '</div>' +
                         '<span class="pro-dir__verified">✓ Cédula verificada</span>' +
+                        (pro.id
+                            ? '<form class="pro-dir__alert" data-alert-professional="' + esc(String(pro.id)) + '" novalidate>' +
+                              '<input type="email" name="email" inputmode="email" autocomplete="email" ' +
+                              'placeholder="Tu correo" aria-label="Tu correo para avisarte cuando ' + esc(name) + ' abra su agenda" required>' +
+                              '<button type="submit">🔔 Avísame cuando abra su agenda</button>' +
+                              '<p class="pro-dir__alert-msg" role="status" aria-live="polite"></p>' +
+                              '</form>'
+                            : '') +
                         '</article>';
                 }).join('');
 
                 section.hidden = false;
+
+                // Altas de "Avísame cuando abra agenda" (Edge Function availability-alert, 039).
+                // Delegación de eventos: una sola escucha para todas las tarjetas.
+                section.addEventListener('submit', function (ev) {
+                    var form = ev.target;
+                    if (!form || !form.getAttribute || !form.hasAttribute('data-alert-professional')) return;
+                    ev.preventDefault();
+                    var msg = form.querySelector('.pro-dir__alert-msg');
+                    var input = form.querySelector('input[type="email"]');
+                    var button = form.querySelector('button');
+                    var email = (input && input.value || '').trim();
+                    if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)) {
+                        if (msg) { msg.textContent = 'Ingresa un correo válido.'; msg.className = 'pro-dir__alert-msg pro-dir__alert-msg--err'; }
+                        return;
+                    }
+                    if (button) button.disabled = true;
+                    fetch('https://qjwebikgrqtotqfipeqt.supabase.co/functions/v1/availability-alert', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ professional_profile_id: form.getAttribute('data-alert-professional'), email: email })
+                    })
+                        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+                        .then(function (r) {
+                            if (r.ok) {
+                                if (msg) {
+                                    msg.textContent = r.data && r.data.duplicate
+                                        ? '✓ Ya estabas registrado/a. Te avisaremos en cuanto abra su agenda.'
+                                        : '✓ ¡Listo! Te avisaremos en cuanto abra su agenda.';
+                                    msg.className = 'pro-dir__alert-msg pro-dir__alert-msg--ok';
+                                }
+                                if (input) input.value = '';
+                            } else if (msg) {
+                                msg.textContent = (r.data && r.data.error) || 'No se pudo guardar. Intenta de nuevo.';
+                                msg.className = 'pro-dir__alert-msg pro-dir__alert-msg--err';
+                            }
+                        })
+                        .catch(function () {
+                            if (msg) { msg.textContent = 'Sin conexión. Intenta de nuevo.'; msg.className = 'pro-dir__alert-msg pro-dir__alert-msg--err'; }
+                        })
+                        .finally(function () {
+                            if (button) button.disabled = false;
+                        });
+                });
             });
         })
         .catch(function () { /* sin conexión: la landing queda como estaba */ });
