@@ -40,6 +40,13 @@ jobs:
       - name: Tests (Vitest)
         working-directory: platform/web
         run: npm run test
+        env:
+          # Los tests que importan módulos con el cliente de Supabase
+          # (p. ej. availabilityAlertsService) necesitan las vars de entorno:
+          # createClient lanza sin URL. Antes ningún test importaba supabase;
+          # con módulos de servicio en tests esto es requisito.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Build (tsc + vite)
         working-directory: platform/web
