@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Megaphone, Send } from 'lucide-react'
+import { Eye, Megaphone, Send } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { DataTable } from '@/components/ui/DataTable'
 import { Input } from '@/components/ui/Input'
+import { Modal } from '@/components/ui/Modal'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { useAuth } from '@/features/auth/useAuth'
@@ -32,6 +33,7 @@ type Broadcast = {
   id: string
   audience: Audience
   subject: string
+  body_text: string
   status: 'pending' | 'sent' | 'failed'
   recipient_count: number
   sent_count: number
@@ -243,6 +245,8 @@ export function AdminBroadcasts() {
   const [confirmOpen, setConfirmOpen] = useState(false)
   // Reenvío de un comunicado pendiente desde el historial.
   const [resendTarget, setResendTarget] = useState<Broadcast | null>(null)
+  // Vista previa del asunto y cuerpo antes de enviar.
+  const [previewTarget, setPreviewTarget] = useState<Broadcast | null>(null)
 
   // Selector de personas específicas
   const [userOptions, setUserOptions] = useState<UserOption[]>([])
@@ -264,7 +268,7 @@ export function AdminBroadcasts() {
     try {
       const { data, error: queryError } = await supabase
         .from('email_broadcasts')
-        .select('id, audience, subject, status, recipient_count, sent_count, failed_count, created_at, only_emails')
+        .select('id, audience, subject, body_text, status, recipient_count, sent_count, failed_count, created_at, only_emails')
         .order('created_at', { ascending: false })
         .limit(50)
       if (queryError) throw queryError
@@ -643,12 +647,18 @@ export function AdminBroadcasts() {
               },
               {
                 header: 'Acciones',
-                render: (row) =>
-                  row.status === 'pending' ? (
-                    <Button variant="outline" size="sm" onClick={() => setResendTarget(row)}>
-                      <Send size={14} className="mr-1" /> Enviar
+                render: (row) => (
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setPreviewTarget(row)}>
+                      <Eye size={14} className="mr-1" /> Ver correo
                     </Button>
-                  ) : null,
+                    {row.status === 'pending' && (
+                      <Button variant="primary" size="sm" onClick={() => setResendTarget(row)}>
+                        <Send size={14} className="mr-1" /> Enviar
+                      </Button>
+                    )}
+                  </div>
+                ),
               },
             ]}
           />
@@ -679,6 +689,46 @@ export function AdminBroadcasts() {
         onConfirm={handleResend}
         onCancel={() => setResendTarget(null)}
       />
+
+      <Modal
+        open={previewTarget !== null}
+        onClose={() => setPreviewTarget(null)}
+        title="Vista previa del correo"
+        className="max-w-2xl"
+      >
+        {previewTarget && (
+          <div className="space-y-4">
+            <div className="text-sm text-text-light space-y-1">
+              <div>
+                <strong className="text-text">Asunto:</strong> {previewTarget.subject}
+              </div>
+              <div>
+                <strong className="text-text">Destinatarios:</strong>{' '}
+                {Array.isArray(previewTarget.only_emails) && previewTarget.only_emails.length > 0
+                  ? `${previewTarget.only_emails.length} guardados (no toda la audiencia)`
+                  : AUDIENCE_LABELS[previewTarget.audience] ?? previewTarget.audience}
+                {' · '}
+                <strong className="text-text">Estado:</strong> {STATUS_LABELS[previewTarget.status]}
+              </div>
+            </div>
+            <div
+              className="rounded-md border border-border overflow-hidden bg-bg-alt"
+              // El contenido se genera a partir de campos escapados (bodyTextToHtml).
+              dangerouslySetInnerHTML={{ __html: broadcastPreviewHtml(previewTarget.subject, previewTarget.body_text) }}
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setPreviewTarget(null)}>
+                Cerrar
+              </Button>
+              {previewTarget.status === 'pending' && (
+                <Button variant="primary" onClick={() => { setResendTarget(previewTarget); setPreviewTarget(null) }}>
+                  <Send size={14} className="mr-1" /> Enviar
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <ConfirmDialog
         open={confirmOpen}
