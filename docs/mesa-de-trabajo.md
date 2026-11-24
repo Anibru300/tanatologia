@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-23 noche: v1.9.19 — Comunicados: filtros "Verificados sin horarios publicados" + "Sin documentos cargados", destinatarios exactos guardados en la fila (migración 040 + redeploy send-broadcast) y 2 campañas a profesionistas PRECARGADAS como pending (20 verificados sin horarios + 33 pendientes sin docs) listas para solo Enviar. Commit+push hecho; deploy automático al push. Ver «Jornada 2026-11-23»)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-23 noche: v1.9.20 — botón "Ver correo" en el historial de Comunicados (asunto, destinatarios y cuerpo con plantilla de marca antes de Enviar). Las 2 campañas del 23-nov ya fueron ENVIADAS POR EL DUEÑO. Ver «Jornada 2026-11-23»)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.19-beta.1` (commit+push 2026-11-23 noche; **pendiente: verificar workflow/deploy**). **Anterior:** `1.9.18` (`c4cdae6`, push 2026-11-12).
+- **Versión:** `1.9.20-beta.1` **DESPLEGADA** (commit `813a95d` + build `994d8fa`, push 2026-11-23 noche; workflow success, producción verificada sirviendo el chunk `AdminBroadcasts` con el botón). **Anterior:** `1.9.19` (`8896bbb`).
 - **Versión anterior:** `1.9.7-beta.1`. **botón "Reportar un problema"** en el dashboard principal de paciente y profesional — abre `ReportProblemModal` (`src/components/ReportProblemModal.tsx`): selector de tipo de falla (videollamada/citas/archivos/cuenta/otro) + descripción; envía vía `support-request` con asunto `[Problema] …` + navegador/fecha del usuario → cae en Soporte/Bandeja del admin y se responde al correo. Anterior: 1.9.6 fix `frame-src` de la meta-CSP (bloqueaba vista previa de PDFs de profesionales, correos HTML de la Bandeja y Daily.co — "Este contenido está bloqueado").
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
@@ -50,7 +50,9 @@
 | 3 | ✅ **v1.9.19 app** | Nuevo filtro profesional **"Verificados sin horarios publicados"** (`verified_without_slots` = verified ∧ sin slots futuros); "Sin documentos subidos" renombrado a **"Sin documentos cargados"**. El alta de comunicado ahora **persiste `only_emails` en la fila** (un pending se reenvía a los mismos destinatarios aunque los datos cambien). Diálogo de reenvío muestra "a sus N destinatarios guardados" cuando hay lista. tsc ✓, tests 49/49, build ✓ |
 | 4 | ✅ **2 campañas PRECARGADAS como pending** | Correo 1 `📅 Publica tus horarios en 2 minutos…` → **20 verificados sin horarios** (lista exacta en `only_emails`, `recipient_count=20`, id `6debf38a…`). Correo 2 `🌱 Falta un paso: sube tu cédula…` → **33 pendientes sin ningún documento** (id `831cd0cb…`). Datos reales de Cloud 23-nov. Doc: `docs/campana-profesionistas-2026-11-23.md` |
 
-**Para el dueño:** entrar a `/admin/comunicados` → historial → botón **Enviar** en cada pending (el diálogo confirma el nº de destinatarios). Cupo del día: 53 ≤ 100 ✅. Las respuestas caerán en `/admin/bandeja`.
+**Para el dueño:** ~~entrar a `/admin/comunicados` → historial → Enviar~~ ✅ **YA ENVIADOS el 23-nov** (verificar en el historial `sent_count` = 20 y 33, `failed_count` = 0). Las respuestas caerán en `/admin/bandeja`.
+
+**v1.9.20 (mismo pedido, noche):** botón **"Ver correo"** en cada fila del historial de Comunicados — abre un Modal con asunto, destinatarios exactos, estado y el cuerpo renderizado con la plantilla de marca; desde ahí mismo se puede pasar a Enviar (pendientes). Producción verificada (chunk `AdminBroadcasts-8jLpExi4.js`). tsc ✓, tests 49/49, build ✓.
 
 **Notas de datos:** ya NO están Lupita ni Adriana López Olmos en "sin horarios" (publicaron tras la campaña anterior ✅). Carlos Urbina sigue `is_visible=false`. Mayra Gómez sí está (horarios agotados/ocupados).
 
