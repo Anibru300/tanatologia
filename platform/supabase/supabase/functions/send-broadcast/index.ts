@@ -192,7 +192,7 @@ Deno.serve(async (req) => {
 
   const { data: broadcast, error: broadcastError } = await adminClient
     .from("email_broadcasts")
-    .select("id, audience, subject, body_text, status")
+    .select("id, audience, subject, body_text, status, only_emails")
     .eq("id", broadcastId)
     .maybeSingle();
 
@@ -238,9 +238,18 @@ Deno.serve(async (req) => {
     ),
   ];
 
-  // Filtro opcional del administrador (p. ej. envío de prueba controlado).
-  const finalEmails = Array.isArray(body.only_emails) && body.only_emails.length > 0
-    ? emails.filter((e) => body.only_emails!.includes(e))
+  // Filtro de destinatarios: la lista guardada en la fila (comunicados
+  // preparados con destinatarios exactos) tiene prioridad; si no, el filtro
+  // opcional del cuerpo del request (p. ej. envío de prueba controlado).
+  const storedEmails = Array.isArray(broadcast.only_emails)
+    ? (broadcast.only_emails as unknown[]).filter((e): e is string => typeof e === "string")
+    : [];
+  const requestEmails = Array.isArray(body.only_emails) && body.only_emails.length > 0
+    ? body.only_emails
+    : [];
+  const onlyEmails = storedEmails.length > 0 ? storedEmails : requestEmails;
+  const finalEmails = onlyEmails.length > 0
+    ? emails.filter((e) => onlyEmails.includes(e))
     : emails;
 
   if (finalEmails.length === 0) {

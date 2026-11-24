@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-12 madrugada: v1.9.18 — Directorio "Próximamente" + "Avísame cuando abra agenda" (migración 039 en Cloud + 3 funciones desplegadas + E2E 17/17 + tests 49/49). **Pendiente solo: commit+push (backend ya en Cloud; app y sitio estático se publican al push).** Ver «Jornada 2026-11-11 (noche)»)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-23 noche: v1.9.19 — Comunicados: filtros "Verificados sin horarios publicados" + "Sin documentos cargados", destinatarios exactos guardados en la fila (migración 040 + redeploy send-broadcast) y 2 campañas a profesionistas PRECARGADAS como pending (20 verificados sin horarios + 33 pendientes sin docs) listas para solo Enviar. Commit+push hecho; deploy automático al push. Ver «Jornada 2026-11-23»)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,7 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.18-beta.1` **DESPLEGADA** (commits `c4cdae6` + `5f9d741`, push 2026-11-12 madrugada; workflow success tras fix del paso de tests en CI — los tests que importan `supabase` necesitan los secrets también en el step de Vitest; bundle `index-CzbXABBa.js` en producción verificado sirviendo 1.9.18; sitio estático con formulario Avíname en vivo). **Anterior:** `1.9.17` (`b1217b5`).
+- **Versión:** `1.9.19-beta.1` (commit+push 2026-11-23 noche; **pendiente: verificar workflow/deploy**). **Anterior:** `1.9.18` (`c4cdae6`, push 2026-11-12).
 - **Versión anterior:** `1.9.7-beta.1`. **botón "Reportar un problema"** en el dashboard principal de paciente y profesional — abre `ReportProblemModal` (`src/components/ReportProblemModal.tsx`): selector de tipo de falla (videollamada/citas/archivos/cuenta/otro) + descripción; envía vía `support-request` con asunto `[Problema] …` + navegador/fecha del usuario → cae en Soporte/Bandeja del admin y se responde al correo. Anterior: 1.9.6 fix `frame-src` de la meta-CSP (bloqueaba vista previa de PDFs de profesionales, correos HTML de la Bandeja y Daily.co — "Este contenido está bloqueado").
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
@@ -38,6 +38,21 @@
 - **PWA:** instalable (Android/iOS), service worker con banner "Nueva versión disponible", botón "Instalar app" en portales y banner en login.
 
 **EXTRA (misma sesión, mismo dueño):** migración de fuentes del sitio estático a Poppins auto-alojado (pendiente 3z). Los 4 woff2 (400/500/600/700, ~22 KB, mismos archivos que la app) copiados a `assets/fonts/`; `@font-face` en main.css; los 3 links de Google Fonts (2 preconnect + css2) reemplazados por 2 preloads locales en las 16 páginas (script `.tools/review/local_fonts.py`). El peso 800 no se usa en el CSS estático (solo 500/700 + 400/600 vía variables). Verificado con Chrome headless **bloqueando fonts.googleapis/gstatic**: las 4 fuentes cargan locales y el render es idéntico. La meta-CSP sigue permitiendo gstatic (inofensivo; limpieza opcional futura).
+
+## Jornada 2026-11-23 (noche) — Comunicados: destinatarios exactos + 2 campañas precargadas (v1.9.19, migración 040)
+
+**Pedido del dueño:** preparar los correos a profesionistas "para que solamente le dé a Enviar", subir categorías de audiencia (verificados sin horarios / sin documentos) y commitear+push para verlos en la plataforma.
+
+| # | Hecho | Detalle |
+|---|-------|---------|
+| 1 | ✅ **Migración 040 en Cloud** | `email_broadcasts.only_emails JSONB` (NULL = audiencia completa, comportamiento anterior). Aplicada y verificada |
+| 2 | ✅ **`send-broadcast` redeplegada** | Al enviar por `broadcast_id`, la lista guardada en la fila tiene **prioridad** sobre el filtro del request. Smoke: OPTIONS 200 / POST 401 sin auth |
+| 3 | ✅ **v1.9.19 app** | Nuevo filtro profesional **"Verificados sin horarios publicados"** (`verified_without_slots` = verified ∧ sin slots futuros); "Sin documentos subidos" renombrado a **"Sin documentos cargados"**. El alta de comunicado ahora **persiste `only_emails` en la fila** (un pending se reenvía a los mismos destinatarios aunque los datos cambien). Diálogo de reenvío muestra "a sus N destinatarios guardados" cuando hay lista. tsc ✓, tests 49/49, build ✓ |
+| 4 | ✅ **2 campañas PRECARGADAS como pending** | Correo 1 `📅 Publica tus horarios en 2 minutos…` → **20 verificados sin horarios** (lista exacta en `only_emails`, `recipient_count=20`, id `6debf38a…`). Correo 2 `🌱 Falta un paso: sube tu cédula…` → **33 pendientes sin ningún documento** (id `831cd0cb…`). Datos reales de Cloud 23-nov. Doc: `docs/campana-profesionistas-2026-11-23.md` |
+
+**Para el dueño:** entrar a `/admin/comunicados` → historial → botón **Enviar** en cada pending (el diálogo confirma el nº de destinatarios). Cupo del día: 53 ≤ 100 ✅. Las respuestas caerán en `/admin/bandeja`.
+
+**Notas de datos:** ya NO están Lupita ni Adriana López Olmos en "sin horarios" (publicaron tras la campaña anterior ✅). Carlos Urbina sigue `is_visible=false`. Mayra Gómez sí está (horarios agotados/ocupados).
 
 ## Jornada 2026-11-11 (noche) — Directorio "Próximamente" + "Avísame cuando abra agenda" (v1.9.18, migración 039) + campañas y testimonios redactados
 

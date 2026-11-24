@@ -24,6 +24,7 @@ type ProfessionalFilter =
   | 'pending_verification'
   | 'visible'
   | 'with_slots'
+  | 'verified_without_slots'
   | 'with_price'
   | 'without_documents'
 
@@ -36,6 +37,7 @@ type Broadcast = {
   sent_count: number
   failed_count: number
   created_at: string
+  only_emails?: string[] | null
 }
 
 type UserOption = { email: string; full_name: string; role: 'patient' | 'professional' }
@@ -59,8 +61,9 @@ const PROFESSIONAL_FILTER_OPTIONS: { value: ProfessionalFilter; label: string }[
   { value: 'pending_verification', label: 'Pendientes de verificar' },
   { value: 'visible', label: 'Visibles en el directorio' },
   { value: 'with_slots', label: 'Con horarios publicados' },
+  { value: 'verified_without_slots', label: 'Verificados sin horarios publicados' },
   { value: 'with_price', label: 'Con precio capturado' },
-  { value: 'without_documents', label: 'Sin documentos subidos' },
+  { value: 'without_documents', label: 'Sin documentos cargados' },
 ]
 
 const TARGET_LABELS: Record<Target, string> = {
@@ -213,6 +216,8 @@ async function resolveTargetEmails(
         return row.is_visible
       case 'with_slots':
         return profIdsWithSlots.has(profileId)
+      case 'verified_without_slots':
+        return row.verification_status === 'verified' && !profIdsWithSlots.has(profileId)
       case 'with_price':
         return row.session_price !== null
       case 'without_documents':
@@ -259,7 +264,7 @@ export function AdminBroadcasts() {
     try {
       const { data, error: queryError } = await supabase
         .from('email_broadcasts')
-        .select('id, audience, subject, status, recipient_count, sent_count, failed_count, created_at')
+        .select('id, audience, subject, status, recipient_count, sent_count, failed_count, created_at, only_emails')
         .order('created_at', { ascending: false })
         .limit(50)
       if (queryError) throw queryError
@@ -382,20 +387,10 @@ export function AdminBroadcasts() {
     setError('')
     setNotice('')
     try {
-      const { data: broadcast, error: insertError } = await supabase
-        .from('email_broadcasts')
-        .insert({
-          audience,
-          subject: subject.trim(),
-          body_text: bodyText.trim(),
-          created_by: user?.id,
-        })
-        .select('id')
-        .single()
-      if (insertError) throw insertError
-
-      // Cuando hay subfiltros o destinatarios específicos, la función los aplica vía only_emails
-      let onlyEmails: string[] | undefined
+      // Cuando hay subfiltros o destinatarios específicos, la función los aplica vía only_emails.
+      // También los guardamos en la fila: así un comunicado pendiente se reenvía
+      // desde el historial a EXACTAMENTE los mismos destinatarios.
+      let onlyEmails: string[] | null = null
       if (target === 'specific') {
         onlyEmails = specificEmails
       } else if (target === 'patients' && patientFilters.length > 0) {
@@ -403,6 +398,19 @@ export function AdminBroadcasts() {
       } else if (target === 'professionals' && professionalFilters.length > 0) {
         onlyEmails = await resolveTargetEmails(target, [], professionalFilters, [])
       }
+
+      const { data: broadcast, error: insertError } = await supabase
+        .from('email_broadcasts')
+        .insert({
+          audience,
+          subject: subject.trim(),
+          body_text: bodyText.trim(),
+          created_by: user?.id,
+          only_emails: onlyEmails,
+        })
+        .select('id')
+        .single()
+      if (insertError) throw insertError
 
       const { data, error: invokeError } = await supabase.functions.invoke('send-broadcast', {
         body: { broadcast_id: broadcast.id, ...(onlyEmails ? { only_emails: onlyEmails } : {}) },
@@ -652,8 +660,17 @@ export function AdminBroadcasts() {
         title="Enviar comunicado pendiente"
         message={
           <>
-            Se enviará <strong>“{resendTarget?.subject}”</strong> a su audiencia (
-            {resendTarget ? (AUDIENCE_LABELS[resendTarget.audience] ?? resendTarget.audience) : ''}). Esta acción no se
+            Se enviará <strong>“{resendTarget?.subject}”</strong>{' '}
+            {Array.isArray(resendTarget?.only_emails) && resendTarget.only_emails.length > 0 ? (
+              <>
+                a sus <strong>{resendTarget.only_emails.length} destinatarios</strong> guardados (no a toda la
+                audiencia)
+              </>
+            ) : (
+              <>
+                a su audiencia ({resendTarget ? (AUDIENCE_LABELS[resendTarget.audience] ?? resendTarget.audience) : ''})
+              </>
+            )}. Esta acción no se
             puede deshacer.
           </>
         }
