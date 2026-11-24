@@ -1,4 +1,4 @@
-# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-23 noche: v1.9.20 — botón "Ver correo" en el historial de Comunicados (asunto, destinatarios y cuerpo con plantilla de marca antes de Enviar). Las 2 campañas del 23-nov ya fueron ENVIADAS POR EL DUEÑO. Ver «Jornada 2026-11-23»)
+# Mesa de trabajo — SOMOS CALMA (actualizado 2026-11-24 madrugada: v1.9.20 en producción. Hoy: chequeo de salud completo + Comunicados con destinatarios exactos guardados (040) + botón "Ver correo". Las 2 campañas a profesionistas fueron ENVIADAS por el dueño; queda PRECARGADO un comunicado de prueba a 15 pacientes sin citas (pendiente de Ver correo → Enviar mañana). Ver «Jornada 2026-11-23»)
 
 > Documento vivo. Lee SOLO este archivo para retomar contexto entre sesiones.
 > Antes de cada sesión: verificar fecha de este archivo vs. últimos commits (`git log --oneline -5`)
@@ -6,7 +6,9 @@
 
 ## 1. Estado actual (producción)
 
-- **Versión:** `1.9.20-beta.1` **DESPLEGADA** (commit `813a95d` + build `994d8fa`, push 2026-11-23 noche; workflow success, producción verificada sirviendo el chunk `AdminBroadcasts` con el botón). **Anterior:** `1.9.19` (`8896bbb`).
+- **Versión:** `1.9.20-beta.1` **DESPLEGADA** (commits `8896bbb` v1.9.19 + `813a95d` v1.9.20 + builds automáticos, push 2026-11-23 noche; workflows success, producción verificada en vivo). **Anterior:** `1.9.18` (`c4cdae6`).
+- **Migración más reciente en Cloud: 040** (`email_broadcasts.only_emails`, 23-nov). Ninguna pendiente.
+- **Citas:** 6 completadas / 2 confirmadas futuras / 2 canceladas en 14 días. Próximas: 24-nov 18:00 (LUIS ENRIQUE×Lorena) y 26-nov 21:00 (Veronica×Berenice).
 - **Versión anterior:** `1.9.7-beta.1`. **botón "Reportar un problema"** en el dashboard principal de paciente y profesional — abre `ReportProblemModal` (`src/components/ReportProblemModal.tsx`): selector de tipo de falla (videollamada/citas/archivos/cuenta/otro) + descripción; envía vía `support-request` con asunto `[Problema] …` + navegador/fecha del usuario → cae en Soporte/Bandeja del admin y se responde al correo. Anterior: 1.9.6 fix `frame-src` de la meta-CSP (bloqueaba vista previa de PDFs de profesionales, correos HTML de la Bandeja y Daily.co — "Este contenido está bloqueado").
 - **Fase:** Beta 1.0 en operación con usuarios reales. **Regla: no agregar funcionalidades nuevas por iniciativa propia.** Documento operativo: `BETA-OPERATIONS.md`. Backlog pospuesto: `docs/backlog-post-beta.md`.
 - **Modelo de cobro vigente (2026-10-02; sesión de 60 min desde el 18-10):** cada profesional define su precio por consulta en un rango **$150–$350 MXN** (`professional_profiles.session_price`, centavos, CHECK 15000–35000, migración 025, default NULL). El paciente **paga directamente al profesional** (transferencia). **La plataforma no procesa cobros ni cobra comisiones.** Decisión del cliente (2026-10-02): los textos **no mencionan cuándo se paga** — el momento/forma de pago lo acuerdan profesional y paciente entre ellos; nosotros solo mostramos el precio. No queda ningún texto de "gratis" en sitio/app (solo líneas de crisis y comentarios internos).
@@ -39,22 +41,41 @@
 
 **EXTRA (misma sesión, mismo dueño):** migración de fuentes del sitio estático a Poppins auto-alojado (pendiente 3z). Los 4 woff2 (400/500/600/700, ~22 KB, mismos archivos que la app) copiados a `assets/fonts/`; `@font-face` en main.css; los 3 links de Google Fonts (2 preconnect + css2) reemplazados por 2 preloads locales en las 16 páginas (script `.tools/review/local_fonts.py`). El peso 800 no se usa en el CSS estático (solo 500/700 + 400/600 vía variables). Verificado con Chrome headless **bloqueando fonts.googleapis/gstatic**: las 4 fuentes cargan locales y el render es idéntico. La meta-CSP sigue permitiendo gstatic (inofensivo; limpieza opcional futura).
 
-## Jornada 2026-11-23 (noche) — Comunicados: destinatarios exactos + 2 campañas precargadas (v1.9.19, migración 040)
+## Jornada 2026-11-23 (noche completa) — Chequeo de salud + Comunicados con destinatarios exactos (v1.9.19/v1.9.20, migración 040) + 2 campañas enviadas
 
-**Pedido del dueño:** preparar los correos a profesionistas "para que solamente le dé a Enviar", subir categorías de audiencia (verificados sin horarios / sin documentos) y commitear+push para verlos en la plataforma.
+### 0. Chequeo de salud (23-nov ~23:20 CDMX, todo operando, sin errores nuevos)
+- Sitio+app en v1.9.18; cron de recordatorios sano (12 pings/2 h = cada 10 min exacto); **87 usuarios** (79→87 en 11 días); 32 slots futuros; 16/16 comunicados históricos `sent`.
+- **Citas últimos 14 días:** 6 completadas, 2 confirmadas futuras, 2 canceladas. Sesión real 20-nov (Veronica×Berenice) con 15+ eventos en `video_call_events` incluidos DIAG_* (telemetría v1.9.17 viva). Próximas: 24-nov 18:00 (LUIS ENRIQUE×Lorena Alva) y 26-nov 21:00 (Veronica×Berenice). Única cancelación reciente: 23-nov 17:33 (Enrique×Berenice, cancelada por usuario 1.5 h antes, sin eventos de video — normal).
+- WhatsApp 100% operativo. Último feedback de usuario (6-nov, 5★) menciona el banner PWA (ya blindado en v1.9.11).
+
+### 1. v1.9.19 — Comunicados: destinatarios exactos guardados + filtros de audiencia (commit `8896bbb`)
+
+**Pedido del dueño:** preparar correos a profesionistas "para que solamente le dé a Enviar", agregar categorías de audiencia y commitear+push.
 
 | # | Hecho | Detalle |
 |---|-------|---------|
 | 1 | ✅ **Migración 040 en Cloud** | `email_broadcasts.only_emails JSONB` (NULL = audiencia completa, comportamiento anterior). Aplicada y verificada |
 | 2 | ✅ **`send-broadcast` redeplegada** | Al enviar por `broadcast_id`, la lista guardada en la fila tiene **prioridad** sobre el filtro del request. Smoke: OPTIONS 200 / POST 401 sin auth |
-| 3 | ✅ **v1.9.19 app** | Nuevo filtro profesional **"Verificados sin horarios publicados"** (`verified_without_slots` = verified ∧ sin slots futuros); "Sin documentos subidos" renombrado a **"Sin documentos cargados"**. El alta de comunicado ahora **persiste `only_emails` en la fila** (un pending se reenvía a los mismos destinatarios aunque los datos cambien). Diálogo de reenvío muestra "a sus N destinatarios guardados" cuando hay lista. tsc ✓, tests 49/49, build ✓ |
-| 4 | ✅ **2 campañas PRECARGADAS como pending** | Correo 1 `📅 Publica tus horarios en 2 minutos…` → **20 verificados sin horarios** (lista exacta en `only_emails`, `recipient_count=20`, id `6debf38a…`). Correo 2 `🌱 Falta un paso: sube tu cédula…` → **33 pendientes sin ningún documento** (id `831cd0cb…`). Datos reales de Cloud 23-nov. Doc: `docs/campana-profesionistas-2026-11-23.md` |
+| 3 | ✅ **Filtros nuevos en Comunicados** | Profesionales → **"Verificados sin horarios publicados"** (`verified_without_slots` = verified ∧ sin slots futuros); "Sin documentos subidos" renombrado a **"Sin documentos cargados"**. El alta persiste `only_emails` en la fila (un pending se reenvía a los mismos destinatarios aunque los datos cambien). Diálogo de reenvío: "a sus N destinatarios guardados". tsc ✓, tests 49/49, build ✓ |
+| 4 | ✅ **2 campañas precargadas como pending** | Correo 1 `📅 Publica tus horarios en 2 minutos…` → 20 verificados sin horarios (id `6debf38a-…`). Correo 2 `🌱 Falta un paso: sube tu cédula…` → 33 pendientes sin documentos (id `831cd0cb-…`). Datos reales 23-nov. Doc: `docs/campana-profesionistas-2026-11-23.md` |
+| 5 | ✅ **El dueño YA LAS ENVIÓ (23-nov noche)** | Confirmó "listo ya lo envié". Verificar mañana en el historial `sent_count` = 20 y 33, `failed_count` = 0 |
 
-**Para el dueño:** ~~entrar a `/admin/comunicados` → historial → Enviar~~ ✅ **YA ENVIADOS el 23-nov** (verificar en el historial `sent_count` = 20 y 33, `failed_count` = 0). Las respuestas caerán en `/admin/bandeja`.
+**Notas de datos:** ya NO están Lupita ni Adriana López Olmos en "sin horarios" (publicaron tras la campaña del 27-oct ✅ funciona). Carlos Urbina sigue `is_visible=false`. Mayra Gómez sí estaba (horarios agotados/ocupados).
 
-**v1.9.20 (mismo pedido, noche):** botón **"Ver correo"** en cada fila del historial de Comunicados — abre un Modal con asunto, destinatarios exactos, estado y el cuerpo renderizado con la plantilla de marca; desde ahí mismo se puede pasar a Enviar (pendientes). Producción verificada (chunk `AdminBroadcasts-8jLpExi4.js`). tsc ✓, tests 49/49, build ✓.
+### 2. v1.9.20 — Botón "Ver correo" en el historial (commit `813a95d`, producción verificada)
 
-**Notas de datos:** ya NO están Lupita ni Adriana López Olmos en "sin horarios" (publicaron tras la campaña anterior ✅). Carlos Urbina sigue `is_visible=false`. Mayra Gómez sí está (horarios agotados/ocupados).
+**Pedido del dueño:** "para los siguientes, pon un botón de ver correo para ver el asunto y el cuerpo antes de enviarlo".
+
+- Cada fila del historial de Comunicados ahora tiene **👁️ Ver correo**: Modal con asunto, destinatarios exactos ("N guardados" o audiencia), estado y el **cuerpo renderizado con la plantilla de marca** (lo que verá el buzón). Desde la vista previa se puede pasar a **Enviar** (pendientes). Disponible también en enviados/fallidos.
+- Verificado: workflow success, producción sirviendo chunk `AdminBroadcasts-8jLpExi4.js` con "Ver correo". tsc ✓, tests 49/49, build ✓.
+
+### 3. Comunicado de prueba a pacientes sin citas — PRECARGADO, pendiente de enviar mañana
+
+**Pedido del dueño:** probar el flujo con un correo real a pacientes que nunca han tenido cita ("no están solos, están a un paso…").
+
+- **Creado como pending:** `💚 No estás solo: estás a un paso de comenzar tu camino` → **15 pacientes sin ninguna cita** (sept→nov), lista exacta en `only_emails`, id `f97204a9-eda7-49b0-af6f-00770785f4fe`.
+- **Mañana:** el dueño entra a `/admin/comunicados` → Ver correo (probar el botón nuevo) → Enviar. Cupo: 15 ≤ 100 ✅.
+- Ojo: incluye a **María Natividad Salazar** (`manasaca.76@gmail.com`) — la paciente del correo sin atender de sep en la Bandeja; si agenda, se cierra ese caso.
 
 ## Jornada 2026-11-11 (noche) — Directorio "Próximamente" + "Avísame cuando abra agenda" (v1.9.18, migración 039) + campañas y testimonios redactados
 
@@ -609,6 +630,7 @@ El dueño pidió seguir en dos días. Al retomar, en este orden:
 | ~~P0~~ ✅ **HECHO 2026-10-27** | Prueba final del webhook JaaS | **Verificado con tráfico real (mejor que la prueba planead.** La sala de prueba ignora por diseño (`no_appointment`); la cita real del 26-oct (Blanca Herrera × Mayra Gómez) dejó 11 eventos completos en `video_call_events` y la cita quedó `completed` con duración real en `/admin/citas`. Ver 3p-A | Hecho |
 | ~~P0~~ ✅ **HECHO 2026-10-27** | Campaña a profesionistas | **ENVIADA y verificada** (`email_broadcasts`): "📅 Mantén tu agenda visible…" → 18/18 verificados, 0 fallos; "🌱 Falta un paso…" → 31/31 pendientes, 0 fallos (~19:08-19:10 UTC). Textos y preparación en 3p-B; envío en 3q. **Seguimiento:** respuestas en la Bandeja (revisar en días); en 3-7 días chequear `/admin/disponibilidad` y `/admin/verificacion`. Queda el P1 de la cuenta duplicada de Victor Hugo Benítez Méndez | Hecho |
 | P1 | Re-grabar v1 y v5 | v1 tiene PII propia y de tercero; v5 muestra flujo que falló y explorador personal (aunque ambos fueron aprobados por decisión expresa del dueño, conviene re-grabar) | Decisión del cliente |
+| P1 | **Mañana 24-nov: verificar envío de las 2 campañas + enviar el comunicado a pacientes sin citas** | (1) Historial de Comunicados: `sent_count` = 20 y 33, `failed_count` = 0 (el dueño confirmó envío el 23-nov noche). (2) Comunicado precargado `💚 No estás solo…` (15 pacientes sin citas, id `f97204a9…`): abrir con el botón **Ver correo** (probar v1.9.20) → Enviar. (3) Seguimiento campañas en 5-7 días: `/admin/disponibilidad` + `/admin/verificacion`; respuestas en `/admin/bandeja` | Pendiente (mañana) |
 | P2 | Decisión proveedor de video | Comparación JaaS vs Daily.co en `/admin/prueba-videollamada`; JaaS gratis hasta 25 MAU, después $99/300 MAU; plan futuro: Jitsi propio | Decisión del cliente |
 | P2 | Pagos | Solo cuando haya tracción. Requisito: tarjeta + PayPal + SPEI (Openpay cubre tarjeta+SPEI; PayPal aparte). El sitio ya lo anuncia como "próximamente" | Diferido |
 | ~~P1~~ ✅ **EN PRODUCCIÓN 2026-11-01** | WhatsApp: encender producción | Plantillas `_3` activas, `_2` borradas, migración 036 aplicada, E2E real 4/4, docs al día (ver 3w). Restan 2 ítems nuevos abajo | Hecho |
